@@ -38,11 +38,17 @@ class Application {
         // trigger a resize event. Windows do, but it might
         // not change the size of the canvas.
         const canvas = this.canvas;
+        const gl = this.gl;
+
         if (canvas.width !== canvas.clientWidth ||
             canvas.height !== canvas.clientHeight)
         {
             canvas.width = canvas.clientWidth;
             canvas.height = canvas.clientHeight;
+
+            // Change the drawing region to reflect the canvas size.
+            gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+
             this.resize();
         }
     }

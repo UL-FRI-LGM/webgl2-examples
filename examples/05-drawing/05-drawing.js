@@ -95,11 +95,6 @@ class App extends Application {
         gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
 
-    resize() {
-        const gl = this.gl;
-        gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
-    }
-
 }
 
 document.addEventListener('DOMContentLoaded', () => {

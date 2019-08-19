@@ -31,11 +31,16 @@ export default class Application {
 
     _resize() {
         const canvas = this.canvas;
+        const gl = this.gl;
+
         if (canvas.width !== canvas.clientWidth ||
             canvas.height !== canvas.clientHeight)
         {
             canvas.width = canvas.clientWidth;
             canvas.height = canvas.clientHeight;
+
+            gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+
             this.resize();
         }
     }
