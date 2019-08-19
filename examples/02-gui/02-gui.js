@@ -1,4 +1,4 @@
-import Application from './Application.js';
+import Application from '/common/Application.js';
 
 class App extends Application {
 
