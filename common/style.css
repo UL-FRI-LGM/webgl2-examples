@@ -1,0 +1,39 @@
+body, html {
+    margin: 0;
+    pading: 0;
+}
+
+* {
+    font-family: sans-serif;
+}
+
+.fullscreen {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.fullscreen > * {
+    width: 100%;
+    height: 100%;
+}
+
+.overlay {
+    position: fixed;
+    left: 20px;
+    top: 20px;
+}
+
+a.back {
+    display: block;
+    padding: 5px 10px;
+    background: #fff;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    text-decoration: none;
+    color: #000;
+}
+
+a.back:hover {
+    background: #ddd;
+}
