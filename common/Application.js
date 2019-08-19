@@ -11,13 +11,9 @@ export default class Application {
     }
 
     _initGL() {
-        // Try to create a WebGL 2.0 context.
-        // We need both a try-catch and a null check.
         this.gl = null;
         try {
-            this.gl = this.canvas.getContext('webgl2', {
-                // options, such as disabling the depth buffer
-            });
+            this.gl = this.canvas.getContext('webgl2');
         } catch (error) {
         }
 
@@ -34,9 +30,6 @@ export default class Application {
     }
 
     _resize() {
-        // Check for resize on RAF, because elements do not
-        // trigger a resize event. Windows do, but it might
-        // not change the size of the canvas.
         const canvas = this.canvas;
         if (canvas.width !== canvas.clientWidth ||
             canvas.height !== canvas.clientHeight)
