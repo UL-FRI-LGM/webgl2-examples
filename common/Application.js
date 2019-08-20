@@ -13,7 +13,9 @@ export default class Application {
     _initGL() {
         this.gl = null;
         try {
-            this.gl = this.canvas.getContext('webgl2');
+            this.gl = this.canvas.getContext('webgl2', {
+                preserveDrawingBuffer: true
+            });
         } catch (error) {
         }
 
