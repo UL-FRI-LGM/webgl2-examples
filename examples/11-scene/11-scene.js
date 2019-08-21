@@ -71,7 +71,7 @@ class App extends Application {
         // Finally, send a request for a texture and attach the texture to
         // all three cubes when the response arrives. This example shows how
         // to handle resource loading asynchronously.
-        this.loadTexture('../../common/crate-diffuse.png', {
+        this.loadTexture('../../images/crate-diffuse.png', {
             mip: true,
             min: gl.NEAREST_MIPMAP_NEAREST,
             mag: gl.NEAREST,
