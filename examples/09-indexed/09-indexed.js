@@ -92,6 +92,17 @@ class App extends Application {
         this.startTime = Date.now();
     }
 
+    update() {
+        // Recalculate the model matrix with new rotation values.
+        let time = Date.now() - this.startTime;
+        mat4.identity(this.modelMatrix);
+        mat4.rotateX(this.modelMatrix, this.modelMatrix, time * 0.0007);
+        mat4.rotateY(this.modelMatrix, this.modelMatrix, time * 0.0006);
+
+        // We made changes to the MVP matrix, so we have to update it.
+        this.updateModelViewProjection();
+    }
+
     render() {
         const gl = this.gl;
 
@@ -101,15 +112,6 @@ class App extends Application {
 
         let program = this.programs.simple;
         gl.useProgram(program.program);
-
-        // Recalculate the model matrix with new rotation values.
-        let time = Date.now() - this.startTime;
-        mat4.identity(this.modelMatrix);
-        mat4.rotateX(this.modelMatrix, this.modelMatrix, time * 0.0007);
-        mat4.rotateY(this.modelMatrix, this.modelMatrix, time * 0.0006);
-
-        // We made changes to the MVP matrix, so we have to update it.
-        this.updateModelViewProjection();
 
         // Set the corresponding uniform. The second argument tells WebGL
         // whether to transpose the matrix before uploading it to the GPU.

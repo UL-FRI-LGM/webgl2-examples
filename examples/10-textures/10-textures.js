@@ -165,6 +165,15 @@ class App extends Application {
         image.src = '../../common/crate-diffuse.png';
     }
 
+    update() {
+        let time = Date.now() - this.startTime;
+        mat4.identity(this.modelMatrix);
+        mat4.rotateX(this.modelMatrix, this.modelMatrix, time * 0.0007);
+        mat4.rotateY(this.modelMatrix, this.modelMatrix, time * 0.0006);
+
+        this.updateModelViewProjection();
+    }
+
     render() {
         const gl = this.gl;
 
@@ -175,12 +184,6 @@ class App extends Application {
         let program = this.programs.simple;
         gl.useProgram(program.program);
 
-        let time = Date.now() - this.startTime;
-        mat4.identity(this.modelMatrix);
-        mat4.rotateX(this.modelMatrix, this.modelMatrix, time * 0.0007);
-        mat4.rotateY(this.modelMatrix, this.modelMatrix, time * 0.0006);
-
-        this.updateModelViewProjection();
         gl.uniformMatrix4fv(program.uniforms.uModelViewProjection,
             false, this.mvpMatrix);
 
