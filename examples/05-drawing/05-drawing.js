@@ -42,6 +42,9 @@ class App extends Application {
         this.colorBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, colors, gl.STATIC_DRAW);
+
+        this.offsetX = 0;
+        this.offsetY = 0;
     }
 
     render() {
@@ -88,7 +91,7 @@ class App extends Application {
         // need to be set again when switching to a different program and
         // then switching back.
         // The uniform uOffset is of type vec2 so we pass in two floats (2f).
-        gl.uniform2f(program.uniforms.uOffset, 0, 0);
+        gl.uniform2f(program.uniforms.uOffset, this.offsetX, this.offsetY);
 
         // Draw! We are drawing triangles, passing in 3 vertices
         // and starting with the vertex at index 0.
@@ -100,4 +103,7 @@ class App extends Application {
 document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.querySelector('canvas');
     const app = new App(canvas);
+    const gui = new dat.GUI();
+    gui.add(app, 'offsetX', -1, 1);
+    gui.add(app, 'offsetY', -1, 1);
 });

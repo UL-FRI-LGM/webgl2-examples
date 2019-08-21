@@ -32,7 +32,6 @@ class App extends Application {
         // transformation is used as the inverse view transformation.
         this.camera = new Node();
         this.camera.projection = mat4.create();
-        mat4.fromTranslation(this.camera.transform, [2, 0, 0]);
         this.root.addChild(this.camera);
 
         // Load the model. Here we just hardcoded the model as a javascript
@@ -49,27 +48,25 @@ class App extends Application {
         });
 
         // Create three cubes, two attached to the root node and one
-        // attached to another cube. Set the correct transformations,
-        // models and textures.
-        let cube1 = new Node();
-        cube1.model = cubeModel;
-        cube1.texture = defaultTexture;
-        mat4.fromTranslation(cube1.transform, [0, 0, -5]);
-        this.root.addChild(cube1);
+        // attached to another cube. Set the correct models and textures.
+        this.cube1 = new Node();
+        this.cube1.model = cubeModel;
+        this.cube1.texture = defaultTexture;
+        this.root.addChild(this.cube1);
 
-        let cube2 = new Node();
-        cube2.model = cubeModel;
-        cube2.texture = defaultTexture;
-        mat4.fromTranslation(cube2.transform, [4, 0, -5]);
-        mat4.rotateX(cube2.transform, cube2.transform, 1);
-        this.root.addChild(cube2);
+        this.cube2 = new Node();
+        this.cube2.model = cubeModel;
+        this.cube2.texture = defaultTexture;
+        this.root.addChild(this.cube2);
 
-        let cube3 = new Node();
-        cube3.model = cubeModel;
-        cube3.texture = defaultTexture;
-        mat4.fromTranslation(cube3.transform, [-1, 0, -5]);
-        mat4.rotateY(cube3.transform, cube3.transform, 1);
-        cube2.addChild(cube3);
+        this.cube3 = new Node();
+        this.cube3.model = cubeModel;
+        this.cube3.texture = defaultTexture;
+        this.cube2.addChild(this.cube3);
+
+        // Set two variables for controlling the cubes' rotations from GUI.
+        this.leftRotation = 0;
+        this.rightRotation = 0;
 
         // Finally, send a request for a texture and attach the texture to
         // all three cubes when the response arrives. This example shows how
@@ -79,10 +76,24 @@ class App extends Application {
             min: gl.NEAREST_MIPMAP_NEAREST,
             mag: gl.NEAREST,
         }, (texture) => {
-            cube1.texture = texture;
-            cube2.texture = texture;
-            cube3.texture = texture;
+            this.cube1.texture = texture;
+            this.cube2.texture = texture;
+            this.cube3.texture = texture;
         });
+    }
+
+    update() {
+        let t1 = this.cube1.transform;
+        mat4.fromTranslation(t1, [-2, 0, -5]);
+        mat4.rotateX(t1, t1, this.leftRotation);
+
+        let t2 = this.cube2.transform;
+        mat4.fromTranslation(t2, [2, 0, -5]);
+        mat4.rotateX(t2, t2, this.rightRotation);
+
+        let t3 = this.cube3.transform;
+        mat4.fromTranslation(t3, [-1, 0, -3]);
+        mat4.rotateY(t3, t3, 1);
     }
 
     render() {
@@ -180,4 +191,7 @@ class App extends Application {
 document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.querySelector('canvas');
     const app = new App(canvas);
+    const gui = new dat.GUI();
+    gui.add(app, 'leftRotation', -3, 3);
+    gui.add(app, 'rightRotation', -3, 3);
 });

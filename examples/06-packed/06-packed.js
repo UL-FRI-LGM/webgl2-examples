@@ -21,6 +21,9 @@ class App extends Application {
         this.vertexBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+
+        this.offsetX = 0;
+        this.offsetY = 0;
     }
 
     render() {
@@ -73,7 +76,7 @@ class App extends Application {
         );
 
         // Set the uniform.
-        gl.uniform2f(program.uniforms.uOffset, 0, 0);
+        gl.uniform2f(program.uniforms.uOffset, this.offsetX, this.offsetY);
 
         // Draw!
         gl.drawArrays(gl.TRIANGLES, 0, 3);
@@ -84,4 +87,7 @@ class App extends Application {
 document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.querySelector('canvas');
     const app = new App(canvas);
+    const gui = new dat.GUI();
+    gui.add(app, 'offsetX', -1, 1);
+    gui.add(app, 'offsetY', -1, 1);
 });

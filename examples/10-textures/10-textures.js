@@ -139,6 +139,10 @@ class App extends Application {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
 
+        // A bool will hold the current filtering mode of the texture
+        // so we can change it with a press of a button.
+        this.isLinearFilter = false;
+
         // We will also create a request for an image.
         const image = new Image();
 
@@ -219,9 +223,23 @@ class App extends Application {
         mat4.mul(matrix, this.projectionMatrix, matrix);
     }
 
+    changeFilter() {
+        const gl = this.gl;
+
+        gl.bindTexture(gl.TEXTURE_2D, this.texture);
+
+        const filter = this.isLinearFilter ? gl.LINEAR : gl.NEAREST;
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
+    }
+
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.querySelector('canvas');
     const app = new App(canvas);
+    const gui = new dat.GUI();
+    gui.add(app, 'isLinearFilter')
+       .name('Linear filtering')
+       .onChange(() => { app.changeFilter(); });
 });
