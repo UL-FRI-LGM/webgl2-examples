@@ -70,7 +70,7 @@ class App extends Application {
         this.root.addChild(this.floor);
         mat4.fromScaling(this.floor.transform, [10, 1, 10]);
 
-        this.loadTexture('../../images/grass.png', {
+        this.loadTexture('../../common/images/grass.png', {
             mip: true,
             min: gl.NEAREST_MIPMAP_NEAREST,
             mag: gl.NEAREST,

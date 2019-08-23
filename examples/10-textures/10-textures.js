@@ -166,7 +166,7 @@ class App extends Application {
         });
 
         // Set the image's source URL to send the request.
-        image.src = '../../images/crate-diffuse.png';
+        image.src = '../../common/images/crate-diffuse.png';
     }
 
     update() {

@@ -21,7 +21,6 @@ The project is structured as follows:
   this project.
 - The `common` directory contains all the code and resources that are used
   in multiple examples.
-- The `images` directory contains images/textures.
 - Finally, the `examples` directory contains a folder for every example.
   Each example holds at least a .html and a .js file as an entry point,
   potentially along with other support files associated with the example.
