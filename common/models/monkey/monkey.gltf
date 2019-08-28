@@ -16,7 +16,7 @@
     "nodes" : [
         {
             "camera" : 0,
-            "name" : "Camera_Orientation",
+            "name" : "Camera",
             "rotation" : [
                 -0.7071067690849304,
                 0,
@@ -28,7 +28,6 @@
             "children" : [
                 0
             ],
-            "name" : "Camera",
             "rotation" : [
                 0.5914059281349182,
                 0.16795258224010468,
@@ -42,13 +41,11 @@
             ]
         },
         {
-            "mesh" : 0,
-            "name" : "Suzanne"
+            "mesh" : 0
         }
     ],
     "cameras" : [
         {
-            "name" : "Camera",
             "perspective" : {
                 "yfov" : 0.4,
                 "zfar" : 100,
@@ -60,7 +57,6 @@
     "materials" : [
         {
             "doubleSided" : true,
-            "name" : "Material.001",
             "normalTexture" : {
                 "index" : 0,
                 "texCoord" : 0
@@ -79,7 +75,6 @@
     ],
     "meshes" : [
         {
-            "name" : "Suzanne",
             "primitives" : [
                 {
                     "attributes" : {
@@ -107,17 +102,14 @@
     "images" : [
         {
             "mimeType" : "image/png",
-            "name" : "normal",
             "uri" : "normal.png"
         },
         {
             "mimeType" : "image/png",
-            "name" : "albedo",
             "uri" : "albedo.png"
         },
         {
             "mimeType" : "image/png",
-            "name" : "metallic-roughness",
             "uri" : "metallic-roughness.png"
         }
     ],
