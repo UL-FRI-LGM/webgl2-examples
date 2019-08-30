@@ -45,17 +45,22 @@ class App extends Application {
         for (let j = 0; j <= height; j++) {
             for (let i = 0; i <= width; i++) {
                 const x = i - width / 2;
-                const y = j - height / 2;
+                const z = j - height / 2;
+                const y = Math.random() / 4;
 
                 // position
                 vertices.push(x);
-                vertices.push(0);
                 vertices.push(y);
+                vertices.push(z);
+
+                // normal
+                vertices.push(0);
                 vertices.push(1);
+                vertices.push(0);
 
                 // texcoords
                 vertices.push(x);
-                vertices.push(y);
+                vertices.push(z);
             }
         }
 

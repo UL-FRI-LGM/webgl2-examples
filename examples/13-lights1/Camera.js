@@ -11,7 +11,7 @@ export default class Camera extends Node {
         Object.assign(this, {
             projection       : mat4.create(),
             rotation         : vec3.set(vec3.create(), 0, 0, 0),
-            translation      : vec3.set(vec3.create(), 0, 1, 0),
+            translation      : vec3.set(vec3.create(), 0, 2, 0),
             velocity         : vec3.set(vec3.create(), 0, 0, 0),
             mouseSensitivity : 0.002,
             maxSpeed         : 3,

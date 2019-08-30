@@ -26,34 +26,43 @@ export default class Renderer {
 
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        const program = this.programs.simple;
+        const program = this.programs.phong;
         gl.useProgram(program.program);
 
         const defaultTexture = this.defaultTexture;
         gl.activeTexture(gl.TEXTURE0);
         gl.uniform1i(program.uniforms.uTexture, 0);
 
-        let mvpMatrix = mat4.create();
-        let mvpStack = [];
-        const mvpLocation = program.uniforms.uModelViewProjection;
+        let matrix = mat4.create();
+        let matrixStack = [];
+
         const viewMatrix = camera.getGlobalTransform();
         mat4.invert(viewMatrix, viewMatrix);
-        mat4.mul(mvpMatrix, camera.projection, viewMatrix);
+        mat4.copy(matrix, viewMatrix);
+        gl.uniformMatrix4fv(program.uniforms.uProjection, false, camera.projection);
+
+        gl.uniform1f(program.uniforms.uEmissive, 0.2);
+        gl.uniform1f(program.uniforms.uDiffuse, 0.8);
+        gl.uniform1f(program.uniforms.uSpecular, 2);
+        gl.uniform1f(program.uniforms.uShininess, 10);
+        gl.uniform3f(program.uniforms.uLightPosition, 2, 5, 3);
+        gl.uniform3f(program.uniforms.uLightColor, 1, 1, 1);
+        gl.uniform3f(program.uniforms.uLightAttenuation, 1.0, 0, 0.02);
 
         scene.traverse(
             (node) => {
-                mvpStack.push(mat4.clone(mvpMatrix));
-                mat4.mul(mvpMatrix, mvpMatrix, node.transform);
+                matrixStack.push(mat4.clone(matrix));
+                mat4.mul(matrix, matrix, node.transform);
                 if (node.model) {
                     gl.bindVertexArray(node.model.vao);
-                    gl.uniformMatrix4fv(mvpLocation, false, mvpMatrix);
+                    gl.uniformMatrix4fv(program.uniforms.uViewModel, false, matrix);
                     const texture = node.texture || defaultTexture;
                     gl.bindTexture(gl.TEXTURE_2D, texture);
                     gl.drawElements(gl.TRIANGLES, node.model.indices, gl.UNSIGNED_SHORT, 0);
                 }
             },
             (node) => {
-                mvpMatrix = mvpStack.pop();
+                matrix = matrixStack.pop();
             }
         );
     }
@@ -75,9 +84,11 @@ export default class Renderer {
 
         gl.enableVertexAttribArray(0);
         gl.enableVertexAttribArray(1);
+        gl.enableVertexAttribArray(2);
 
-        gl.vertexAttribPointer(0, 4, gl.FLOAT, false, 24, 0);
-        gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 24, 16);
+        gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 32, 0);
+        gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 32, 12);
+        gl.vertexAttribPointer(2, 2, gl.FLOAT, false, 32, 24);
 
         return { vao, indices };
     }
