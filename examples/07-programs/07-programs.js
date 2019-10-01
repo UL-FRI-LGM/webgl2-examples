@@ -18,6 +18,11 @@ class App extends Application {
         this.vertexBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+
+        this.offsetX = 0;
+        this.offsetY = 0;
+        this.scaleX = 0.5;
+        this.scaleY = 0.5;
     }
 
     render() {
@@ -44,7 +49,7 @@ class App extends Application {
             4, gl.FLOAT, false, 24, 8);
 
         // Draw the first triangle with the first program.
-        gl.uniform2f(program.uniforms.uOffset, 0.4, 0);
+        gl.uniform2f(program.uniforms.uOffset, 0.4 + this.offsetX, 0 + this.offsetY);
         gl.drawArrays(gl.TRIANGLES, 0, 3);
 
 
@@ -65,8 +70,8 @@ class App extends Application {
             4, gl.FLOAT, false, 24, 8);
 
         // Draw the second triangle with the second program.
-        gl.uniform2f(program.uniforms.uOffset, -0.4, 0);
-        gl.uniform2f(program.uniforms.uScale, 0.5, 0.5);
+        gl.uniform2f(program.uniforms.uOffset, -0.4 + this.offsetX, 0 + this.offsetY);
+        gl.uniform2f(program.uniforms.uScale, this.scaleX, this.scaleY);
         gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
 
@@ -75,4 +80,9 @@ class App extends Application {
 document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.querySelector('canvas');
     const app = new App(canvas);
+    const gui = new dat.GUI();
+    gui.add(app, 'offsetX', -1, 1);
+    gui.add(app, 'offsetY', -1, 1);
+    gui.add(app, 'scaleX', -1, 1);
+    gui.add(app, 'scaleY', -1, 1);
 });
