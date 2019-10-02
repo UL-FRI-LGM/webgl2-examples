@@ -3,6 +3,7 @@ import Application from '../../common/Application.js';
 import Renderer from './Renderer.js';
 import Node from './Node.js';
 import Camera from './Camera.js';
+import Light from './Light.js';
 
 const mat4 = glMatrix.mat4;
 const vec3 = glMatrix.vec3;
@@ -21,6 +22,9 @@ class App extends Application {
 
         this.camera = new Camera();
         this.root.addChild(this.camera);
+
+        this.light = new Light();
+        this.root.addChild(this.light);
 
         const floorModel = this.createFloorModel(10, 10);
 
@@ -103,7 +107,7 @@ class App extends Application {
     }
 
     render() {
-        this.renderer.render(this.root, this.camera);
+        this.renderer.render(this.root, this.camera, this.light);
     }
 
     resize() {
@@ -123,5 +127,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.querySelector('canvas');
     const app = new App(canvas);
     const gui = new dat.GUI();
+    gui.add(app.light, 'ambient', 0.0, 1.0);
+    gui.add(app.light, 'diffuse', 0.0, 1.0);
+    gui.add(app.light, 'specular', 0.0, 1.0);
+    gui.add(app.light, 'shininess', 0.0, 1000.0);
+    gui.addColor(app.light, 'color');
+    for (let i = 0; i < 3; i++) {
+        gui.add(app.light.position, i, -10.0, 10.0).name('position.' + String.fromCharCode('x'.charCodeAt(0) + i));
+    }
     gui.add(app, 'enableCamera');
 });

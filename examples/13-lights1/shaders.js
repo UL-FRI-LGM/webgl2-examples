@@ -6,7 +6,7 @@ layout (location = 2) in vec2 aTexCoord;
 uniform mat4 uViewModel;
 uniform mat4 uProjection;
 
-uniform float uEmissive;
+uniform float uAmbient;
 uniform float uDiffuse;
 uniform float uSpecular;
 
@@ -32,11 +32,11 @@ void main() {
     float lambert = max(0.0, dot(L, N));
     float phong = pow(max(0.0, dot(E, R)), uShininess);
 
-    float emissive = uEmissive;
+    float ambient = uAmbient;
     float diffuse = uDiffuse * lambert;
     float specular = uSpecular * phong;
 
-    vLight = ((emissive + diffuse + specular) * attenuation) * uLightColor;
+    vLight = ((ambient + diffuse + specular) * attenuation) * uLightColor;
     vTexCoord = aTexCoord;
     gl_Position = uProjection * vec4(vertexPosition, 1);
 }

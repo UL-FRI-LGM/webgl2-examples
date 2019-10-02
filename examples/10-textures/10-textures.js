@@ -118,7 +118,8 @@ class App extends Application {
             // The type of the data in the main memory.
             gl.UNSIGNED_BYTE,
 
-            // The data in the main memory.
+            // The data in the main memory (red color - before the actual data is
+            // loaded from the URI).
             new Uint8Array([255, 0, 0, 255])
         );
 
