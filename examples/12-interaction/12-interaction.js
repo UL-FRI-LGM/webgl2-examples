@@ -265,5 +265,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.querySelector('canvas');
     const app = new App(canvas);
     const gui = new dat.GUI();
+    gui.add(app.camera, 'mouseSensitivity', 0.0001, 0.01);
+    gui.add(app.camera, 'maxSpeed', 0, 10);
+    gui.add(app.camera, 'friction', 0.05, 0.75);
+    gui.add(app.camera, 'acceleration', 1, 100);
     gui.add(app, 'enableMouseLook');
 });
