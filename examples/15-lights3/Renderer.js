@@ -21,6 +21,7 @@ export default class Renderer {
         });
 
         this.programs = WebGL.buildPrograms(gl, shaders);
+        console.log(this.programs);
     }
 
     render(scene, camera) {
@@ -43,12 +44,14 @@ export default class Renderer {
         mat4.copy(matrix, viewMatrix);
         gl.uniformMatrix4fv(program.uniforms.uProjection, false, camera.projection);
 
-        let lightAmbientColors = [];
-        let lightDiffuseColors = [];
-        let lightSpecularColors = [];
-        let lightPositions = [];
-        let lightShininiesses = [];
-        let lightAttenuations = [];
+        // let lightAmbientColors = [];
+        // let lightDiffuseColors = [];
+        // let lightSpecularColors = [];
+        // let lightPositions = [];
+        // let lightShininiesses = [];
+        // let lightAttenuations = [];
+
+        let lightCounter = 0;
 
         scene.traverse(
             (node) => {
@@ -63,18 +66,26 @@ export default class Renderer {
                 } else if (node instanceof Light) {
                     let color = vec3.clone(node.ambientColor);
                     vec3.scale(color, color, 1.0 / 255.0);
-                    lightAmbientColors.push(color);
+                    gl.uniform3fv(program.uniforms['uAmbientColor[' + lightCounter + ']'], color);
+                    // lightAmbientColors.push(color);
                     color = vec3.clone(node.diffuseColor);
                     vec3.scale(color, color, 1.0 / 255.0);
-                    lightDiffuseColors.push(color);
+                    gl.uniform3fv(program.uniforms['uDiffuseColor[' + lightCounter + ']'], color);
+                    // lightDiffuseColors.push(color);
                     color = vec3.clone(node.specularColor);
                     vec3.scale(color, color, 1.0 / 255.0);
-                    lightSpecularColors.push(color);
+                    gl.uniform3fv(program.uniforms['uSpecularColor[' + lightCounter + ']'], color);
+                    // lightSpecularColors.push(color);
                     let position = [0,0,0];
                     mat4.getTranslation(position, node.transform);
-                    lightPositions.push(position);
-                    lightShininiesses.push(node.shininess);
-                    lightAttenuations.push(node.attenuatuion);
+
+                    gl.uniform3fv(program.uniforms['uLightPosition[' + lightCounter + ']'], position);
+                    gl.uniform1f(program.uniforms['uShininess[' + lightCounter + ']'], node.shininess);
+                    gl.uniform3fv(program.uniforms['uLightAttenuation[' + lightCounter + ']'], node.attenuatuion);
+                    // lightPositions.push(position);
+                    // lightShininiesses.push(node.shininess);
+                    // lightAttenuations.push(node.attenuatuion);
+                    lightCounter++;
                 }
             },
             (node) => {
@@ -82,12 +93,12 @@ export default class Renderer {
             }
         );
         
-        gl.uniform3fv(program.uniforms.uAmbientColor, lightAmbientColors);
-        gl.uniform3fv(program.uniforms.uDiffuseColor, lightDiffuseColors);
-        gl.uniform3fv(program.uniforms.uSpecularColor, lightSpecularColors);
-        gl.uniform3fv(program.uniforms.uLightPosition, lightPositions);
-        gl.uniform1fv(program.uniforms.uShininess, lightShininiesses);
-        gl.uniform3fv(program.uniforms.uLightAttenuation, lightAttenuations);
+        // gl.uniform3fv(program.uniforms.uAmbientColor, lightAmbientColors);
+        // gl.uniform3fv(program.uniforms.uDiffuseColor, lightDiffuseColors);
+        // gl.uniform3fv(program.uniforms.uSpecularColor, lightSpecularColors);
+        // gl.uniform3fv(program.uniforms.uLightPosition, lightPositions);
+        // gl.uniform1fv(program.uniforms.uShininess, lightShininiesses);
+        // gl.uniform3fv(program.uniforms.uLightAttenuation, lightAttenuations);
     }
 
     createModel(model) {

@@ -41,27 +41,31 @@ in vec2 vTexCoord;
 out vec4 oColor;
 
 void main() {
-    vec3 lightPosition = (uViewModel * vec4(uLightPosition[0], 1)).xyz;
-    float d = distance(vVertexPosition, lightPosition);
-    float attenuation = 1.0 / dot(uLightAttenuation[0] * vec3(1, d, d * d), vec3(1, 1, 1));
+    oColor = vec4(0.0);
+    
+    for (int i = 0; i < 4; i++) {
+        vec3 lightPosition = (uViewModel * vec4(uLightPosition[i], 1)).xyz;
+        float d = distance(vVertexPosition, lightPosition);
+        float attenuation = 1.0 / dot(uLightAttenuation[i] * vec3(1, d, d * d), vec3(1, 1, 1));
 
-    vec3 N = (uViewModel * vec4(vNormal, 0)).xyz;
-    vec3 L = normalize(lightPosition - vVertexPosition);
-    vec3 E = normalize(-vVertexPosition);
-    vec3 R = normalize(reflect(-L, N));
+        vec3 N = (uViewModel * vec4(vNormal, 0)).xyz;
+        vec3 L = normalize(lightPosition - vVertexPosition);
+        vec3 E = normalize(-vVertexPosition);
+        vec3 R = normalize(reflect(-L, N));
 
-    float lambert = max(0.0, dot(L, N));
-    float phong = pow(max(0.0, dot(E, R)), uShininess[0]);
+        float lambert = max(0.0, dot(L, N));
+        float phong = pow(max(0.0, dot(E, R)), uShininess[i]);
 
-    vec3 ambient = uAmbientColor[0];
-    vec3 diffuse = uDiffuseColor[0] * lambert;
-    vec3 specular = uSpecularColor[0] * phong;
+        vec3 ambient = uAmbientColor[i];
+        vec3 diffuse = uDiffuseColor[i] * lambert;
+        vec3 specular = uSpecularColor[i] * phong;
 
-    vec3 light = (ambient + diffuse + specular) * attenuation;
+        vec3 light = (ambient + diffuse + specular) * attenuation;
 
 
-    // oColor = texture(uTexture, vTexCoord) * vec4(light, 1);
-    oColor = vec4(uDiffuseColor[0], 1.0);
+        oColor += texture(uTexture, vTexCoord) * vec4(light, 1);
+    }
+    // oColor = vec4(light, 1.0);
 }
 `;
 
