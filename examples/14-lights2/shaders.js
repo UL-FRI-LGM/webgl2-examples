@@ -1,28 +1,37 @@
 const vertex = `#version 300 es
-precision mediump float;
 layout (location = 0) in vec3 aPosition;
 layout (location = 1) in vec3 aNormal;
 layout (location = 2) in vec2 aTexCoord;
 
 uniform mat4 uViewModel;
 uniform mat4 uProjection;
+uniform vec3 uLightPosition;
+uniform vec3 uLightAttenuation;
 
-out vec3 vVertexPosition;
+out vec3 vEye;
+out vec3 vLight;
 out vec3 vNormal;
 out vec2 vTexCoord;
+out float vAttenuation;
 
 void main() {
-    vVertexPosition = (uViewModel * vec4(aPosition, 1)).xyz;
-    vNormal = aNormal;
+    vec3 vertexPosition = (uViewModel * vec4(aPosition, 1)).xyz;
+    vec3 lightPosition = (uViewModel * vec4(uLightPosition, 1)).xyz;
+    vEye = -vertexPosition;
+    vLight = lightPosition - vertexPosition;
+    vNormal = (uViewModel * vec4(aNormal, 0)).xyz;
     vTexCoord = aTexCoord;
-    gl_Position = uProjection * vec4(vVertexPosition, 1);
+
+    float d = distance(vertexPosition, lightPosition);
+    vec3 attenuation = uLightAttenuation * vec3(1, d, d * d);
+    vAttenuation = 1.0 / dot(attenuation, vec3(1, 1, 1));
+
+    gl_Position = uProjection * vec4(vertexPosition, 1);
 }
 `;
 
 const fragment = `#version 300 es
 precision mediump float;
-
-uniform mat4 uViewModel;
 
 uniform mediump sampler2D uTexture;
 
@@ -31,23 +40,19 @@ uniform vec3 uDiffuseColor;
 uniform vec3 uSpecularColor;
 
 uniform float uShininess;
-uniform vec3 uLightPosition;
-uniform vec3 uLightAttenuation;
 
-in vec3 vVertexPosition;
+in vec3 vEye;
+in vec3 vLight;
 in vec3 vNormal;
 in vec2 vTexCoord;
+in float vAttenuation;
 
 out vec4 oColor;
 
 void main() {
-    vec3 lightPosition = (uViewModel * vec4(uLightPosition, 1)).xyz;
-    float d = distance(vVertexPosition, lightPosition);
-    float attenuation = 1.0 / dot(uLightAttenuation * vec3(1, d, d * d), vec3(1, 1, 1));
-
-    vec3 N = (uViewModel * vec4(vNormal, 0)).xyz;
-    vec3 L = normalize(lightPosition - vVertexPosition);
-    vec3 E = normalize(-vVertexPosition);
+    vec3 N = normalize(vNormal);
+    vec3 L = normalize(vLight);
+    vec3 E = normalize(vEye);
     vec3 R = normalize(reflect(-L, N));
 
     float lambert = max(0.0, dot(L, N));
@@ -57,8 +62,7 @@ void main() {
     vec3 diffuse = uDiffuseColor * lambert;
     vec3 specular = uSpecularColor * phong;
 
-    vec3 light = (ambient + diffuse + specular) * attenuation;
-
+    vec3 light = (ambient + diffuse + specular) * vAttenuation;
 
     oColor = texture(uTexture, vTexCoord) * vec4(light, 1);
 }
