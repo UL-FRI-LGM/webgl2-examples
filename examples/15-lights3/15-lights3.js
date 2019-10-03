@@ -24,18 +24,10 @@ class App extends Application {
         this.camera = new Camera();
         this.root.addChild(this.camera);
 
+        let lightLocations = [[-5, -5], [-5, 5], [5, 5], [5, -5]];
         for (let i = 0; i < 4; i++) {
             let light = new Light();
-            // mat4.fromTranslation(light.transform, [Math.random() * 10 - 5, 5, Math.random() * 10 - 5]);
-            // light.ambientColor = [Math.random() * 64, Math.random() * 64, Math.random() * 64];
-            // light.diffuseColor = [Math.random() * 128 + 128, Math.random() * 128 + 128, Math.random() * 128 + 128];
-            // light.specularColor = [Math.random() * 64 + 192, Math.random() * 64 + 192, Math.random() * 64 + 192];
-
-            mat4.fromTranslation(light.transform, [- 5, 5, 5]);
-            light.ambientColor = [64, 64, 64];
-            light.diffuseColor = [192, 192, 192];
-            light.specularColor = [255, 255, 255];
-            console.log(light);
+            mat4.fromTranslation(light.transform, [lightLocations[i][0], 5, lightLocations[i][1]]);;
             this.root.addChild(light);
         }
 
@@ -71,6 +63,19 @@ class App extends Application {
         this.time = Date.now();
         const dt = (this.time - this.startTime) * 0.001;
         this.startTime = this.time;
+
+        let lightCounter = 0;
+        this.root.traverse(
+            (node) => {
+                if (node instanceof Light && lightCounter < 3) {
+                    // console.log(node);
+                    node.diffuseColor[lightCounter] = Math.sin(this.time / 1000 + lightCounter * Math.PI/2) * 255;
+                    node.specularColor[lightCounter] = Math.sin(this.time / 1000 + lightCounter * Math.PI/3) * 255;
+                    lightCounter++;
+                }
+            },
+            (node) => {}
+        );
 
         this.camera.update(dt);
     }

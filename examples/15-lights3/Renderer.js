@@ -44,13 +44,6 @@ export default class Renderer {
         mat4.copy(matrix, viewMatrix);
         gl.uniformMatrix4fv(program.uniforms.uProjection, false, camera.projection);
 
-        // let lightAmbientColors = [];
-        // let lightDiffuseColors = [];
-        // let lightSpecularColors = [];
-        // let lightPositions = [];
-        // let lightShininiesses = [];
-        // let lightAttenuations = [];
-
         let lightCounter = 0;
 
         scene.traverse(
@@ -67,24 +60,18 @@ export default class Renderer {
                     let color = vec3.clone(node.ambientColor);
                     vec3.scale(color, color, 1.0 / 255.0);
                     gl.uniform3fv(program.uniforms['uAmbientColor[' + lightCounter + ']'], color);
-                    // lightAmbientColors.push(color);
                     color = vec3.clone(node.diffuseColor);
                     vec3.scale(color, color, 1.0 / 255.0);
                     gl.uniform3fv(program.uniforms['uDiffuseColor[' + lightCounter + ']'], color);
-                    // lightDiffuseColors.push(color);
                     color = vec3.clone(node.specularColor);
                     vec3.scale(color, color, 1.0 / 255.0);
                     gl.uniform3fv(program.uniforms['uSpecularColor[' + lightCounter + ']'], color);
-                    // lightSpecularColors.push(color);
                     let position = [0,0,0];
                     mat4.getTranslation(position, node.transform);
 
                     gl.uniform3fv(program.uniforms['uLightPosition[' + lightCounter + ']'], position);
                     gl.uniform1f(program.uniforms['uShininess[' + lightCounter + ']'], node.shininess);
                     gl.uniform3fv(program.uniforms['uLightAttenuation[' + lightCounter + ']'], node.attenuatuion);
-                    // lightPositions.push(position);
-                    // lightShininiesses.push(node.shininess);
-                    // lightAttenuations.push(node.attenuatuion);
                     lightCounter++;
                 }
             },
@@ -92,13 +79,6 @@ export default class Renderer {
                 matrix = matrixStack.pop();
             }
         );
-        
-        // gl.uniform3fv(program.uniforms.uAmbientColor, lightAmbientColors);
-        // gl.uniform3fv(program.uniforms.uDiffuseColor, lightDiffuseColors);
-        // gl.uniform3fv(program.uniforms.uSpecularColor, lightSpecularColors);
-        // gl.uniform3fv(program.uniforms.uLightPosition, lightPositions);
-        // gl.uniform1fv(program.uniforms.uShininess, lightShininiesses);
-        // gl.uniform3fv(program.uniforms.uLightAttenuation, lightAttenuations);
     }
 
     createModel(model) {
