@@ -1,0 +1,16 @@
+{
+    "walls": [
+        { "x": 0, "y": 0, "w": 1, "h": 1, "tex": 0 },
+        { "x": 2, "y": 0, "w": 2, "h": 3, "tex": 1 }
+    ],
+    "objects": [
+        { "x": 5, "y": 5, "mesh": 0 }
+    ],
+    "textures": [
+        "../../common/images/crate-diffuse.png",
+        "../../common/images/grass.png"
+    ],
+    "models": [
+        "../../common/models/pyramid.json"
+    ]
+}
