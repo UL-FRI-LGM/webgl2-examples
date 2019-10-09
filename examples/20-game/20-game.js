@@ -3,7 +3,8 @@ import Application from '../../common/Application.js';
 import Renderer from './Renderer.js';
 import Node from './Node.js';
 import Camera from './Camera.js';
-import LevelBuilder from './LevelBuilder.js';
+import Mesh from './Mesh.js';
+import SceneLoader from './SceneLoader.js';
 
 class App extends Application {
 
@@ -20,9 +21,11 @@ class App extends Application {
         this.camera = new Camera();
         this.root.addChild(this.camera);
 
-        this.builder = new LevelBuilder(gl);
-        fetch('level.json').then(response => response.json()).then(json => {
-            this.builder.build(json);
+        new Mesh();
+
+        this.loader = new SceneLoader();
+        this.loader.loadScene('scene.json').then(scene => {
+            console.log(scene);
         });
 
         this.pointerlockchangeHandler = this.pointerlockchangeHandler.bind(this);
@@ -56,12 +59,7 @@ class App extends Application {
     resize() {
         const w = this.canvas.clientWidth;
         const h = this.canvas.clientHeight;
-        const aspect = w / h;
-        const fovy = Math.PI / 3;
-        const near = 0.1;
-        const far = 100;
-
-        glMatrix.mat4.perspective(this.camera.projection, fovy, aspect, near, far);
+        this.camera.aspect = w / h;
     }
 
 }

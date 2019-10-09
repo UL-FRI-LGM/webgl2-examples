@@ -21,6 +21,11 @@ export default class Renderer {
         this.programs = WebGL.buildPrograms(gl, shaders);
     }
 
+    prepare(scene) {
+        // TODO traverse scene, create GL objects
+        // (??? transforms, projection matrices ???)
+    }
+
     render(scene, camera) {
         const gl = this.gl;
 
@@ -36,7 +41,7 @@ export default class Renderer {
         let matrix = mat4.create();
         let matrixStack = [];
 
-        const viewMatrix = camera.getGlobalTransform();
+        const viewMatrix = this.getGlobalTransform(camera);
         mat4.invert(viewMatrix, viewMatrix);
         mat4.copy(matrix, viewMatrix);
         gl.uniformMatrix4fv(program.uniforms.uProjection, false, camera.projection);
@@ -65,6 +70,24 @@ export default class Renderer {
                 matrix = matrixStack.pop();
             }
         );
+    }
+
+    getGlobalTransform(node) {
+        if (!node.parent) {
+            return mat4.clone(node.transform);
+        } else {
+            let transform = this.getGlobalTransform(node.parent);
+            return mat4.mul(transform, transform, node.transform);
+        }
+    }
+
+    updateTransforms(scene) {
+        scene.nodes.forEach(node => {
+            node.traverse(node => {
+                // update node.transform from TRS
+                // update node.projection for cameras
+            });
+        });
     }
 
     createModel(model) {
