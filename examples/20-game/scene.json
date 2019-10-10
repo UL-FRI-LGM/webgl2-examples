@@ -20,7 +20,7 @@
         "min": [-1, -1, -1],
         "max": [1, 1, 1]
       },
-      "translation": [3, 1, 5]
+      "translation": [3, 1, -5]
     },
     {
       "type": "model",
@@ -30,17 +30,29 @@
         "min": [-1, -1, -1],
         "max": [1, 1, 1]
       },
-      "translation": [0, 1, -5]
+      "translation": [0, 1, 5]
     },
     {
       "type": "model",
       "mesh": 1,
       "texture": 1,
       "aabb": {
-        "min": [-1, -1, -1],
-        "max": [1, 1, 1]
+        "min": [-0.5, -0.5, -0.5],
+        "max": [0.5, 0.5, 0.5]
       },
-      "translation": [0, 1, 5]
+      "translation": [0, 1, -5]
+    },
+    {
+      "type": "model",
+      "mesh": 0,
+      "texture": 0,
+      "aabb": {
+        "min": [-1, -0.1, -1],
+        "max": [1, 0.1, 1]
+      },
+      "translation": [3, 0.1, -1],
+      "rotation": [0, 1, 0],
+      "scale": [1, 0.1, 1]
     }
   ],
   "textures": [
