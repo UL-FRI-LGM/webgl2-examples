@@ -63,27 +63,27 @@ export default class Physics {
 
         let minDiff = Infinity;
         let minDirection = [0, 0, 0];
-        if (diffa[0] > 0 && diffa[0] < minDiff) {
+        if (diffa[0] >= 0 && diffa[0] < minDiff) {
             minDiff = diffa[0];
             minDirection = [minDiff, 0, 0];
         }
-        if (diffa[1] > 0 && diffa[1] < minDiff) {
+        if (diffa[1] >= 0 && diffa[1] < minDiff) {
             minDiff = diffa[1];
             minDirection = [0, minDiff, 0];
         }
-        if (diffa[2] > 0 && diffa[2] < minDiff) {
+        if (diffa[2] >= 0 && diffa[2] < minDiff) {
             minDiff = diffa[2];
             minDirection = [0, 0, minDiff];
         }
-        if (diffb[0] > 0 && diffb[0] < minDiff) {
+        if (diffb[0] >= 0 && diffb[0] < minDiff) {
             minDiff = diffb[0];
             minDirection = [-minDiff, 0, 0];
         }
-        if (diffb[1] > 0 && diffb[1] < minDiff) {
+        if (diffb[1] >= 0 && diffb[1] < minDiff) {
             minDiff = diffb[1];
             minDirection = [0, -minDiff, 0];
         }
-        if (diffb[2] > 0 && diffb[2] < minDiff) {
+        if (diffb[2] >= 0 && diffb[2] < minDiff) {
             minDiff = diffb[2];
             minDirection = [0, 0, -minDiff];
         }
