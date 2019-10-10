@@ -1,8 +1,3 @@
-import * as WebGL from './WebGL.js';
-
-const mat4 = glMatrix.mat4;
-const vec3 = glMatrix.vec3;
-
 export default class SceneLoader {
 
     async loadScene(uri) {
@@ -11,6 +6,7 @@ export default class SceneLoader {
         const models = scene.models.map(uri => this.loadJson(uri));
         scene.textures = await Promise.all(images);
         scene.models = await Promise.all(models);
+
         return scene;
     }
 

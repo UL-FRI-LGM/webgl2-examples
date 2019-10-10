@@ -1,10 +1,9 @@
 import Application from '../../common/Application.js';
 
 import Renderer from './Renderer.js';
-import Node from './Node.js';
 import Camera from './Camera.js';
-import Mesh from './Mesh.js';
 import SceneLoader from './SceneLoader.js';
+import SceneBuilder from './SceneBuilder.js';
 
 class App extends Application {
 
@@ -12,24 +11,31 @@ class App extends Application {
         const gl = this.gl;
 
         this.renderer = new Renderer(gl);
-
         this.time = Date.now();
         this.startTime = this.time;
-
-        this.root = new Node();
-
-        this.camera = new Camera();
-        this.root.addChild(this.camera);
-
-        new Mesh();
-
-        this.loader = new SceneLoader();
-        this.loader.loadScene('scene.json').then(scene => {
-            console.log(scene);
-        });
+        this.aspect = 1;
 
         this.pointerlockchangeHandler = this.pointerlockchangeHandler.bind(this);
         document.addEventListener('pointerlockchange', this.pointerlockchangeHandler);
+
+        this.load('scene.json');
+    }
+
+    async load(uri) {
+        const scene = await new SceneLoader().loadScene('scene.json');
+        const builder = new SceneBuilder(scene);
+        this.scene = builder.build();
+
+        // Find first camera.
+        this.camera = null;
+        this.scene.traverse(() => {}, node => {
+            if (node instanceof Camera) {
+                this.camera = node;
+            }
+        });
+
+        this.camera.aspect = this.aspect;
+        this.renderer.prepare(this.scene);
     }
 
     enableCamera() {
@@ -37,6 +43,10 @@ class App extends Application {
     }
 
     pointerlockchangeHandler() {
+        if (!this.camera) {
+            return;
+        }
+
         if (document.pointerLockElement === this.canvas) {
             this.camera.enable();
         } else {
@@ -49,17 +59,24 @@ class App extends Application {
         const dt = (this.time - this.startTime) * 0.001;
         this.startTime = this.time;
 
-        this.camera.update(dt);
+        if (this.camera) {
+            this.camera.update(dt);
+        }
     }
 
     render() {
-        this.renderer.render(this.root, this.camera);
+        if (this.scene) {
+            this.renderer.render(this.scene, this.camera);
+        }
     }
 
     resize() {
         const w = this.canvas.clientWidth;
         const h = this.canvas.clientHeight;
-        this.camera.aspect = w / h;
+        this.aspect = w / h;
+        if (this.camera) {
+            this.camera.aspect = this.aspect;
+        }
     }
 
 }
