@@ -13,12 +13,23 @@ export default class Renderer {
         gl.enable(gl.CULL_FACE);
 
         this.programs = WebGL.buildPrograms(gl, shaders);
+
+        this.defaultTexture = WebGL.createTexture(gl, {
+            width  : 1,
+            height : 1,
+            data   : new Uint8Array([255, 255, 255, 255])
+        });
     }
 
     prepare(scene) {
         scene.nodes.forEach(node => {
-            // TODO traverse scene, create GL objects
-            // (??? transforms, projection matrices ???)
+            node.gl = {};
+            if (node.mesh) {
+                Object.assign(node.gl, this.createModel(node.mesh));
+            }
+            if (node.image) {
+                node.gl.texture = this.createTexture(node.image);
+            }
         }, () => {});
     }
 
@@ -29,10 +40,6 @@ export default class Renderer {
 
         const program = this.programs.simple;
         gl.useProgram(program.program);
-
-        const defaultTexture = this.defaultTexture;
-        gl.activeTexture(gl.TEXTURE0);
-        gl.uniform1i(program.uniforms.uTexture, 0);
 
         let matrix = mat4.create();
         let matrixStack = [];
@@ -46,24 +53,19 @@ export default class Renderer {
             node => {
                 matrixStack.push(mat4.clone(matrix));
                 mat4.mul(matrix, matrix, node.transform);
-                if (node.model) {
-                    gl.bindVertexArray(node.model.vao);
+                if (node.gl.vao) {
+                    gl.bindVertexArray(node.gl.vao);
                     gl.uniformMatrix4fv(program.uniforms.uViewModel, false, matrix);
-                    gl.bindTexture(gl.TEXTURE_2D, node.texture);
-                    gl.drawElements(gl.TRIANGLES, node.model.indices, gl.UNSIGNED_SHORT, 0);
+                    gl.activeTexture(gl.TEXTURE0);
+                    gl.bindTexture(gl.TEXTURE_2D, node.gl.texture);
+                    gl.uniform1i(program.uniforms.uTexture, 0);
+                    gl.drawElements(gl.TRIANGLES, node.gl.indices, gl.UNSIGNED_SHORT, 0);
                 }
             },
             node => {
                 matrix = matrixStack.pop();
             }
         );
-    }
-
-    updateTransforms(scene) {
-        scene.traverse(node => {
-            // update node.transform from TRS
-            // update node.projection for cameras
-        }, () => {});
     }
 
     createModel(model) {
@@ -92,6 +94,15 @@ export default class Renderer {
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(model.indices), gl.STATIC_DRAW);
 
         return { vao, indices };
+    }
+
+    createTexture(texture) {
+        const gl = this.gl;
+        return WebGL.createTexture(gl, {
+            image : texture,
+            min   : gl.NEAREST,
+            mag   : gl.NEAREST
+        });
     }
 
 }

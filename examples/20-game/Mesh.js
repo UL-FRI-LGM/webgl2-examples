@@ -1,10 +1,8 @@
 import Utils from './Utils.js';
-import Node from './Node.js';
 
-export default class Mesh extends Node {
+export default class Mesh {
 
     constructor(options) {
-        super(options);
         Utils.init(this, this.constructor.defaults, options);
     }
 

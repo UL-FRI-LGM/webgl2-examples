@@ -1,6 +1,9 @@
-import Node from './Node.js';
 import Mesh from './Mesh.js';
+
+import Node from './Node.js';
+import Model from './Model.js';
 import Camera from './Camera.js';
+
 import Scene from './Scene.js';
 
 export default class SceneBuilder {
@@ -10,13 +13,14 @@ export default class SceneBuilder {
     }
 
     createNode(spec) {
-        if (spec.model !== undefined) {
-            const updated = Object.assign({}, spec, this.spec.models[spec.model]);
-            return new Mesh(updated);
-        } else if (spec.projection !== undefined) {
-            return new Camera(spec);
-        } else {
-            return new Node(spec);
+        switch (spec.type) {
+            case 'camera': return new Camera(spec);
+            case 'model': {
+                const mesh = new Mesh(this.spec.meshes[spec.mesh]);
+                const texture = this.spec.textures[spec.texture];
+                return new Model(mesh, texture, spec);
+            }
+            default: return new Node(spec);
         }
     }
 

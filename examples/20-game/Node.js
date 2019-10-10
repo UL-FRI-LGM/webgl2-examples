@@ -1,5 +1,6 @@
 import Utils from './Utils.js';
 
+const vec3 = glMatrix.vec3;
 const mat4 = glMatrix.mat4;
 const quat = glMatrix.quat;
 
@@ -17,9 +18,10 @@ export default class Node {
 
     updateTransform() {
         const t = this.transform;
-        const q = quat.fromEuler(quat.create(), ...this.rotation);
-        const v = this.translation;
-        const s = this.scale;
+        const degrees = this.rotation.map(x => x * 180 / Math.PI);
+        const q = quat.fromEuler(quat.create(), ...degrees);
+        const v = vec3.clone(this.translation);
+        const s = vec3.clone(this.scale);
         mat4.fromRotationTranslationScale(t, q, v, s);
     }
 

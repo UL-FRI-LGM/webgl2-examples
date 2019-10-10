@@ -3,9 +3,9 @@ export default class SceneLoader {
     async loadScene(uri) {
         const scene = await this.loadJson(uri);
         const images = scene.textures.map(uri => this.loadImage(uri));
-        const models = scene.models.map(uri => this.loadJson(uri));
+        const meshes = scene.meshes.map(uri => this.loadJson(uri));
         scene.textures = await Promise.all(images);
-        scene.models = await Promise.all(models);
+        scene.meshes = await Promise.all(meshes);
 
         return scene;
     }

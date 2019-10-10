@@ -35,6 +35,7 @@ class App extends Application {
         });
 
         this.camera.aspect = this.aspect;
+        this.camera.updateProjection();
         this.renderer.prepare(this.scene);
     }
 
@@ -76,6 +77,7 @@ class App extends Application {
         this.aspect = w / h;
         if (this.camera) {
             this.camera.aspect = this.aspect;
+            this.camera.updateProjection();
         }
     }
 

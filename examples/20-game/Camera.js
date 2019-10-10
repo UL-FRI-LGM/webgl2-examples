@@ -68,11 +68,7 @@ export default class Camera extends Node {
         vec3.scaleAndAdd(c.translation, c.translation, c.velocity, dt);
 
         // 6: update the final transform
-        //const t = c.transform;
-        //mat4.identity(t);
-        //mat4.translate(t, t, c.translation);
-        //mat4.rotateY(t, t, c.rotation[1]);
-        //mat4.rotateX(t, t, c.rotation[0]);
+        this.updateTransform();
     }
 
     enable() {
