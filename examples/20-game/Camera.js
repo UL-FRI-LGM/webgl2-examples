@@ -63,12 +63,6 @@ export default class Camera extends Node {
         if (len > c.maxSpeed) {
             vec3.scale(c.velocity, c.velocity, c.maxSpeed / len);
         }
-
-        // 5: update translation
-        vec3.scaleAndAdd(c.translation, c.translation, c.velocity, dt);
-
-        // 6: update the final transform
-        this.updateTransform();
     }
 
     enable() {

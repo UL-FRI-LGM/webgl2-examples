@@ -30,7 +30,7 @@ export default class Renderer {
             if (node.image) {
                 node.gl.texture = this.createTexture(node.image);
             }
-        }, () => {});
+        });
     }
 
     render(scene, camera) {

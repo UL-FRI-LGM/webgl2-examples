@@ -1,6 +1,7 @@
 import Application from '../../common/Application.js';
 
 import Renderer from './Renderer.js';
+import Physics from './Physics.js';
 import Camera from './Camera.js';
 import SceneLoader from './SceneLoader.js';
 import SceneBuilder from './SceneBuilder.js';
@@ -25,10 +26,11 @@ class App extends Application {
         const scene = await new SceneLoader().loadScene('scene.json');
         const builder = new SceneBuilder(scene);
         this.scene = builder.build();
+        this.physics = new Physics(this.scene);
 
         // Find first camera.
         this.camera = null;
-        this.scene.traverse(() => {}, node => {
+        this.scene.traverse(node => {
             if (node instanceof Camera) {
                 this.camera = node;
             }
@@ -62,6 +64,10 @@ class App extends Application {
 
         if (this.camera) {
             this.camera.update(dt);
+        }
+
+        if (this.physics) {
+            this.physics.update(dt);
         }
     }
 
