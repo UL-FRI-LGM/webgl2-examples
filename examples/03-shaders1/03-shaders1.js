@@ -56,15 +56,7 @@ class App extends Application {
             throw new Error('Cannot link program\nInfo log:\n' + log);
         }
 
-        // ===== UNIFORM & ATTRIBUTE LOCATIONS ===== //
-
-        const aPosition = gl.getAttribLocation(program, 'aPosition');
-        const aColor = gl.getAttribLocation(program, 'aColor');
-        const uOffset = gl.getUniformLocation(program, 'uOffset');
-
-        console.log(`aPosition: ${aPosition}`);
-        console.log(`aColor: ${aColor}`);
-        console.log(`uOffset: ${uOffset}`);
+        console.log('Compilation successful');
     }
 
 }
