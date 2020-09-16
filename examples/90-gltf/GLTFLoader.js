@@ -1,248 +1,119 @@
+import BufferView from './BufferView.js';
+import Accessor from './Accessor.js';
+import Sampler from './Sampler.js';
+import Texture from './Texture.js';
+import Material from './Material.js';
+import Primitive from './Primitive.js';
+import Mesh from './Mesh.js';
+import PerspectiveCamera from './PerspectiveCamera.js';
+import OrthographicCamera from './OrthographicCamera.js';
+import Node from './Node.js';
+import Scene from './Scene.js';
+
+const vec3 = glMatrix.vec3;
+const vec4 = glMatrix.vec4;
 const mat4 = glMatrix.mat4;
+
+// This class loads all GLTF resources and instantiates
+// the corresponding classes. Keep in mind that it loads
+// the resources in series (care to optimize?).
 
 export default class GLTFLoader {
 
-    constructor(gl) {
-        this.gl = gl;
+    constructor() {
         this.gltf = null;
+        this.gltfUrl = null;
+        this.dirname = null;
 
-        this.built = false;
-
-        this.aspectRatio = 1;
+        this.cache = new Map();
     }
 
-    async load(uri) {
-        const dirname = uri.split('/').slice(0, -1).join('/') + '/';
-        const gltf = this.gltf = await this.loadGLTF(uri);
-
-        let promises = [];
-
-        if (!gltf.images) {
-            gltf.images = [];
-        }
-
-        gltf.images.push({
-            uri: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII='
-        });
-
-        for (let image of gltf.images) {
-            if (typeof image.uri === 'undefined') {
-                throw new Error('image.uri has to be defined');
-            }
-            const path = image.uri.startsWith('data:') ? image.uri : dirname + image.uri;
-            promises.push(this.loadImage(path).then((img) => image.image = img));
-        }
-
-        if (!gltf.buffers) {
-            gltf.buffers = [];
-        }
-
-        for (let buffer of gltf.buffers) {
-            if (typeof buffer.uri === 'undefined') {
-                throw new Error('buffer.uri has to be defined');
-            }
-            const path = buffer.uri.startsWith('data:') ? buffer.uri : dirname + buffer.uri;
-            promises.push(this.loadBuffer(path).then((buf) => buffer.buffer = buf));
-        }
-
-        await Promise.all(promises);
-
-        this.build();
+    fetchJson(url) {
+        return fetch(url).then(response => response.json());
     }
 
-    loadGLTF(uri) {
-        return fetch(uri).then(response => response.json());
+    fetchBuffer(url) {
+        return fetch(url).then(response => response.arrayBuffer());
     }
 
-    loadBuffer(uri) {
-        return fetch(uri).then(response => response.arrayBuffer());
-    }
-
-    loadImage(uri) {
+    fetchImage(url) {
         return new Promise((resolve, reject) => {
             let image = new Image();
-            image.addEventListener('load', () => resolve(image));
+            image.addEventListener('load', e => resolve(image));
             image.addEventListener('error', reject);
-            image.src = uri;
+            image.src = url;
         });
     }
 
-    build() {
-        let gltf = this.gltf;
-
-        if (gltf.asset.version !== '2.0') {
-            throw new Error('glTF versions other than 2.0 not supported');
-        }
-
-        this.createSamplers();
-        this.createTextures();
-        this.createMaterials();
-        this.prepareBuffers();
-        this.createBufferViews();
-        this.createMeshes();
-        this.createScenes();
-
-        this.built = true;
-    }
-
-    createSamplers() {
-        const gl = this.gl;
-        let gltf = this.gltf;
-
-        gltf.samplers = gltf.samplers || [];
-
-        gltf.samplers.push({});
-
-        for (let sampler of gltf.samplers) {
-            const samplerObject = gl.createSampler();
-            sampler.samplerObject = samplerObject;
-            if (sampler.magFilter) {
-                gl.samplerParameteri(samplerObject, gl.TEXTURE_MAG_FILTER, sampler.magFilter);
-            }
-            if (sampler.minFilter) {
-                gl.samplerParameteri(samplerObject, gl.TEXTURE_MIN_FILTER, sampler.minFilter);
-            }
-            if (sampler.wrapS) {
-                gl.samplerParameteri(samplerObject, gl.TEXTURE_WRAP_S, sampler.wrapS);
-            }
-            if (sampler.wrapT) {
-                gl.samplerParameteri(samplerObject, gl.TEXTURE_WRAP_T, sampler.wrapT);
-            }
+    findByNameOrIndex(set, nameOrIndex) {
+        if (typeof nameOrIndex === 'number') {
+            return set[nameOrIndex];
+        } else {
+            return set.find(element => element.name === nameOrIndex);
         }
     }
 
-    createTextures() {
-        const gl = this.gl;
-        let gltf = this.gltf;
+    async load(url) {
+        this.gltfUrl = new URL(url, window.location);
+        this.gltf = await this.fetchJson(url);
+        this.defaultScene = this.gltf.scene || 0;
+    }
 
-        gltf.textures = gltf.textures || [];
+    async loadImage(nameOrIndex) {
+        const gltfSpec = this.findByNameOrIndex(this.gltf.images, nameOrIndex);
+        if (this.cache.has(gltfSpec)) {
+            return this.cache.get(gltfSpec);
+        }
 
-        gltf.textures.push({
-            source: gltf.images.length - 1
+        if (gltfSpec.uri) {
+            const url = new URL(gltfSpec.uri, this.gltfUrl);
+            const image = await this.fetchImage(url);
+            this.cache.set(gltfSpec, image);
+            return image;
+        } else {
+            const bufferView = await this.loadBufferView(gltfSpec.bufferView);
+            const blob = new Blob([bufferView], { type: gltfSpec.mimeType });
+            const url = URL.createObjectURL(blob);
+            const image = await this.fetchImage(url);
+            URL.revokeObjectURL(url);
+            this.cache.set(gltfSpec, image);
+            return image;
+        }
+    }
+
+    async loadBuffer(nameOrIndex) {
+        const gltfSpec = this.findByNameOrIndex(this.gltf.buffers, nameOrIndex);
+        if (this.cache.has(gltfSpec)) {
+            return this.cache.get(gltfSpec);
+        }
+
+        const url = new URL(gltfSpec.uri, this.gltfUrl);
+        const buffer = await this.fetchBuffer(url);
+        this.cache.set(gltfSpec, buffer);
+        return buffer;
+    }
+
+    async loadBufferView(nameOrIndex) {
+        const gltfSpec = this.findByNameOrIndex(this.gltf.bufferViews, nameOrIndex);
+        if (this.cache.has(gltfSpec)) {
+            return this.cache.get(gltfSpec);
+        }
+
+        const bufferView = new BufferView({
+            ...gltfSpec,
+            buffer: await this.loadBuffer(gltfSpec.buffer),
         });
-
-        for (let texture of gltf.textures) {
-            const textureObject = gl.createTexture();
-            texture.textureObject = textureObject;
-            if (typeof texture.source === 'undefined') {
-                throw new Error('texture.source has to be defined');
-            }
-            texture.source = gltf.images[texture.source];
-            const sampler = typeof texture.sampler !== 'undefined'
-                ? texture.sampler
-                : gltf.samplers.length - 1;
-            texture.sampler = gltf.samplers[sampler];
-
-            gl.bindTexture(gl.TEXTURE_2D, textureObject);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, texture.source.image);
-            gl.generateMipmap(gl.TEXTURE_2D);
-        }
+        this.cache.set(gltfSpec, bufferView);
+        return bufferView;
     }
 
-    createMaterials() {
-        const gl = this.gl;
-        let gltf = this.gltf;
-
-        gltf.materials = gltf.materials || [];
-
-        gltf.materials.push({});
-
-        for (let material of gltf.materials) {
-            // TODO: convert everything to textures
-            if (material.normalTexture) {
-                material.normalTexture.texture = gltf.textures[material.normalTexture.index];
-            }
-            if (material.occlusionTexture) {
-                material.occlusionTexture.texture = gltf.textures[material.occlusionTexture.index];
-            }
-            if (material.emissiveTexture) {
-                material.emissiveTexture.texture = gltf.textures[material.emissiveTexture.index];
-            }
-            let pbr = material.pbrMetallicRoughness;
-            if (pbr) {
-                if (pbr.baseColorTexture) {
-                    pbr.baseColorTexture.texture = gltf.textures[pbr.baseColorTexture.index];
-                }
-                if (pbr.metallicRoughnessTexture) {
-                    pbr.metallicRoughnessTexture.texture = gltf.textures[pbr.metallicRoughnessTexture.index];
-                }
-            }
-        }
-    }
-
-    prepareAccessor(accessor, target) {
-        const gl = this.gl;
-        let gltf = this.gltf;
-
-        if (typeof accessor.bufferView === 'undefined') {
-            throw new Error('accessor.bufferView has to be defined');
+    async loadAccessor(nameOrIndex) {
+        const gltfSpec = this.findByNameOrIndex(this.gltf.accessors, nameOrIndex);
+        if (this.cache.has(gltfSpec)) {
+            return this.cache.get(gltfSpec);
         }
 
-        let bufferView = gltf.bufferViews[accessor.bufferView];
-        accessor.bufferView = bufferView;
-        if (typeof bufferView.target !== 'undefined' && bufferView.target !== target) {
-            throw new Error('bufferView.target does not agree with accessor');
-        }
-        bufferView.target = target;
-        bufferView.buffer = gltf.buffers[bufferView.buffer];
-    }
-
-    prepareBuffers() {
-        const gl = this.gl;
-        let gltf = this.gltf;
-
-        gltf.buffers = gltf.buffers || [];
-        gltf.bufferViews = gltf.bufferViews || [];
-        gltf.accessors = gltf.accessors || [];
-        gltf.meshes = gltf.meshes || [];
-
-        for (let mesh of gltf.meshes) {
-            for (let primitive of mesh.primitives) {
-                if (typeof primitive.indices !== 'undefined') {
-                    const accessor = gltf.accessors[primitive.indices];
-                    primitive.indices = accessor;
-                    this.prepareAccessor(accessor, gl.ELEMENT_ARRAY_BUFFER);
-                }
-                for (let attribute in primitive.attributes) {
-                    const accessorIndex = primitive.attributes[attribute];
-                    const accessor = gltf.accessors[accessorIndex];
-                    primitive.attributes[attribute] = accessor;
-                    this.prepareAccessor(accessor, gl.ARRAY_BUFFER);
-                }
-                if (typeof primitive.mode === 'undefined') {
-                    primitive.mode = gl.TRIANGLES;
-                }
-            }
-        }
-    }
-
-    createBufferViews() {
-        const gl = this.gl;
-        let gltf = this.gltf;
-
-        gltf.bufferViews = gltf.bufferViews || [];
-
-        for (let bufferView of gltf.bufferViews) {
-            if (typeof bufferView.target === 'undefined') {
-                throw new Error('bufferView.target has to be defined');
-            }
-
-            const data = new Uint8Array(bufferView.buffer.buffer);
-            const bufferObject = gl.createBuffer();
-            bufferView.bufferObject = bufferObject;
-            gl.bindBuffer(bufferView.target, bufferObject);
-            gl.bufferData(bufferView.target, data, gl.STATIC_DRAW,
-                bufferView.byteOffset, bufferView.byteLength);
-        }
-    }
-
-    createMeshes() {
-        const gl = this.gl;
-        let gltf = this.gltf;
-
-        gltf.meshes = gltf.meshes || [];
-
-        const attributeTypeToSize = {
+        const accessorTypeToNumComponentsMap = {
             SCALAR : 1,
             VEC2   : 2,
             VEC3   : 3,
@@ -252,175 +123,203 @@ export default class GLTFLoader {
             MAT4   : 16,
         };
 
-        const attributeNameToIndex = {
-            POSITION   : 0,
-            NORMAL     : 1,
-            TANGENT    : 2,
-            TEXCOORD_0 : 3,
-            TEXCOORD_1 : 4,
-            COLOR_0    : 5,
-            JOINTS_0   : 6,
-            WEIGHTS_0  : 7,
-        };
+        const accessor = new Accessor({
+            ...gltfSpec,
+            bufferView    : await this.loadBufferView(gltfSpec.bufferView),
+            numComponents : accessorTypeToNumComponentsMap[gltfSpec.type],
+        });
+        this.cache.set(gltfSpec, accessor);
+        return accessor;
+    }
 
-        for (let mesh of gltf.meshes) {
-            for (let primitive of mesh.primitives) {
-                const material = typeof primitive.material !== 'undefined'
-                    ? primitive.material
-                    : gltf.materials.length - 1;
-                primitive.material = gltf.materials[material];
+    async loadSampler(nameOrIndex) {
+        const gltfSpec = this.findByNameOrIndex(this.gltf.samplers, nameOrIndex);
+        if (this.cache.has(gltfSpec)) {
+            return this.cache.get(gltfSpec);
+        }
 
-                const vao = gl.createVertexArray();
-                gl.bindVertexArray(vao);
-                primitive.vao = vao;
+        const sampler = new Sampler({
+            min   : gltfSpec.minFilter,
+            mag   : gltfSpec.magFilter,
+            wrapS : gltfSpec.wrapS,
+            wrapT : gltfSpec.wrapT,
+        });
+        this.cache.set(gltfSpec, sampler);
+        return sampler;
+    }
 
-                if (typeof primitive.indices !== 'undefined') {
-                    const bufferView = primitive.indices.bufferView;
-                    gl.bindBuffer(bufferView.target, bufferView.bufferObject);
-                }
+    async loadTexture(nameOrIndex) {
+        const gltfSpec = this.findByNameOrIndex(this.gltf.textures, nameOrIndex);
+        if (this.cache.has(gltfSpec)) {
+            return this.cache.get(gltfSpec);
+        }
 
-                for (let attribute in primitive.attributes) {
-                    const accessor = primitive.attributes[attribute];
-                    const bufferView = accessor.bufferView;
-                    const index = attributeNameToIndex[attribute];
-                    const size = attributeTypeToSize[accessor.type];
-                    const type = accessor.componentType;
-                    const normalized = !!accessor.normalized;
-                    const stride = bufferView.byteStride || 0; // is this correct or should it be computed?
-                    const offset = accessor.byteOffset || 0;
+        let options = {};
+        if (gltfSpec.source !== undefined) {
+            options.image = await this.loadImage(gltfSpec.source);
+        }
+        if (gltfSpec.sampler !== undefined) {
+            options.sampler = await this.loadSampler(gltfSpec.sampler);
+        }
 
-                    if (typeof index === 'undefined') {
-                        throw new Error('Attribute ' + attribute + ' not supported');
-                    }
+        const texture = new Texture(options);
+        this.cache.set(gltfSpec, texture);
+        return texture;
+    }
 
-                    gl.bindBuffer(bufferView.target, bufferView.bufferObject);
-                    gl.enableVertexAttribArray(index);
-                    gl.vertexAttribPointer(index, size, type, normalized, stride, offset);
-                }
+    async loadMaterial(nameOrIndex) {
+        const gltfSpec = this.findByNameOrIndex(this.gltf.materials, nameOrIndex);
+        if (this.cache.has(gltfSpec)) {
+            return this.cache.get(gltfSpec);
+        }
+
+        let options = {};
+        const pbr = gltfSpec.pbrMetallicRoughness;
+        if (pbr !== undefined) {
+            if (pbr.baseColorTexture !== undefined) {
+                options.baseColorTexture = await this.loadTexture(pbr.baseColorTexture.index);
+                options.baseColorTexCoord = pbr.baseColorTexture.texCoord;
             }
+            if (pbr.baseColorFactor) {
+                options.baseColorFactor = vec4.fromValues(pbr.baseColorFactor);
+            }
+            if (pbr.metallicRoughnessTexture !== undefined) {
+                options.metallicRoughnessTexture = await this.loadTexture(pbr.metallicRoughnessTexture.index);
+                options.metallicRoughnessTexCoord = pbr.metallicRoughnessTexture.texCoord;
+            }
+            options.metallicFactor = pbr.metallicFactor;
+            options.roughnessFactor = pbr.roughnessFactor;
+        }
+
+        if (gltfSpec.normalTexture !== undefined) {
+            options.normalTexture = await this.loadTexture(gltfSpec.normalTexture.index);
+            options.normalTexCoord = gltfSpec.normalTexture.texCoord;
+            options.normalFactor = gltfSpec.normalTexture.scale;
+        }
+
+        if (gltfSpec.occlusionTexture !== undefined) {
+            options.occlusionTexture = await this.loadTexture(gltfSpec.occlusionTexture.index);
+            options.occlusionTexCoord = gltfSpec.occlusionTexture.texCoord;
+            options.occlusionFactor = gltfSpec.occlusionTexture.strength;
+        }
+
+        if (gltfSpec.emissiveTexture !== undefined) {
+            options.emissiveTexture = await this.loadTexture(gltfSpec.emissiveTexture.index);
+            options.emissiveTexCoord = gltfSpec.emissiveTexture.texCoord;
+            options.emissiveFactor = vec3.fromValues(gltfSpec.emissiveFactor);
+        }
+
+        options.alphaMode = gltfSpec.alphaMode;
+        options.alphaCutoff = gltfSpec.alphaCutoff;
+        options.doubleSided = gltfSpec.doubleSided;
+
+        const material = new Material(options);
+        this.cache.set(gltfSpec, material);
+        return material;
+    }
+
+    async loadMesh(nameOrIndex) {
+        const gltfSpec = this.findByNameOrIndex(this.gltf.meshes, nameOrIndex);
+        if (this.cache.has(gltfSpec)) {
+            return this.cache.get(gltfSpec);
+        }
+
+        let options = { primitives: [] };
+        for (const primitiveSpec of gltfSpec.primitives) {
+            let primitiveOptions = {};
+            primitiveOptions.attributes = {};
+            for (const name in primitiveSpec.attributes) {
+                primitiveOptions.attributes[name] = await this.loadAccessor(primitiveSpec.attributes[name]);
+            }
+            if (primitiveSpec.indices !== undefined) {
+                primitiveOptions.indices = await this.loadAccessor(primitiveSpec.indices);
+            }
+            if (primitiveSpec.material !== undefined) {
+                primitiveOptions.material = await this.loadMaterial(primitiveSpec.material);
+            }
+            primitiveOptions.mode = primitiveSpec.mode;
+            const primitive = new Primitive(primitiveOptions);
+            options.primitives.push(primitive);
+        }
+
+        const mesh = new Mesh(options);
+        this.cache.set(gltfSpec, mesh);
+        return mesh;
+    }
+
+    async loadCamera(nameOrIndex) {
+        const gltfSpec = this.findByNameOrIndex(this.gltf.cameras, nameOrIndex);
+        if (this.cache.has(gltfSpec)) {
+            return this.cache.get(gltfSpec);
+        }
+
+        if (gltfSpec.type === 'perspective') {
+            const persp = gltfSpec.perspective;
+            const camera = new PerspectiveCamera({
+                aspect : persp.aspectRatio,
+                fov    : persp.yfov,
+                near   : persp.znear,
+                far    : persp.zfar,
+            });
+            this.cache.set(gltfSpec, camera);
+            return camera;
+        } else if (gltfSpec.type === 'orthographic') {
+            const ortho = gltfSpec.orthographic;
+            const camera = new OrthographicCamera({
+                left   : -ortho.xmag,
+                right  : ortho.xmag,
+                bottom : -ortho.ymag,
+                top    : ortho.ymag,
+                near   : ortho.znear,
+                far    : ortho.zfar,
+            });
+            this.cache.set(gltfSpec, camera);
+            return camera;
         }
     }
 
-    createNode(node) {
-        const gl = this.gl;
-        let gltf = this.gltf;
+    async loadNode(nameOrIndex) {
+        const gltfSpec = this.findByNameOrIndex(this.gltf.nodes, nameOrIndex);
+        if (this.cache.has(gltfSpec)) {
+            return this.cache.get(gltfSpec);
+        }
 
-        if (typeof node.camera !== 'undefined') {
-            node.camera = gltf.cameras[node.camera];
-            node.camera.matrix = mat4.create();
-            if (node.camera.type === 'perspective') {
-                const p = node.camera.perspective;
-                const fovy = p.yfov;
-                const aspect = p.aspectRatio || this.aspectRatio;
-                const near = p.znear;
-                const far = p.zfar || Infinity;
-                mat4.perspective(node.camera.matrix, fovy, aspect, near, far);
-            } else if (node.camera.type === 'orthographic') {
-                const o = node.camera.orthographic;
-                const left = -o.xmag / 2;
-                const right = o.xmag / 2;
-                const bottom = -o.ymag / 2;
-                const top = o.ymag / 2;
-                const near = o.znear;
-                const far = o.zfar;
-                mat4.ortho(node.camera.matrix, left, right, bottom, top, near, far);
+        let options = { ...gltfSpec, children: [] };
+        if (gltfSpec.children) {
+            for (const nodeIndex of gltfSpec.children) {
+                const node = await this.loadNode(nodeIndex);
+                options.children.push(node);
             }
         }
-
-        if (typeof node.mesh !== 'undefined') {
-            node.mesh = gltf.meshes[node.mesh];
+        if (gltfSpec.camera !== undefined) {
+            options.camera = await this.loadCamera(gltfSpec.camera);
+        }
+        if (gltfSpec.mesh !== undefined) {
+            options.mesh = await this.loadMesh(gltfSpec.mesh);
         }
 
-        const t = node.transform = mat4.create();
-        if (node.matrix) {
-            mat4.copy(t, node.matrix);
-        } else {
-            const q = node.rotation || [0, 0, 0, 1];
-            const v = node.translation || [0, 0, 0];
-            const s = node.scale || [1, 1, 1];
-            mat4.fromRotationTranslationScale(t, q, v, s);
-        }
-
-        node.children = node.children || [];
-        for (let i = 0; i < node.children.length; i++) {
-            const child = gltf.nodes[node.children[i]];
-            node.children[i] = child;
-            child.parent = node;
-            this.createNode(child);
-        }
+        const node = new Node(options);
+        this.cache.set(gltfSpec, node);
+        return node;
     }
 
-    createScenes() {
-        const gl = this.gl;
-        let gltf = this.gltf;
-
-        gltf.scenes = gltf.scenes || [];
-        gltf.nodes = gltf.nodes || [];
-        gltf.cameras = gltf.cameras || [];
-
-        for (let scene of gltf.scenes) {
-            scene.nodes = scene.nodes || [];
-
-            for (let i = 0; i < scene.nodes.length; i++) {
-                const node = gltf.nodes[scene.nodes[i]];
-                scene.nodes[i] = node;
-                this.createNode(node);
-            }
+    async loadScene(nameOrIndex) {
+        const gltfSpec = this.findByNameOrIndex(this.gltf.scenes, nameOrIndex);
+        if (this.cache.has(gltfSpec)) {
+            return this.cache.get(gltfSpec);
         }
-    }
 
-    getObjectByName(name) {
-        let object = null;
-        let gltf = this.gltf;
-
-        const sets = [
-            'accessors',
-            'buffers',
-            'bufferViews',
-            'scenes',
-            'nodes',
-            'cameras',
-            'meshes',
-            'materials',
-            'textures',
-            'images',
-            'samplers',
-        ];
-
-        for (let set of sets) {
-            // yes, assignment, not equality
-            if (object = gltf[set].find(x => x.name === name)) {
-                return object;
+        let options = { nodes: [] };
+        if (gltfSpec.nodes) {
+            for (const nodeIndex of gltfSpec.nodes) {
+                const node = await this.loadNode(nodeIndex);
+                options.nodes.push(node);
             }
         }
 
-        return null;
-    }
-
-    setAspectRatio(aspectRatio) {
-        const gl = this.gl;
-        let gltf = this.gltf;
-
-        this.aspectRatio = aspectRatio;
-
-        if (!gltf) {
-            return;
-        }
-
-        gltf.cameras = gltf.cameras || [];
-
-        for (let camera of gltf.cameras) {
-            if (camera.type === 'perspective') {
-                const p = camera.perspective;
-                if (typeof p.aspectRatio === 'undefined') {
-                    const fovy = p.yfov;
-                    const aspect = p.aspectRatio || this.aspectRatio;
-                    const near = p.znear;
-                    const far = p.zfar || Infinity;
-                    mat4.perspective(camera.matrix, fovy, aspect, near, far);
-                }
-            }
-        }
+        const scene = new Scene(options);
+        this.cache.set(gltfSpec, scene);
+        return scene;
     }
 
 }

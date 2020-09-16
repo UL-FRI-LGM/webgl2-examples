@@ -7,25 +7,30 @@ const mat4 = glMatrix.mat4;
 
 class App extends Application {
 
-    start() {
-        this.renderer = new Renderer(this.gl);
-        this.loader = new GLTFLoader(this.gl);
+    async start() {
+        this.loader = new GLTFLoader();
+        await this.loader.load('../../common/models/monkey/monkey.gltf');
 
-        this.loader.load('../../common/models/monkey/monkey.gltf');
+        this.scene = await this.loader.loadScene(this.loader.defaultScene);
+        this.camera = await this.loader.loadNode('Camera');
+
+        if (!this.scene || !this.camera) {
+            throw new Error('Scene or Camera not present in glTF');
+        }
+
+        if (!this.camera.camera) {
+            throw new Error('Camera node does not contain a camera reference');
+        }
+
+        this.renderer = new Renderer(this.gl);
+        this.renderer.prepareScene(this.scene);
+        this.resize();
     }
 
     render() {
-        if (!this.loader.built) {
-            return;
+        if (this.renderer) {
+            this.renderer.render(this.scene, this.camera);
         }
-
-        const scene = this.loader.getObjectByName('Scene');
-        const camera = this.loader.getObjectByName('Camera');
-        if (!scene || !camera) {
-            throw new Error('Scene or camera not present in glTF');
-        }
-
-        this.renderer.render(scene, camera);
     }
 
     resize() {
@@ -33,7 +38,10 @@ class App extends Application {
         const h = this.canvas.clientHeight;
         const aspectRatio = w / h;
 
-        this.loader.setAspectRatio(aspectRatio);
+        if (this.camera) {
+            this.camera.camera.aspect = aspectRatio;
+            this.camera.camera.updateMatrix();
+        }
     }
 
 }
