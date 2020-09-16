@@ -56,8 +56,20 @@ export default class Renderer {
     }
 
     prepareTexture(texture) {
-        this.prepareImage(texture.image);
+        const gl = this.gl;
+
         this.prepareSampler(texture.sampler);
+        const glTexture = this.prepareImage(texture.image);
+        gl.bindTexture(gl.TEXTURE_2D, glTexture);
+        const mipmapModes = [
+            gl.NEAREST_MIPMAP_NEAREST,
+            gl.NEAREST_MIPMAP_LINEAR,
+            gl.LINEAR_MIPMAP_NEAREST,
+            gl.LINEAR_MIPMAP_LINEAR,
+        ];
+        if (mipmapModes.includes(texture.sampler.min)) {
+            gl.generateMipmap(gl.TEXTURE_2D);
+        }
     }
 
     prepareMaterial(material) {
