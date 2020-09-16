@@ -180,13 +180,11 @@ export default class GLTFLoader {
                 options.baseColorTexture = await this.loadTexture(pbr.baseColorTexture.index);
                 options.baseColorTexCoord = pbr.baseColorTexture.texCoord;
             }
-            if (pbr.baseColorFactor) {
-                options.baseColorFactor = vec4.fromValues(pbr.baseColorFactor);
-            }
             if (pbr.metallicRoughnessTexture !== undefined) {
                 options.metallicRoughnessTexture = await this.loadTexture(pbr.metallicRoughnessTexture.index);
                 options.metallicRoughnessTexCoord = pbr.metallicRoughnessTexture.texCoord;
             }
+            options.baseColorFactor = pbr.baseColorFactor;
             options.metallicFactor = pbr.metallicFactor;
             options.roughnessFactor = pbr.roughnessFactor;
         }
@@ -206,7 +204,7 @@ export default class GLTFLoader {
         if (gltfSpec.emissiveTexture !== undefined) {
             options.emissiveTexture = await this.loadTexture(gltfSpec.emissiveTexture.index);
             options.emissiveTexCoord = gltfSpec.emissiveTexture.texCoord;
-            options.emissiveFactor = vec3.fromValues(gltfSpec.emissiveFactor);
+            options.emissiveFactor = gltfSpec.emissiveFactor;
         }
 
         options.alphaMode = gltfSpec.alphaMode;
