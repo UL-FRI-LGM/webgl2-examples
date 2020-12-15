@@ -23,8 +23,7 @@ void main() {
     vTexCoord = aTexCoord;
 
     float d = distance(vertexPosition, lightPosition);
-    vec3 attenuation = uLightAttenuation * vec3(1, d, d * d);
-    vAttenuation = 1.0 / dot(attenuation, vec3(1, 1, 1));
+    vAttenuation = 1.0 / dot(uLightAttenuation, vec3(1, d, d * d));
 
     gl_Position = uProjection * vec4(vertexPosition, 1);
 }

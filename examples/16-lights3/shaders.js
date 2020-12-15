@@ -42,11 +42,11 @@ out vec4 oColor;
 
 void main() {
     oColor = vec4(0.0);
-    
+
     for (int i = 0; i < 4; i++) {
         vec3 lightPosition = (uViewModel * vec4(uLightPosition[i], 1)).xyz;
         float d = distance(vVertexPosition, lightPosition);
-        float attenuation = 1.0 / dot(uLightAttenuation[i] * vec3(1, d, d * d), vec3(1, 1, 1));
+        float attenuation = 1.0 / dot(uLightAttenuation[i], vec3(1, d, d * d));
 
         vec3 N = (uViewModel * vec4(vNormal, 0)).xyz;
         vec3 L = normalize(lightPosition - vVertexPosition);
@@ -62,10 +62,8 @@ void main() {
 
         vec3 light = (ambient + diffuse + specular) * attenuation;
 
-
         oColor += texture(uTexture, vTexCoord) * vec4(light, 1);
     }
-    // oColor = vec4(light, 1.0);
 }
 `;
 
