@@ -1,6 +1,6 @@
-import Node from './Node.js';
+import { Node } from './Node.js';
 
-export default class Model extends Node {
+export class Model extends Node {
 
     constructor(mesh, image, options) {
         super(options);

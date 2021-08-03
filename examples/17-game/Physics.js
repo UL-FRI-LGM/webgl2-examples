@@ -1,7 +1,7 @@
 const vec3 = glMatrix.vec3;
 const mat4 = glMatrix.mat4;
 
-export default class Physics {
+export class Physics {
 
     constructor(scene) {
         this.scene = scene;

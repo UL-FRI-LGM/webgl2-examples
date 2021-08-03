@@ -1,6 +1,6 @@
-import Node from './Node.js';
+import { Node } from './Node.js';
 
-export default class Floor extends Node {
+export class Floor extends Node {
 
     constructor(width, height) {
         super();

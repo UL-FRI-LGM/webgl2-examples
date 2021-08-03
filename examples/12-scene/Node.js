@@ -1,6 +1,6 @@
 const mat4 = glMatrix.mat4;
 
-export default class Node {
+export class Node {
 
     constructor() {
         // Every node has its own local transformation.

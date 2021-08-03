@@ -1,6 +1,6 @@
-import Material from './Material.js';
+import { Material } from './Material.js';
 
-export default class Primitive {
+export class Primitive {
 
     constructor(options = {}) {
         this.attributes = {...(options.attributes || {})};

@@ -26,6 +26,6 @@ void main() {
 }
 `;
 
-export default {
+export const shaders = {
     simple: { vertex, fragment }
 };

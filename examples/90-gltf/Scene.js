@@ -1,6 +1,6 @@
-import Node from './Node.js';
+import { Node } from './Node.js';
 
-export default class Scene {
+export class Scene {
 
     constructor(options = {}) {
         this.nodes = [...(options.nodes || [])];

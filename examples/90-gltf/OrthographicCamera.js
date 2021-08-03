@@ -1,8 +1,8 @@
-import Camera from './Camera.js';
+import { Camera } from './Camera.js';
 
 const mat4 = glMatrix.mat4;
 
-export default class OrthographicCamera extends Camera {
+export class OrthographicCamera extends Camera {
 
     constructor(options = {}) {
         super(options);

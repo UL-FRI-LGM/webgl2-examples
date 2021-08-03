@@ -1,10 +1,10 @@
-import Application from '../../common/Application.js';
+import { Application } from '../../common/Application.js';
 
-import Renderer from './Renderer.js';
-import Node from './Node.js';
-import Camera from './Camera.js';
-import Light from './Light.js';
-import Floor from './Floor.js';
+import { Renderer } from './Renderer.js';
+import { Node } from './Node.js';
+import { Camera } from './Camera.js';
+import { Light } from './Light.js';
+import { Floor } from './Floor.js';
 
 const mat4 = glMatrix.mat4;
 const vec3 = glMatrix.vec3;

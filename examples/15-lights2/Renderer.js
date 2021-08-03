@@ -1,10 +1,10 @@
 import * as WebGL from './WebGL.js';
-import shaders from './shaders.js';
+import { shaders } from './shaders.js';
 
 const mat4 = glMatrix.mat4;
 const vec3 = glMatrix.vec3;
 
-export default class Renderer {
+export class Renderer {
 
     constructor(gl) {
         this.gl = gl;

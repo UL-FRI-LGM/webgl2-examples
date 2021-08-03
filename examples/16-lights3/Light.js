@@ -1,6 +1,6 @@
-import Node from './Node.js';
+import { Node } from './Node.js';
 
-export default class Light extends Node {
+export class Light extends Node {
 
     constructor() {
         super();

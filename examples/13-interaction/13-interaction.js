@@ -1,9 +1,9 @@
-import Application from '../../common/Application.js';
+import { Application } from '../../common/Application.js';
 import * as WebGL from './WebGL.js';
 
-import Node from './Node.js';
+import { Node } from './Node.js';
 
-import shaders from './shaders.js';
+import { shaders } from './shaders.js';
 import * as FloorModel from './floor.js';
 
 const mat4 = glMatrix.mat4;

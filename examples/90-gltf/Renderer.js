@@ -1,12 +1,12 @@
 import * as WebGL from './WebGL.js';
-import shaders from './shaders.js';
+import { shaders } from './shaders.js';
 
 const mat4 = glMatrix.mat4;
 
 // This class prepares all assets for use with WebGL
 // and takes care of rendering.
 
-export default class Renderer {
+export class Renderer {
 
     constructor(gl) {
         this.gl = gl;

@@ -1,4 +1,4 @@
-export default class Sampler {
+export class Sampler {
 
     constructor(options = {}) {
         this.mag = options.mag || 9729;

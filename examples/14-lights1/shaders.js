@@ -57,6 +57,6 @@ void main() {
 }
 `;
 
-export default {
+export const shaders = {
     phong: { vertex, fragment }
 };

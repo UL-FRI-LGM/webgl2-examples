@@ -1,6 +1,6 @@
 const mat4 = glMatrix.mat4;
 
-export default class Camera {
+export class Camera {
 
     constructor(options = {}) {
         this.node = options.node || null;

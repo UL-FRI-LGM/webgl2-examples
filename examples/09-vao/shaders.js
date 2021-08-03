@@ -52,7 +52,7 @@ void main() {
 }
 `;
 
-export default {
+export const shaders = {
     first: {
         vertex   : firstVertex,
         fragment : firstFragment

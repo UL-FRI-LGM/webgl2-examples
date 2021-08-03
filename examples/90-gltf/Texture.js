@@ -1,6 +1,6 @@
-import Sampler from './Sampler.js';
+import { Sampler } from './Sampler.js';
 
-export default class Texture {
+export class Texture {
 
     constructor(options = {}) {
         this.image = options.image || null;

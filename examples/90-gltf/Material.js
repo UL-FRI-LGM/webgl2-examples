@@ -1,7 +1,7 @@
 const vec3 = glMatrix.vec3;
 const vec4 = glMatrix.vec4;
 
-export default class Material {
+export class Material {
 
     constructor(options = {}) {
         this.baseColorTexture = options.baseColorTexture || null;

@@ -1,14 +1,14 @@
-import BufferView from './BufferView.js';
-import Accessor from './Accessor.js';
-import Sampler from './Sampler.js';
-import Texture from './Texture.js';
-import Material from './Material.js';
-import Primitive from './Primitive.js';
-import Mesh from './Mesh.js';
-import PerspectiveCamera from './PerspectiveCamera.js';
-import OrthographicCamera from './OrthographicCamera.js';
-import Node from './Node.js';
-import Scene from './Scene.js';
+import { BufferView } from './BufferView.js';
+import { Accessor } from './Accessor.js';
+import { Sampler } from './Sampler.js';
+import { Texture } from './Texture.js';
+import { Material } from './Material.js';
+import { Primitive } from './Primitive.js';
+import { Mesh } from './Mesh.js';
+import { PerspectiveCamera } from './PerspectiveCamera.js';
+import { OrthographicCamera } from './OrthographicCamera.js';
+import { Node } from './Node.js';
+import { Scene } from './Scene.js';
 
 const vec3 = glMatrix.vec3;
 const vec4 = glMatrix.vec4;
@@ -18,7 +18,7 @@ const mat4 = glMatrix.mat4;
 // the corresponding classes. Keep in mind that it loads
 // the resources in series (care to optimize?).
 
-export default class GLTFLoader {
+export class GLTFLoader {
 
     constructor() {
         this.gltf = null;

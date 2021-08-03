@@ -1,4 +1,4 @@
-export default class Application {
+export class Application {
 
     constructor(canvas) {
         this._update = this._update.bind(this);

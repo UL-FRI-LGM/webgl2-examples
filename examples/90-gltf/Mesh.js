@@ -1,4 +1,4 @@
-export default class Mesh {
+export class Mesh {
 
     constructor(options = {}) {
         this.primitives = [...(options.primitives || [])];

@@ -1,4 +1,4 @@
-export default class Accessor {
+export class Accessor {
 
     constructor(options = {}) {
         this.bufferView = options.bufferView || null;

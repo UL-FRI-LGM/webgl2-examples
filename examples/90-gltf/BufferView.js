@@ -1,4 +1,4 @@
-export default class BufferView {
+export class BufferView {
 
     constructor(options = {}) {
         this.buffer = options.buffer || null;

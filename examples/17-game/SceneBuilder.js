@@ -1,12 +1,12 @@
-import Mesh from './Mesh.js';
+import { Mesh } from './Mesh.js';
 
-import Node from './Node.js';
-import Model from './Model.js';
-import Camera from './Camera.js';
+import { Node } from './Node.js';
+import { Model } from './Model.js';
+import { Camera } from './Camera.js';
 
-import Scene from './Scene.js';
+import { Scene } from './Scene.js';
 
-export default class SceneBuilder {
+export class SceneBuilder {
 
     constructor(spec) {
         this.spec = spec;

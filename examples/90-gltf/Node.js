@@ -2,7 +2,7 @@ const vec3 = glMatrix.vec3;
 const mat4 = glMatrix.mat4;
 const quat = glMatrix.quat;
 
-export default class Node {
+export class Node {
 
     constructor(options = {}) {
         this.translation = options.translation

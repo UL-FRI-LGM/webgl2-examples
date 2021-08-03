@@ -24,6 +24,6 @@ void main() {
 }
 `;
 
-export default {
+export const shaders = {
     test: { vertex, fragment }
 };

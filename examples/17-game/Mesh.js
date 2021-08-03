@@ -1,6 +1,6 @@
-import Utils from './Utils.js';
+import { Utils } from './Utils.js';
 
-export default class Mesh {
+export class Mesh {
 
     constructor(options) {
         Utils.init(this, this.constructor.defaults, options);
