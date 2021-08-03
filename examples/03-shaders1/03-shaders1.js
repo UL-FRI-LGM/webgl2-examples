@@ -1,4 +1,5 @@
 import { Application } from '../../common/Application.js';
+
 import * as shaders from './shaders.js';
 
 class App extends Application {

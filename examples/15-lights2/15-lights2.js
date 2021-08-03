@@ -1,3 +1,5 @@
+import { GUI } from '../../lib/dat.gui.module.js';
+import { mat4 } from '../../lib/gl-matrix-module.js';
 import { Application } from '../../common/Application.js';
 
 import { Renderer } from './Renderer.js';
@@ -5,9 +7,6 @@ import { Node } from './Node.js';
 import { Camera } from './Camera.js';
 import { Light } from './Light.js';
 import { Floor } from './Floor.js';
-
-const mat4 = glMatrix.mat4;
-const vec3 = glMatrix.vec3;
 
 class App extends Application {
 
@@ -83,7 +82,7 @@ class App extends Application {
 document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.querySelector('canvas');
     const app = new App(canvas);
-    const gui = new dat.GUI();
+    const gui = new GUI();
     gui.addColor(app.light, 'ambientColor');
     gui.addColor(app.light, 'diffuseColor');
     gui.addColor(app.light, 'specularColor');

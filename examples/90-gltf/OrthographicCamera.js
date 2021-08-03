@@ -1,6 +1,6 @@
-import { Camera } from './Camera.js';
+import { mat4 } from '../../lib/gl-matrix-module.js';
 
-const mat4 = glMatrix.mat4;
+import { Camera } from './Camera.js';
 
 export class OrthographicCamera extends Camera {
 

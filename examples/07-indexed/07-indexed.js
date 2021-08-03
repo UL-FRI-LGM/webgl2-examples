@@ -1,8 +1,8 @@
+import { mat4 } from '../../lib/gl-matrix-module.js';
 import { Application } from '../../common/Application.js';
+
 import * as WebGL from './WebGL.js';
 import { shaders } from './shaders.js';
-
-const mat4 = glMatrix.mat4;
 
 class App extends Application {
 

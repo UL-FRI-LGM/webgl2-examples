@@ -1,9 +1,8 @@
 import { Application } from '../../common/Application.js';
+
 import * as WebGL from './WebGL.js';
 import { GLTFLoader } from './GLTFLoader.js';
 import { Renderer } from './Renderer.js';
-
-const mat4 = glMatrix.mat4;
 
 class App extends Application {
 

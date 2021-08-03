@@ -1,3 +1,4 @@
+import { GUI } from '../../lib/dat.gui.module.js';
 import { Application } from '../../common/Application.js';
 
 class App extends Application {
@@ -19,6 +20,6 @@ class App extends Application {
 document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.querySelector('canvas');
     const app = new App(canvas);
-    const gui = new dat.GUI();
+    const gui = new GUI();
     gui.addColor(app, 'color');
 });

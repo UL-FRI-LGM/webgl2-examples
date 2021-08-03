@@ -1,4 +1,4 @@
-const mat4 = glMatrix.mat4;
+import { mat4 } from '../../lib/gl-matrix-module.js';
 
 export class Node {
 

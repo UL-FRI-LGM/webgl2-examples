@@ -1,7 +1,7 @@
+import { mat4 } from '../../lib/gl-matrix-module.js';
+
 import * as WebGL from './WebGL.js';
 import { shaders } from './shaders.js';
-
-const mat4 = glMatrix.mat4;
 
 export class Renderer {
 

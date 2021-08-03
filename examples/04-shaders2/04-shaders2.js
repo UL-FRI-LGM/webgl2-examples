@@ -1,4 +1,5 @@
 import { Application } from '../../common/Application.js';
+
 import * as WebGL from './WebGL.js';
 import * as shaders from './shaders.js';
 

@@ -1,13 +1,12 @@
+import { GUI } from '../../lib/dat.gui.module.js';
+import { vec3, mat4 } from '../../lib/gl-matrix-module.js';
 import { Application } from '../../common/Application.js';
-import * as WebGL from './WebGL.js';
 
+import * as WebGL from './WebGL.js';
 import { Node } from './Node.js';
 
 import { shaders } from './shaders.js';
 import * as FloorModel from './floor.js';
-
-const mat4 = glMatrix.mat4;
-const vec3 = glMatrix.vec3;
 
 class App extends Application {
 
@@ -264,7 +263,7 @@ class App extends Application {
 document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.querySelector('canvas');
     const app = new App(canvas);
-    const gui = new dat.GUI();
+    const gui = new GUI();
     gui.add(app.camera, 'mouseSensitivity', 0.0001, 0.01);
     gui.add(app.camera, 'maxSpeed', 0, 10);
     gui.add(app.camera, 'friction', 0.05, 0.75);

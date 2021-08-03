@@ -1,4 +1,6 @@
+import { GUI } from '../../lib/dat.gui.module.js';
 import { Application } from '../../common/Application.js';
+
 import * as WebGL from './WebGL.js';
 import { shaders } from './shaders.js';
 
@@ -87,7 +89,7 @@ class App extends Application {
 document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.querySelector('canvas');
     const app = new App(canvas);
-    const gui = new dat.GUI();
+    const gui = new GUI();
     gui.add(app, 'offsetX', -1, 1);
     gui.add(app, 'offsetY', -1, 1);
 });

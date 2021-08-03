@@ -10,10 +10,6 @@ import { OrthographicCamera } from './OrthographicCamera.js';
 import { Node } from './Node.js';
 import { Scene } from './Scene.js';
 
-const vec3 = glMatrix.vec3;
-const vec4 = glMatrix.vec4;
-const mat4 = glMatrix.mat4;
-
 // This class loads all GLTF resources and instantiates
 // the corresponding classes. Keep in mind that it loads
 // the resources in series (care to optimize?).

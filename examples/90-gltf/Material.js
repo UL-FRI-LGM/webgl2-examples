@@ -1,5 +1,4 @@
-const vec3 = glMatrix.vec3;
-const vec4 = glMatrix.vec4;
+import { vec3, vec4 } from '../../lib/gl-matrix-module.js';
 
 export class Material {
 

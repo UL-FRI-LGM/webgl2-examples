@@ -1,6 +1,4 @@
-const vec3 = glMatrix.vec3;
-const mat4 = glMatrix.mat4;
-const quat = glMatrix.quat;
+import { vec3, mat4, quat } from '../../lib/gl-matrix-module.js';
 
 export class Node {
 

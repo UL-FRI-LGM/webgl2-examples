@@ -1,12 +1,12 @@
+import { GUI } from '../../lib/dat.gui.module.js';
+import { mat4 } from '../../lib/gl-matrix-module.js';
 import { Application } from '../../common/Application.js';
-import * as WebGL from './WebGL.js';
 
+import * as WebGL from './WebGL.js';
 import { Node } from './Node.js';
 
 import { shaders } from './shaders.js';
 import * as CubeModel from './cube.js';
-
-const mat4 = glMatrix.mat4;
 
 class App extends Application {
 
@@ -191,7 +191,7 @@ class App extends Application {
 document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.querySelector('canvas');
     const app = new App(canvas);
-    const gui = new dat.GUI();
+    const gui = new GUI();
     gui.add(app, 'leftRotation', -3, 3);
     gui.add(app, 'rightRotation', -3, 3);
 });
