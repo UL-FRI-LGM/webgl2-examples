@@ -75,7 +75,7 @@ class App extends Application {
             mip: true,
             min: gl.NEAREST_MIPMAP_NEAREST,
             mag: gl.NEAREST,
-        }, (texture) => {
+        }, texture => {
             this.cube1.texture = texture;
             this.cube2.texture = texture;
             this.cube3.texture = texture;
@@ -124,7 +124,7 @@ class App extends Application {
         // be pushed onto the stack and then restored once the node is done
         // rendering itself and its children.
         this.root.traverse(
-            (node) => {
+            node => {
                 mvpStack.push(mat4.clone(mvpMatrix));
                 mat4.mul(mvpMatrix, mvpMatrix, node.transform);
                 if (node.model) {
@@ -134,7 +134,7 @@ class App extends Application {
                     gl.drawElements(gl.TRIANGLES, node.model.indices, gl.UNSIGNED_SHORT, 0);
                 }
             },
-            (node) => {
+            node => {
                 mvpMatrix = mvpStack.pop();
             }
         );

@@ -73,7 +73,7 @@ class App extends Application {
             mip: true,
             min: gl.NEAREST_MIPMAP_NEAREST,
             mag: gl.NEAREST,
-        }, (texture) => {
+        }, texture => {
             this.floor.texture = texture;
         });
     }
@@ -196,7 +196,7 @@ class App extends Application {
         mat4.mul(mvpMatrix, this.camera.projection, viewMatrix);
 
         this.root.traverse(
-            (node) => {
+            node => {
                 mvpStack.push(mat4.clone(mvpMatrix));
                 mat4.mul(mvpMatrix, mvpMatrix, node.transform);
                 if (node.model) {
@@ -206,7 +206,7 @@ class App extends Application {
                     gl.drawElements(gl.TRIANGLES, node.model.indices, gl.UNSIGNED_SHORT, 0);
                 }
             },
-            (node) => {
+            node => {
                 mvpMatrix = mvpStack.pop();
             }
         );

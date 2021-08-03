@@ -43,11 +43,15 @@ export class Node {
     traverse(before, after) {
         // This method is a helper that is useful for all kinds of tasks.
         // We are going to use it for rendering.
-        before(this);
+        if (before) {
+            before(this);
+        }
         for (let child of this.children) {
             child.traverse(before, after);
         }
-        after(this);
+        if (after) {
+            after(this);
+        }
     }
 
 }

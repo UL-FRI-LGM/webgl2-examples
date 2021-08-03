@@ -46,11 +46,15 @@ export class Node {
     }
 
     traverse(before, after) {
-        before && before(this);
+        if (before) {
+            before(this);
+        }
         for (let child of this.children) {
             child.traverse(before, after);
         }
-        after && after(this);
+        if (after) {
+            after(this);
+        }
     }
 
 }

@@ -35,7 +35,7 @@ class App extends Application {
             mip: true,
             min: gl.NEAREST_MIPMAP_NEAREST,
             mag: gl.NEAREST,
-        }, (texture) => {
+        }, texture => {
             this.floor.texture = texture;
         });
 

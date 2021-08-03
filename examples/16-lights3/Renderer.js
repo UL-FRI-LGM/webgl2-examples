@@ -1,9 +1,8 @@
+import { vec3, mat4 } from '../../lib/gl-matrix-module.js';
+
 import * as WebGL from './WebGL.js';
 import { shaders } from './shaders.js';
 import { Light } from './Light.js';
-
-const mat4 = glMatrix.mat4;
-const vec3 = glMatrix.vec3;
 
 export class Renderer {
 
@@ -21,7 +20,6 @@ export class Renderer {
         });
 
         this.programs = WebGL.buildPrograms(gl, shaders);
-        console.log(this.programs);
     }
 
     render(scene, camera) {
@@ -47,7 +45,7 @@ export class Renderer {
         let lightCounter = 0;
 
         scene.traverse(
-            (node) => {
+            node => {
                 matrixStack.push(mat4.clone(matrix));
                 mat4.mul(matrix, matrix, node.transform);
                 if (node.model) {
@@ -75,7 +73,7 @@ export class Renderer {
                     lightCounter++;
                 }
             },
-            (node) => {
+            node => {
                 matrix = matrixStack.pop();
             }
         );

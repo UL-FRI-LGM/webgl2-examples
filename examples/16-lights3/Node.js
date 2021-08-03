@@ -1,4 +1,4 @@
-const mat4 = glMatrix.mat4;
+import { mat4 } from '../../lib/gl-matrix-module.js';
 
 export class Node {
 
@@ -31,11 +31,15 @@ export class Node {
     }
 
     traverse(before, after) {
-        before(this);
+        if (before) {
+            before(this);
+        }
         for (let child of this.children) {
             child.traverse(before, after);
         }
-        after(this);
+        if (after) {
+            after(this);
+        }
     }
 
 }

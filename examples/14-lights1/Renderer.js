@@ -52,7 +52,7 @@ export class Renderer {
         gl.uniform3fv(program.uniforms.uLightAttenuation, light.attenuatuion);
 
         scene.traverse(
-            (node) => {
+            node => {
                 matrixStack.push(mat4.clone(matrix));
                 mat4.mul(matrix, matrix, node.transform);
                 if (node.model) {
@@ -63,7 +63,7 @@ export class Renderer {
                     gl.drawElements(gl.TRIANGLES, node.model.indices, gl.UNSIGNED_SHORT, 0);
                 }
             },
-            (node) => {
+            node => {
                 matrix = matrixStack.pop();
             }
         );

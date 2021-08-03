@@ -38,7 +38,7 @@ class App extends Application {
             mip: true,
             min: gl.NEAREST_MIPMAP_NEAREST,
             mag: gl.NEAREST,
-        }, (texture) => {
+        }, texture => {
             this.floor.texture = texture;
         });
 
@@ -64,17 +64,13 @@ class App extends Application {
         this.startTime = this.time;
 
         let lightCounter = 0;
-        this.root.traverse(
-            (node) => {
-                if (node instanceof Light && lightCounter < 3) {
-                    // console.log(node);
-                    node.diffuseColor[lightCounter] = Math.sin(this.time / 1000 + lightCounter * Math.PI/2) * 255;
-                    node.specularColor[lightCounter] = Math.sin(this.time / 1000 + lightCounter * Math.PI/3) * 255;
-                    lightCounter++;
-                }
-            },
-            (node) => {}
-        );
+        this.root.traverse(node => {
+            if (node instanceof Light && lightCounter < 3) {
+                node.diffuseColor[lightCounter] = Math.sin(this.time / 1000 + lightCounter * Math.PI/2) * 255;
+                node.specularColor[lightCounter] = Math.sin(this.time / 1000 + lightCounter * Math.PI/3) * 255;
+                lightCounter++;
+            }
+        });
 
         this.camera.update(dt);
     }
