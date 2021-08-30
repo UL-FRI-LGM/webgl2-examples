@@ -10,6 +10,20 @@ class App extends Application {
     start() {
         const gl = this.gl;
 
+        // These are all the different primitive types in WebGL.
+        // As this example only draws a single triangle,
+        // most of them are not really useful.
+        this.primitiveType = gl.TRIANGLES;
+        this.primitiveTypes = {
+            Points        : gl.POINTS,
+            Lines         : gl.LINES,
+            LineStrip     : gl.LINE_STRIP,
+            LineLoop      : gl.LINE_LOOP,
+            Triangles     : gl.TRIANGLES,
+            TriangleStrip : gl.TRIANGLE_STRIP,
+            TriangleFan   : gl.TRIANGLE_FAN,
+        };
+
         // this.programs now contains a program object and attribute and
         // uniform locations for each of the supplied shaders.
         this.programs = WebGL.buildPrograms(gl, shaders);
@@ -98,7 +112,7 @@ class App extends Application {
 
         // Draw! We are drawing triangles, passing in 3 vertices
         // and starting with the vertex at index 0.
-        gl.drawArrays(gl.TRIANGLES, 0, 3);
+        gl.drawArrays(this.primitiveType, 0, 3);
     }
 
 }
@@ -109,4 +123,5 @@ document.addEventListener('DOMContentLoaded', () => {
     const gui = new GUI();
     gui.add(app, 'offsetX', -1, 1);
     gui.add(app, 'offsetY', -1, 1);
+    gui.add(app, 'primitiveType', app.primitiveTypes);
 });
