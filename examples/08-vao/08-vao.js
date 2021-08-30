@@ -1,3 +1,5 @@
+import { GUI } from '../../lib/dat.gui.module.js';
+
 import { Application } from '../../common/engine/Application.js';
 import * as WebGL from '../../common/engine/WebGL.js';
 
@@ -48,15 +50,10 @@ class App extends Application {
         // when we explicitly want that.
         gl.bindVertexArray(null);
 
-        // Optionally, we can set the uniforms in the initialization step.
-        let program = this.programs.first;
-        gl.useProgram(program.program);
-        gl.uniform2f(program.uniforms.uOffset, 0.4, 0);
-
-        program = this.programs.second;
-        gl.useProgram(program.program);
-        gl.uniform2f(program.uniforms.uOffset, -0.4, 0);
-        gl.uniform2f(program.uniforms.uScale, 0.5, 0.5);
+        this.offsetX = 0;
+        this.offsetY = 0;
+        this.scaleX = 0.5;
+        this.scaleY = 0.5;
     }
 
     render() {
@@ -70,13 +67,16 @@ class App extends Application {
         gl.bindVertexArray(this.vao);
 
         // Draw the first triangle with the first program.
-        // All uniforms are already set up.
-        gl.useProgram(this.programs.first.program);
+        let program = this.programs.first;
+        gl.useProgram(program.program);
+        gl.uniform2f(program.uniforms.uOffset, 0.4 + this.offsetX, 0 + this.offsetY);
         gl.drawArrays(gl.TRIANGLES, 0, 3);
 
         // Draw the second triangle with the second program.
-        // All uniforms are already set up.
-        gl.useProgram(this.programs.second.program);
+        program = this.programs.second;
+        gl.useProgram(program.program);
+        gl.uniform2f(program.uniforms.uOffset, -0.4 + this.offsetX, 0 + this.offsetY);
+        gl.uniform2f(program.uniforms.uScale, this.scaleX, this.scaleY);
         gl.drawArrays(gl.TRIANGLES, 0, 3);
 
         // Unbind the VAO when we do not need it anymore.
@@ -88,4 +88,9 @@ class App extends Application {
 document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.querySelector('canvas');
     const app = new App(canvas);
+    const gui = new GUI();
+    gui.add(app, 'offsetX', -1, 1);
+    gui.add(app, 'offsetY', -1, 1);
+    gui.add(app, 'scaleX', -1, 1);
+    gui.add(app, 'scaleY', -1, 1);
 });
