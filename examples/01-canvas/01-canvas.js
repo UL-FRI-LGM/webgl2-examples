@@ -1,23 +1,23 @@
 class Application {
 
-    constructor(canvas) {
+    constructor(canvas, glOptions) {
         this._update = this._update.bind(this);
 
         this.canvas = canvas;
-        this._initGL();
+        this._initGL(glOptions);
         this.start();
 
         requestAnimationFrame(this._update);
     }
 
-    _initGL() {
+    _initGL(glOptions) {
         // Try to create a WebGL 2.0 context.
         // We need both a try-catch and a null check.
         this.gl = null;
         try {
-            this.gl = this.canvas.getContext('webgl2', {
-                // options, such as disabling the depth buffer
-            });
+            // We can pass in options, such as disabling the depth buffer,
+            // disabling antialiasing, preserving the drawing buffer, etc.
+            this.gl = this.canvas.getContext('webgl2', glOptions);
         } catch (error) {
         }
 

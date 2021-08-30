@@ -1,21 +1,19 @@
 export class Application {
 
-    constructor(canvas) {
+    constructor(canvas, glOptions) {
         this._update = this._update.bind(this);
 
         this.canvas = canvas;
-        this._initGL();
+        this._initGL(glOptions);
         this.start();
 
         requestAnimationFrame(this._update);
     }
 
-    _initGL() {
+    _initGL(glOptions) {
         this.gl = null;
         try {
-            this.gl = this.canvas.getContext('webgl2', {
-                preserveDrawingBuffer: true
-            });
+            this.gl = this.canvas.getContext('webgl2', glOptions);
         } catch (error) {
         }
 

@@ -1,6 +1,6 @@
 import { GUI } from '../../lib/dat.gui.module.js';
 import { vec3, quat } from '../../lib/gl-matrix-module.js';
-import { Application } from './Application.js';
+import { Application } from '../../common/Application.js';
 
 import { Scene } from './Scene.js';
 import { Node } from './Node.js';
@@ -116,7 +116,7 @@ class App extends Application {
 
 document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.querySelector('canvas');
-    const app = new App(canvas);
+    const app = new App(canvas, { antialias: false });
     const gui = new GUI();
     gui.add(app.renderer, 'occlusionEnabled');
     gui.add(app.renderer, 'occlusionStrength', 0, 10);
