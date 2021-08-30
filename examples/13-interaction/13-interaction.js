@@ -1,8 +1,9 @@
 import { GUI } from '../../lib/dat.gui.module.js';
 import { vec3, mat4 } from '../../lib/gl-matrix-module.js';
-import { Application } from '../../common/Application.js';
 
-import * as WebGL from './WebGL.js';
+import { Application } from '../../common/engine/Application.js';
+import * as WebGL from '../../common/engine/WebGL.js';
+
 import { Node } from './Node.js';
 
 import { shaders } from './shaders.js';

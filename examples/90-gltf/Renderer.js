@@ -1,6 +1,7 @@
 import { mat4 } from '../../lib/gl-matrix-module.js';
 
-import * as WebGL from './WebGL.js';
+import * as WebGL from '../../common/engine/WebGL.js';
+
 import { shaders } from './shaders.js';
 
 // This class prepares all assets for use with WebGL

@@ -1,5 +1,5 @@
 import { GUI } from '../../lib/dat.gui.module.js';
-import { Application } from '../../common/Application.js';
+import { Application } from '../../common/engine/Application.js';
 
 class App extends Application {
 

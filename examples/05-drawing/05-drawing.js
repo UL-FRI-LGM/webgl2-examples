@@ -1,7 +1,8 @@
 import { GUI } from '../../lib/dat.gui.module.js';
-import { Application } from '../../common/Application.js';
 
-import * as WebGL from './WebGL.js';
+import { Application } from '../../common/engine/Application.js';
+import * as WebGL from '../../common/engine/WebGL.js';
+
 import { shaders } from './shaders.js';
 
 class App extends Application {

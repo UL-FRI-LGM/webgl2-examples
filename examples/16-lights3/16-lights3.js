@@ -1,6 +1,6 @@
 import { GUI } from '../../lib/dat.gui.module.js';
 import { mat4 } from '../../lib/gl-matrix-module.js';
-import { Application } from '../../common/Application.js';
+import { Application } from '../../common/engine/Application.js';
 
 import { Renderer } from './Renderer.js';
 import { Node } from './Node.js';

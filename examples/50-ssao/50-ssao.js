@@ -1,6 +1,7 @@
 import { GUI } from '../../lib/dat.gui.module.js';
 import { vec3, quat } from '../../lib/gl-matrix-module.js';
-import { Application } from '../../common/Application.js';
+
+import { Application } from '../../common/engine/Application.js';
 
 import { Scene } from './Scene.js';
 import { Node } from './Node.js';
