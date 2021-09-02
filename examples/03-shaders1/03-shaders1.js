@@ -1,6 +1,6 @@
 import { Application } from '../../common/engine/Application.js';
 
-import * as shaders from './shaders.js';
+import { shaders } from './shaders.js';
 
 class App extends Application {
 
@@ -13,7 +13,7 @@ class App extends Application {
         const vertexShader = gl.createShader(gl.VERTEX_SHADER);
 
         // append source string
-        gl.shaderSource(vertexShader, shaders.vertex);
+        gl.shaderSource(vertexShader, shaders.test.vertex);
 
         // try to compile
         gl.compileShader(vertexShader);
@@ -29,7 +29,7 @@ class App extends Application {
 
         // repeat for fragment shader
         const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-        gl.shaderSource(fragmentShader, shaders.fragment);
+        gl.shaderSource(fragmentShader, shaders.test.fragment);
         gl.compileShader(fragmentShader);
 
         status = gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS);

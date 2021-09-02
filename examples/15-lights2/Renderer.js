@@ -1,6 +1,6 @@
 import { vec3, mat4 } from '../../lib/gl-matrix-module.js';
 
-import * as WebGL from '../../common/engine/WebGL.js';
+import { WebGL } from '../../common/engine/WebGL.js';
 
 import { shaders } from './shaders.js';
 

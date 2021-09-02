@@ -1,4 +1,6 @@
-export function createShader(gl, source, type) {
+export class WebGL {
+
+static createShader(gl, source, type) {
     const shader = gl.createShader(type);
     gl.shaderSource(shader, source);
     gl.compileShader(shader);
@@ -10,7 +12,7 @@ export function createShader(gl, source, type) {
     return shader;
 }
 
-export function createProgram(gl, shaders) {
+static createProgram(gl, shaders) {
     const program = gl.createProgram();
     for (const shader of shaders) {
         gl.attachShader(program, shader);
@@ -39,14 +41,14 @@ export function createProgram(gl, shaders) {
     return { program, attributes, uniforms };
 }
 
-export function buildPrograms(gl, shaders) {
+static buildPrograms(gl, shaders) {
     const programs = {};
     for (const name in shaders) {
         try {
             const program = shaders[name];
-            programs[name] = createProgram(gl, [
-                createShader(gl, program.vertex, gl.VERTEX_SHADER),
-                createShader(gl, program.fragment, gl.FRAGMENT_SHADER)
+            programs[name] = WebGL.createProgram(gl, [
+                WebGL.createShader(gl, program.vertex, gl.VERTEX_SHADER),
+                WebGL.createShader(gl, program.fragment, gl.FRAGMENT_SHADER)
             ]);
         } catch (err) {
             throw new Error('Error compiling ' + name + '\n' + err);
@@ -55,7 +57,7 @@ export function buildPrograms(gl, shaders) {
     return programs;
 }
 
-export function createTexture(gl, options) {
+static createTexture(gl, options) {
     const target  = options.target  || gl.TEXTURE_2D;
     const iformat = options.iformat || gl.RGBA;
     const format  = options.format  || gl.RGBA;
@@ -89,7 +91,7 @@ export function createTexture(gl, options) {
     return texture;
 }
 
-export function createBuffer(gl, options) {
+static createBuffer(gl, options) {
     const target = options.target || gl.ARRAY_BUFFER;
     const hint   = options.hint   || gl.STATIC_DRAW;
     const buffer = options.buffer || gl.createBuffer();
@@ -100,15 +102,15 @@ export function createBuffer(gl, options) {
     return buffer;
 }
 
-export function createUnitQuad(gl) {
-    return createBuffer(gl, { data: new Float32Array([0, 0, 1, 0, 1, 1, 0, 1]) });
+static createUnitQuad(gl) {
+    return WebGL.createBuffer(gl, { data: new Float32Array([0, 0, 1, 0, 1, 1, 0, 1]) });
 }
 
-export function createClipQuad(gl) {
-    return createBuffer(gl, { data: new Float32Array([-1, -1, 1, -1, 1, 1, -1, 1]) });
+static createClipQuad(gl) {
+    return WebGL.createBuffer(gl, { data: new Float32Array([-1, -1, 1, -1, 1, 1, -1, 1]) });
 }
 
-export function createSampler(gl, options) {
+static createSampler(gl, options) {
     const sampler = options.sampler || gl.createSampler();
 
     if (options.wrapS) { gl.samplerParameteri(sampler, gl.TEXTURE_WRAP_S, options.wrapS); }
@@ -117,4 +119,6 @@ export function createSampler(gl, options) {
     if (options.mag) { gl.samplerParameteri(sampler, gl.TEXTURE_MAG_FILTER, options.mag); }
 
     return sampler;
+}
+
 }

@@ -1,7 +1,7 @@
 import { mat4 } from '../../lib/gl-matrix-module.js';
 
 import { Application } from '../../common/engine/Application.js';
-import * as WebGL from '../../common/engine/WebGL.js';
+import { WebGL } from '../../common/engine/WebGL.js';
 
 import { shaders } from './shaders.js';
 

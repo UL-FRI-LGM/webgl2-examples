@@ -1,16 +1,16 @@
 import { Application } from '../../common/engine/Application.js';
+import { WebGL } from '../../common/engine/WebGL.js';
 
-import * as WebGL from './WebGL.js';
-import * as shaders from './shaders.js';
+import { shaders } from './shaders.js';
 
 class App extends Application {
 
     start() {
         const gl = this.gl;
 
-        const vertexShader = WebGL.createShader(gl, shaders.vertex, gl.VERTEX_SHADER);
-        const fragmentShader = WebGL.createShader(gl, shaders.fragment, gl.FRAGMENT_SHADER);
-        const program = WebGL.createProgram(gl, [ vertexShader, fragmentShader ]);
+        const vertexShader = WebGL.createShader(gl, shaders.test.vertex, gl.VERTEX_SHADER);
+        const fragmentShader = WebGL.createShader(gl, shaders.test.fragment, gl.FRAGMENT_SHADER);
+        const { program } = WebGL.createProgram(gl, [ vertexShader, fragmentShader ]);
 
         // ===== UNIFORM & ATTRIBUTE LOCATIONS ===== //
 

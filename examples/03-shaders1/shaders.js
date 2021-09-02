@@ -1,4 +1,4 @@
-export const vertex = `#version 300 es
+const vertex = `#version 300 es
 uniform vec2 uOffset;
 
 in vec2 aPosition;
@@ -12,7 +12,7 @@ void main() {
 }
 `;
 
-export const fragment = `#version 300 es
+const fragment = `#version 300 es
 precision mediump float;
 
 in vec4 vColor;
@@ -23,3 +23,7 @@ void main() {
     oColor = vColor;
 }
 `;
+
+export const shaders = {
+    test: { vertex, fragment }
+};
