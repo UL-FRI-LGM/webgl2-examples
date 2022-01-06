@@ -69,12 +69,15 @@ in vec2 vPosition;
 
 layout (location = 0) out float oAmbient;
 
+float rand(vec2 co){
+    return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
+}
+
 void main() {
     vec3 position = texture(uPosition, vPosition).xyz;
     vec3 normal = texture(uNormal, vPosition).xyz;
 
-    float randomScale = 123.456789012345;
-    float randomOffset = dot(vPosition, vec2(1, 1)) * randomScale;
+    float randomOffset = rand(vPosition);
     vec3 randomVector = texture(uOcclusionSamples, vec2(randomOffset, 0)).xyz;
     vec3 tangent = normalize(randomVector - normal * dot(randomVector, normal));
     vec3 bitangent = cross(normal, tangent);
