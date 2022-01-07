@@ -8,9 +8,12 @@ export class Physics {
 
     update(dt) {
         this.scene.traverse(node => {
+            // Move every node with defined velocity.
             if (node.velocity) {
                 vec3.scaleAndAdd(node.translation, node.translation, node.velocity, dt);
                 node.updateTransform();
+
+                // After moving, check for collision with every other node.
                 this.scene.traverse(other => {
                     if (node !== other) {
                         this.resolveCollision(node, other);
@@ -30,35 +33,44 @@ export class Physics {
             && this.intervalIntersection(aabb1.min[2], aabb1.max[2], aabb2.min[2], aabb2.max[2]);
     }
 
+    getTransformedAABB(node) {
+        // Transform all vertices of the AABB from local to global space.
+        const transform = node.getGlobalTransform();
+        const { min, max } = node.aabb;
+        const vertices = [
+            [min[0], min[1], min[2]],
+            [min[0], min[1], max[2]],
+            [min[0], max[1], min[2]],
+            [min[0], max[1], max[2]],
+            [max[0], min[1], min[2]],
+            [max[0], min[1], max[2]],
+            [max[0], max[1], min[2]],
+            [max[0], max[1], max[2]],
+        ].map(v => vec3.transformMat4(v, v, transform));
+
+        // Find new min and max by component.
+        const xs = vertices.map(v => v[0]);
+        const ys = vertices.map(v => v[1]);
+        const zs = vertices.map(v => v[2]);
+        const newmin = [Math.min(...xs), Math.min(...ys), Math.min(...zs)];
+        const newmax = [Math.max(...xs), Math.max(...ys), Math.max(...zs)];
+        return { min: newmin, max: newmax };
+    }
+
     resolveCollision(a, b) {
-        // Update bounding boxes with global translation.
-        const ta = a.getGlobalTransform();
-        const tb = b.getGlobalTransform();
-
-        const posa = mat4.getTranslation(vec3.create(), ta);
-        const posb = mat4.getTranslation(vec3.create(), tb);
-
-        const mina = vec3.add(vec3.create(), posa, a.aabb.min);
-        const maxa = vec3.add(vec3.create(), posa, a.aabb.max);
-        const minb = vec3.add(vec3.create(), posb, b.aabb.min);
-        const maxb = vec3.add(vec3.create(), posb, b.aabb.max);
+        // Get global space AABBs.
+        const aBox = this.getTransformedAABB(a);
+        const bBox = this.getTransformedAABB(b);
 
         // Check if there is collision.
-        const isColliding = this.aabbIntersection({
-            min: mina,
-            max: maxa
-        }, {
-            min: minb,
-            max: maxb
-        });
-
+        const isColliding = this.aabbIntersection(aBox, bBox);
         if (!isColliding) {
             return;
         }
 
         // Move node A minimally to avoid collision.
-        const diffa = vec3.sub(vec3.create(), maxb, mina);
-        const diffb = vec3.sub(vec3.create(), maxa, minb);
+        const diffa = vec3.sub(vec3.create(), bBox.max, aBox.min);
+        const diffb = vec3.sub(vec3.create(), aBox.max, bBox.min);
 
         let minDiff = Infinity;
         let minDirection = [0, 0, 0];
