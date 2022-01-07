@@ -31,7 +31,7 @@ export class Camera extends Node {
             Math.cos(c.rotation[1]), 0, -Math.sin(c.rotation[1]));
 
         // 1: add movement acceleration
-        let acc = vec3.create();
+        const acc = vec3.create();
         if (this.keys['KeyW']) {
             vec3.add(acc, acc, forward);
         }
@@ -75,7 +75,7 @@ export class Camera extends Node {
         document.removeEventListener('keydown', this.keydownHandler);
         document.removeEventListener('keyup', this.keyupHandler);
 
-        for (let key in this.keys) {
+        for (const key in this.keys) {
             this.keys[key] = false;
         }
     }

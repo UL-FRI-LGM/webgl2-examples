@@ -34,7 +34,7 @@ export class GLTFLoader {
 
     fetchImage(url) {
         return new Promise((resolve, reject) => {
-            let image = new Image();
+            const image = new Image();
             image.addEventListener('load', e => resolve(image));
             image.addEventListener('error', reject);
             image.src = url;
@@ -150,7 +150,7 @@ export class GLTFLoader {
             return this.cache.get(gltfSpec);
         }
 
-        let options = {};
+        const options = {};
         if (gltfSpec.source !== undefined) {
             options.image = await this.loadImage(gltfSpec.source);
         }
@@ -169,7 +169,7 @@ export class GLTFLoader {
             return this.cache.get(gltfSpec);
         }
 
-        let options = {};
+        const options = {};
         const pbr = gltfSpec.pbrMetallicRoughness;
         if (pbr !== undefined) {
             if (pbr.baseColorTexture !== undefined) {
@@ -218,9 +218,9 @@ export class GLTFLoader {
             return this.cache.get(gltfSpec);
         }
 
-        let options = { primitives: [] };
+        const options = { primitives: [] };
         for (const primitiveSpec of gltfSpec.primitives) {
-            let primitiveOptions = {};
+            const primitiveOptions = {};
             primitiveOptions.attributes = {};
             for (const name in primitiveSpec.attributes) {
                 primitiveOptions.attributes[name] = await this.loadAccessor(primitiveSpec.attributes[name]);
@@ -278,7 +278,7 @@ export class GLTFLoader {
             return this.cache.get(gltfSpec);
         }
 
-        let options = { ...gltfSpec, children: [] };
+        const options = { ...gltfSpec, children: [] };
         if (gltfSpec.children) {
             for (const nodeIndex of gltfSpec.children) {
                 const node = await this.loadNode(nodeIndex);
@@ -303,7 +303,7 @@ export class GLTFLoader {
             return this.cache.get(gltfSpec);
         }
 
-        let options = { nodes: [] };
+        const options = { nodes: [] };
         if (gltfSpec.nodes) {
             for (const nodeIndex of gltfSpec.nodes) {
                 const node = await this.loadNode(nodeIndex);

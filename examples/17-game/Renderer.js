@@ -42,8 +42,8 @@ export class Renderer {
         const program = this.programs.simple;
         gl.useProgram(program.program);
 
-        let matrix = mat4.create();
-        let matrixStack = [];
+        const matrix = mat4.create();
+        const matrixStack = [];
 
         const viewMatrix = camera.getGlobalTransform();
         mat4.invert(viewMatrix, viewMatrix);
@@ -53,7 +53,7 @@ export class Renderer {
         scene.traverse(
             node => {
                 matrixStack.push(mat4.clone(matrix));
-                mat4.mul(matrix, matrix, node.transform);
+                mat4.mul(matrix, matrix, node.matrix);
                 if (node.gl.vao) {
                     gl.bindVertexArray(node.gl.vao);
                     gl.uniformMatrix4fv(program.uniforms.uViewModel, false, matrix);
@@ -64,7 +64,7 @@ export class Renderer {
                 }
             },
             node => {
-                matrix = matrixStack.pop();
+                mat4.copy(matrix, matrixStack.pop());
             }
         );
     }

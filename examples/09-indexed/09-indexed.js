@@ -95,7 +95,7 @@ class App extends Application {
 
     update() {
         // Recalculate the model matrix with new rotation values.
-        let time = Date.now() - this.startTime;
+        const time = Date.now() - this.startTime;
         mat4.identity(this.modelMatrix);
         mat4.rotateX(this.modelMatrix, this.modelMatrix, time * 0.0007);
         mat4.rotateY(this.modelMatrix, this.modelMatrix, time * 0.0006);
@@ -111,7 +111,7 @@ class App extends Application {
 
         gl.bindVertexArray(this.vao);
 
-        let program = this.programs.simple;
+        const program = this.programs.simple;
         gl.useProgram(program.program);
 
         // Set the corresponding uniform. The second argument tells WebGL
@@ -139,7 +139,7 @@ class App extends Application {
     }
 
     updateModelViewProjection() {
-        let matrix = this.mvpMatrix;
+        const matrix = this.mvpMatrix;
 
         // First, copy the model matrix to the MVP. This will be the first
         // transformation of a vertex.
@@ -148,7 +148,7 @@ class App extends Application {
         // Then, multiply it from the left by the inverse of the view
         // matrix. We use an inverse because moving the camera in one way
         // is equivalent of moving the whole world the other way.
-        let viewInverse = mat4.invert(mat4.create(), this.viewMatrix);
+        const viewInverse = mat4.invert(mat4.create(), this.viewMatrix);
         mat4.mul(matrix, viewInverse, matrix);
 
         // Finally, multiply the result from the left by the projection

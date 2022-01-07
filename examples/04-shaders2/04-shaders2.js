@@ -14,7 +14,7 @@ class App extends Application {
 
         // ===== UNIFORM & ATTRIBUTE LOCATIONS ===== //
 
-        let attributes = {};
+        const attributes = {};
 
         // get number of active attributes (not optimzed out by the compiler)
         const activeAttributes = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
@@ -24,7 +24,7 @@ class App extends Application {
             attributes[info.name] = gl.getAttribLocation(program, info.name);
         }
 
-        let uniforms = {};
+        const uniforms = {};
 
         // do the same for uniforms
         const activeUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);

@@ -173,7 +173,7 @@ class App extends Application {
     }
 
     update() {
-        let time = Date.now() - this.startTime;
+        const time = Date.now() - this.startTime;
         mat4.identity(this.modelMatrix);
         mat4.rotateX(this.modelMatrix, this.modelMatrix, time * 0.0007);
         mat4.rotateY(this.modelMatrix, this.modelMatrix, time * 0.0006);
@@ -188,7 +188,7 @@ class App extends Application {
 
         gl.bindVertexArray(this.vao);
 
-        let program = this.programs.simple;
+        const program = this.programs.simple;
         gl.useProgram(program.program);
 
         gl.uniformMatrix4fv(program.uniforms.uModelViewProjection,
@@ -219,9 +219,9 @@ class App extends Application {
     }
 
     updateModelViewProjection() {
-        let matrix = this.mvpMatrix;
+        const matrix = this.mvpMatrix;
         mat4.copy(matrix, this.modelMatrix);
-        let viewInverse = mat4.invert(mat4.create(), this.viewMatrix);
+        const viewInverse = mat4.invert(mat4.create(), this.viewMatrix);
         mat4.mul(matrix, viewInverse, matrix);
         mat4.mul(matrix, this.projectionMatrix, matrix);
     }

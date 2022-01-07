@@ -23,10 +23,10 @@ class App extends Application {
         this.camera = new Camera();
         this.root.addChild(this.camera);
 
-        let lightLocations = [[-5, -5], [-5, 5], [5, 5], [5, -5]];
+        const lightLocations = [[-5, -5], [-5, 5], [5, 5], [5, -5]];
         for (let i = 0; i < 4; i++) {
-            let light = new Light();
-            mat4.fromTranslation(light.transform, [lightLocations[i][0], 5, lightLocations[i][1]]);;
+            const light = new Light();
+            mat4.fromTranslation(light.matrix, [lightLocations[i][0], 5, lightLocations[i][1]]);;
             this.root.addChild(light);
         }
 

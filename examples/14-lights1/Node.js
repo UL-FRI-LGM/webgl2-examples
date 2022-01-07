@@ -3,17 +3,17 @@ import { mat4 } from '../../lib/gl-matrix-module.js';
 export class Node {
 
     constructor() {
-        this.transform = mat4.create();
+        this.matrix = mat4.create();
         this.children = [];
         this.parent = null;
     }
 
     getGlobalTransform() {
         if (!this.parent) {
-            return mat4.clone(this.transform);
+            return mat4.clone(this.matrix);
         } else {
-            let transform = this.parent.getGlobalTransform();
-            return mat4.mul(transform, transform, this.transform);
+            const matrix = this.parent.getGlobalTransform();
+            return mat4.mul(matrix, matrix, this.matrix);
         }
     }
 
@@ -34,7 +34,7 @@ export class Node {
         if (before) {
             before(this);
         }
-        for (let child of this.children) {
+        for (const child of this.children) {
             child.traverse(before, after);
         }
         if (after) {

@@ -68,7 +68,7 @@ class App extends Application {
         this.floor.model = floorModel;
         this.floor.texture = defaultTexture;
         this.root.addChild(this.floor);
-        mat4.fromScaling(this.floor.transform, [10, 1, 10]);
+        mat4.fromScaling(this.floor.matrix, [10, 1, 10]);
 
         this.loadTexture('../../common/images/grass.png', {
             mip: true,
@@ -128,11 +128,11 @@ class App extends Application {
         vec3.scaleAndAdd(c.translation, c.translation, c.velocity, dt);
 
         // 6: update the final transform
-        const t = c.transform;
-        mat4.identity(t);
-        mat4.translate(t, t, c.translation);
-        mat4.rotateY(t, t, c.rotation[1]);
-        mat4.rotateX(t, t, c.rotation[0]);
+        const m = c.matrix;
+        mat4.identity(m);
+        mat4.translate(m, m, c.translation);
+        mat4.rotateY(m, m, c.rotation[1]);
+        mat4.rotateX(m, m, c.rotation[0]);
     }
 
     enableMouseLook() {
@@ -190,7 +190,7 @@ class App extends Application {
         gl.uniform1i(program.uniforms.uTexture, 0);
 
         let mvpMatrix = mat4.create();
-        let mvpStack = [];
+        const mvpStack = [];
         const mvpLocation = program.uniforms.uModelViewProjection;
         const viewMatrix = this.camera.getGlobalTransform();
         mat4.invert(viewMatrix, viewMatrix);
@@ -199,7 +199,7 @@ class App extends Application {
         this.root.traverse(
             node => {
                 mvpStack.push(mat4.clone(mvpMatrix));
-                mat4.mul(mvpMatrix, mvpMatrix, node.transform);
+                mat4.mul(mvpMatrix, mvpMatrix, node.matrix);
                 if (node.model) {
                     gl.bindVertexArray(node.model.vao);
                     gl.uniformMatrix4fv(mvpLocation, false, mvpMatrix);
@@ -251,7 +251,7 @@ class App extends Application {
     loadTexture(url, options, handler) {
         const gl = this.gl;
 
-        let image = new Image();
+        const image = new Image();
         image.addEventListener('load', () => {
             const opts = Object.assign({ image }, options);
             handler(WebGL.createTexture(gl, opts));

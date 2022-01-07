@@ -34,23 +34,20 @@ export class Renderer {
         gl.activeTexture(gl.TEXTURE0);
         gl.uniform1i(program.uniforms.uTexture, 0);
 
-        let matrix = mat4.create();
-        let matrixStack = [];
+        const matrix = mat4.create();
+        const matrixStack = [];
 
         const viewMatrix = camera.getGlobalTransform();
         mat4.invert(viewMatrix, viewMatrix);
         mat4.copy(matrix, viewMatrix);
         gl.uniformMatrix4fv(program.uniforms.uProjection, false, camera.projection);
 
-        let color = vec3.clone(light.ambientColor);
-        vec3.scale(color, color, 1.0 / 255.0);
-        gl.uniform3fv(program.uniforms.uAmbientColor, color);
-        color = vec3.clone(light.diffuseColor);
-        vec3.scale(color, color, 1.0 / 255.0);
-        gl.uniform3fv(program.uniforms.uDiffuseColor, color);
-        color = vec3.clone(light.specularColor);
-        vec3.scale(color, color, 1.0 / 255.0);
-        gl.uniform3fv(program.uniforms.uSpecularColor, color);
+        gl.uniform3fv(program.uniforms.uAmbientColor,
+            vec3.scale(vec3.create(), light.ambientColor, 1 / 255));
+        gl.uniform3fv(program.uniforms.uDiffuseColor,
+            vec3.scale(vec3.create(), light.diffuseColor, 1 / 255));
+        gl.uniform3fv(program.uniforms.uSpecularColor,
+            vec3.scale(vec3.create(), light.specularColor, 1 / 255));
         gl.uniform1f(program.uniforms.uShininess, light.shininess);
         gl.uniform3fv(program.uniforms.uLightPosition, light.position);
         gl.uniform3fv(program.uniforms.uLightAttenuation, light.attenuatuion);
@@ -58,7 +55,7 @@ export class Renderer {
         scene.traverse(
             node => {
                 matrixStack.push(mat4.clone(matrix));
-                mat4.mul(matrix, matrix, node.transform);
+                mat4.mul(matrix, matrix, node.matrix);
                 if (node.model) {
                     gl.bindVertexArray(node.model.vao);
                     gl.uniformMatrix4fv(program.uniforms.uViewModel, false, matrix);
@@ -68,7 +65,7 @@ export class Renderer {
                 }
             },
             node => {
-                matrix = matrixStack.pop();
+                mat4.copy(matrix, matrixStack.pop());
             }
         );
     }
@@ -102,7 +99,7 @@ export class Renderer {
     loadTexture(url, options, handler) {
         const gl = this.gl;
 
-        let image = new Image();
+        const image = new Image();
         image.addEventListener('load', () => {
             const opts = Object.assign({ image }, options);
             handler(WebGL.createTexture(gl, opts));

@@ -84,15 +84,15 @@ class App extends Application {
     }
 
     update() {
-        let t1 = this.cube1.transform;
+        const t1 = this.cube1.matrix;
         mat4.fromTranslation(t1, [-2, 0, -5]);
         mat4.rotateX(t1, t1, this.leftRotation);
 
-        let t2 = this.cube2.transform;
+        const t2 = this.cube2.matrix;
         mat4.fromTranslation(t2, [2, 0, -5]);
         mat4.rotateX(t2, t2, this.rightRotation);
 
-        let t3 = this.cube3.transform;
+        const t3 = this.cube3.matrix;
         mat4.fromTranslation(t3, [-1, 0, -3]);
         mat4.rotateY(t3, t3, 1);
     }
@@ -113,7 +113,7 @@ class App extends Application {
 
         // Create a MVP matrix and a stack to hold the intermediate matrices.
         let mvpMatrix = mat4.create();
-        let mvpStack = [];
+        const mvpStack = [];
         const mvpLocation = program.uniforms.uModelViewProjection;
         // We can premultiply the view and projection matrices, so that we
         // do not have to do it for every node during scene traversal.
@@ -127,7 +127,7 @@ class App extends Application {
         this.root.traverse(
             node => {
                 mvpStack.push(mat4.clone(mvpMatrix));
-                mat4.mul(mvpMatrix, mvpMatrix, node.transform);
+                mat4.mul(mvpMatrix, mvpMatrix, node.matrix);
                 if (node.model) {
                     gl.bindVertexArray(node.model.vao);
                     gl.uniformMatrix4fv(mvpLocation, false, mvpMatrix);
@@ -179,7 +179,7 @@ class App extends Application {
     loadTexture(url, options, handler) {
         const gl = this.gl;
 
-        let image = new Image();
+        const image = new Image();
         image.addEventListener('load', () => {
             const opts = Object.assign({ image }, options);
             handler(WebGL.createTexture(gl, opts));

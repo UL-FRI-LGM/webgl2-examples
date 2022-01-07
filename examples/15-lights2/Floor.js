@@ -5,7 +5,7 @@ export class Floor extends Node {
     constructor(width, height) {
         super();
 
-        let vertices = [];
+        const vertices = [];
         this.vertices = vertices;
         for (let j = 0; j <= height; j++) {
             for (let i = 0; i <= width; i++) {
@@ -29,7 +29,7 @@ export class Floor extends Node {
             }
         }
 
-        let indices = [];
+        const indices = [];
         this.indices = indices;
         for (let j = 0; j < height; j++) {
             for (let i = 0; i < width; i++) {

@@ -34,8 +34,8 @@ export class Renderer {
         gl.activeTexture(gl.TEXTURE0);
         gl.uniform1i(program.uniforms.uTexture, 0);
 
-        let matrix = mat4.create();
-        let matrixStack = [];
+        const matrix = mat4.create();
+        const matrixStack = [];
 
         const viewMatrix = camera.getGlobalTransform();
         mat4.invert(viewMatrix, viewMatrix);
@@ -43,11 +43,10 @@ export class Renderer {
         gl.uniformMatrix4fv(program.uniforms.uProjection, false, camera.projection);
 
         let lightCounter = 0;
-
         scene.traverse(
             node => {
                 matrixStack.push(mat4.clone(matrix));
-                mat4.mul(matrix, matrix, node.transform);
+                mat4.mul(matrix, matrix, node.matrix);
                 if (node.model) {
                     gl.bindVertexArray(node.model.vao);
                     gl.uniformMatrix4fv(program.uniforms.uViewModel, false, matrix);
@@ -55,26 +54,23 @@ export class Renderer {
                     gl.bindTexture(gl.TEXTURE_2D, texture);
                     gl.drawElements(gl.TRIANGLES, node.model.indices, gl.UNSIGNED_SHORT, 0);
                 } else if (node instanceof Light) {
-                    let color = vec3.clone(node.ambientColor);
-                    vec3.scale(color, color, 1.0 / 255.0);
-                    gl.uniform3fv(program.uniforms['uAmbientColor[' + lightCounter + ']'], color);
-                    color = vec3.clone(node.diffuseColor);
-                    vec3.scale(color, color, 1.0 / 255.0);
-                    gl.uniform3fv(program.uniforms['uDiffuseColor[' + lightCounter + ']'], color);
-                    color = vec3.clone(node.specularColor);
-                    vec3.scale(color, color, 1.0 / 255.0);
-                    gl.uniform3fv(program.uniforms['uSpecularColor[' + lightCounter + ']'], color);
-                    let position = [0,0,0];
-                    mat4.getTranslation(position, node.transform);
+                    gl.uniform3fv(program.uniforms['uAmbientColor[' + lightCounter + ']'],
+                        vec3.scale(vec3.create(), node.ambientColor, 1 / 255));
+                    gl.uniform3fv(program.uniforms['uDiffuseColor[' + lightCounter + ']'],
+                        vec3.scale(vec3.create(), node.diffuseColor, 1 / 255));
+                    gl.uniform3fv(program.uniforms['uSpecularColor[' + lightCounter + ']'],
+                        vec3.scale(vec3.create(), node.specularColor, 1 / 255));
 
-                    gl.uniform3fv(program.uniforms['uLightPosition[' + lightCounter + ']'], position);
+                    gl.uniform3fv(program.uniforms['uLightPosition[' + lightCounter + ']'],
+                        mat4.getTranslation(vec3.create(), node.matrix));
                     gl.uniform1f(program.uniforms['uShininess[' + lightCounter + ']'], node.shininess);
                     gl.uniform3fv(program.uniforms['uLightAttenuation[' + lightCounter + ']'], node.attenuatuion);
+
                     lightCounter++;
                 }
             },
             node => {
-                matrix = matrixStack.pop();
+                mat4.copy(matrix, matrixStack.pop());
             }
         );
     }
@@ -108,7 +104,7 @@ export class Renderer {
     loadTexture(url, options, handler) {
         const gl = this.gl;
 
-        let image = new Image();
+        const image = new Image();
         image.addEventListener('load', () => {
             const opts = Object.assign({ image }, options);
             handler(WebGL.createTexture(gl, opts));

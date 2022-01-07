@@ -12,7 +12,7 @@ export class SceneLoader {
 
     loadImage(uri) {
         return new Promise((resolve, reject) => {
-            let image = new Image();
+            const image = new Image();
             image.addEventListener('load', () => resolve(image));
             image.addEventListener('error', reject);
             image.src = uri;

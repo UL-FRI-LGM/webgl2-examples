@@ -1,9 +1,9 @@
 export class Utils {
 
     static init(object, defaults, options) {
-        let filtered = Utils.clone(options || {});
-        let defaulted = Utils.clone(defaults || {});
-        for (let key in filtered) {
+        const filtered = Utils.clone(options || {});
+        const defaulted = Utils.clone(defaults || {});
+        for (const key in filtered) {
             if (!defaulted.hasOwnProperty(key)) {
                 delete filtered[key];
             }

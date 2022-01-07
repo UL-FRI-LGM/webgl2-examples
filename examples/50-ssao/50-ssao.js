@@ -24,7 +24,7 @@ class App extends Application {
         this.camera = new Camera();
         this.camera.translation = [0, 0, 10];
         this.camera.aspect = this.aspect;
-        this.camera.updateTransform();
+        this.camera.updateMatrix();
         this.camera.updateProjection();
         this.scene.addNode(this.camera);
 
@@ -36,7 +36,7 @@ class App extends Application {
 
     loadImage(uri) {
         return new Promise((resolve, reject) => {
-            let image = new Image();
+            const image = new Image();
             image.addEventListener('load', e => resolve(image));
             image.addEventListener('error', reject);
             image.src = uri;
@@ -65,7 +65,7 @@ class App extends Application {
             quat.random(cube.rotation);
             const scale = 0.1 + Math.random();
             cube.scale = [scale, scale, scale];
-            cube.updateTransform();
+            cube.updateMatrix();
             this.cubeRoot.addNode(cube);
         }
     }
@@ -110,7 +110,7 @@ class App extends Application {
         quat.rotateY(q, q, dx * mouseSensitivity);
         const r = this.cubeRoot.rotation;
         quat.mul(r, q, r);
-        this.cubeRoot.updateTransform();
+        this.cubeRoot.updateMatrix();
     }
 
 }

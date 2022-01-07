@@ -7,16 +7,16 @@ export class Node {
         this.rotation = [0, 0, 0, 1];
         this.scale = [1, 1, 1];
 
-        this.transform = mat4.create();
-        this.updateTransform();
+        this.matrix = mat4.create();
+        this.updateMatrix();
 
         this.children = [];
         this.parent = null;
     }
 
-    updateTransform() {
+    updateMatrix() {
         mat4.fromRotationTranslationScale(
-            this.transform,
+            this.matrix,
             this.rotation,
             this.translation,
             this.scale);
@@ -24,10 +24,10 @@ export class Node {
 
     getGlobalTransform() {
         if (!this.parent) {
-            return mat4.clone(this.transform);
+            return mat4.clone(this.matrix);
         } else {
-            let transform = this.parent.getGlobalTransform();
-            return mat4.mul(transform, transform, this.transform);
+            const matrix = this.parent.getGlobalTransform();
+            return mat4.mul(matrix, matrix, this.matrix);
         }
     }
 
@@ -48,7 +48,7 @@ export class Node {
         if (before) {
             before(this);
         }
-        for (let child of this.children) {
+        for (const child of this.children) {
             child.traverse(before, after);
         }
         if (after) {

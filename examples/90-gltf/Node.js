@@ -17,7 +17,9 @@ export class Node {
             : mat4.create();
 
         if (options.matrix) {
-            this.updateTransform();
+            mat4.getRotation(this.rotation, this.matrix);
+            mat4.getTranslation(this.translation, this.matrix);
+            mat4.getScaling(this.scale, this.matrix);
         } else if (options.translation || options.rotation || options.scale) {
             this.updateMatrix();
         }
@@ -30,12 +32,6 @@ export class Node {
             child.parent = this;
         }
         this.parent = null;
-    }
-
-    updateTransform() {
-        mat4.getRotation(this.rotation, this.matrix);
-        mat4.getTranslation(this.translation, this.matrix);
-        mat4.getScaling(this.scale, this.matrix);
     }
 
     updateMatrix() {

@@ -19,8 +19,8 @@ class App extends Application {
         gl.compileShader(vertexShader);
 
         // get compile status and report error if compilation failed
-        let status = gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS);
-        if (!status) {
+        const vertexStatus = gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS);
+        if (!vertexStatus) {
             const log = gl.getShaderInfoLog(vertexShader);
             throw new Error('Cannot compile vertex shader\nInfo log:\n' + log);
         }
@@ -32,8 +32,8 @@ class App extends Application {
         gl.shaderSource(fragmentShader, shaders.test.fragment);
         gl.compileShader(fragmentShader);
 
-        status = gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS);
-        if (!status) {
+        const fragmentStatus = gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS);
+        if (!fragmentStatus) {
             const log = gl.getShaderInfoLog(fragmentShader);
             throw new Error('Cannot compile fragment shader\nInfo log:\n' + log);
         }
@@ -51,8 +51,8 @@ class App extends Application {
         gl.linkProgram(program);
 
         // get link status and report error if linkage failed
-        status = gl.getProgramParameter(program, gl.LINK_STATUS);
-        if (!status) {
+        const programStatus = gl.getProgramParameter(program, gl.LINK_STATUS);
+        if (!programStatus) {
             const log = gl.getProgramInfoLog(program);
             throw new Error('Cannot link program\nInfo log:\n' + log);
         }

@@ -137,7 +137,7 @@ export class Renderer {
         const gl = this.gl;
 
         matrix = mat4.clone(matrix);
-        mat4.mul(matrix, matrix, node.transform);
+        mat4.mul(matrix, matrix, node.matrix);
 
         if (node.mesh) {
             gl.bindVertexArray(node.mesh.vao);
