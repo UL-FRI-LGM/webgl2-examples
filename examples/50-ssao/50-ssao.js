@@ -124,4 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
     gui.add(app.renderer, 'occlusionScale', 0, 2);
     gui.add(app.renderer, 'occlusionRange', 0, 2);
     gui.add(app.renderer, 'depthBias', 0, 0.5);
+    gui.add(app.renderer, 'occlusionSampleCount',
+        [1, 2, 4, 8, 16, 32, 64]
+    ).onChange(value => app.renderer.createSSAOSamples());
 });
