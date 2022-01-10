@@ -92,7 +92,7 @@ class App extends Application {
             Math.cos(c.rotation[1]), 0, -Math.sin(c.rotation[1]));
 
         // 1: add movement acceleration
-        let acc = vec3.create();
+        const acc = vec3.create();
         if (this.keys['KeyW']) {
             vec3.add(acc, acc, forward);
         }
