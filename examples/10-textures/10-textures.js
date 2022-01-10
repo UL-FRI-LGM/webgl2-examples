@@ -221,8 +221,8 @@ class App extends Application {
     updateModelViewProjection() {
         const matrix = this.mvpMatrix;
         mat4.copy(matrix, this.modelMatrix);
-        const viewInverse = mat4.invert(mat4.create(), this.viewMatrix);
-        mat4.mul(matrix, viewInverse, matrix);
+        const view = mat4.invert(mat4.create(), this.viewMatrix);
+        mat4.mul(matrix, view, matrix);
         mat4.mul(matrix, this.projectionMatrix, matrix);
     }
 

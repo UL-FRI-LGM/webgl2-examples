@@ -9,16 +9,16 @@ class App extends Application {
 
         // ===== VERTEX SHADER ===== //
 
-        // create vertex shader object
+        // Create vertex shader object.
         const vertexShader = gl.createShader(gl.VERTEX_SHADER);
 
-        // append source string
+        // Append source string.
         gl.shaderSource(vertexShader, shaders.test.vertex);
 
-        // try to compile
+        // Try to compile.
         gl.compileShader(vertexShader);
 
-        // get compile status and report error if compilation failed
+        // Get compile status and report error if compilation failed.
         const vertexStatus = gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS);
         if (!vertexStatus) {
             const log = gl.getShaderInfoLog(vertexShader);
@@ -27,7 +27,7 @@ class App extends Application {
 
         // ===== FRAGMENT SHADER ===== //
 
-        // repeat for fragment shader
+        // Repeat for fragment shader.
         const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
         gl.shaderSource(fragmentShader, shaders.test.fragment);
         gl.compileShader(fragmentShader);
@@ -40,17 +40,17 @@ class App extends Application {
 
         // ===== PROGRAM OBJECT ===== //
 
-        // create a program object
+        // Create a program object.
         const program = gl.createProgram();
 
-        // attach both shaders
+        // Attach both shaders - both are mandatory.
         gl.attachShader(program, vertexShader);
         gl.attachShader(program, fragmentShader);
 
-        // try to link
+        // Try to link.
         gl.linkProgram(program);
 
-        // get link status and report error if linkage failed
+        // Get link status and report error if linkage failed.
         const programStatus = gl.getProgramParameter(program, gl.LINK_STATUS);
         if (!programStatus) {
             const log = gl.getProgramInfoLog(program);

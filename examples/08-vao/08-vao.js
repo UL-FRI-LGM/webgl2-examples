@@ -46,10 +46,6 @@ class App extends Application {
         gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 24, 0);
         gl.vertexAttribPointer(1, 4, gl.FLOAT, false, 24, 8);
 
-        // Unbind the vertex array so that it is only used and modified
-        // when we explicitly want that.
-        gl.bindVertexArray(null);
-
         this.offsetX = 0;
         this.offsetY = 0;
         this.scaleX = 0.5;
@@ -78,9 +74,6 @@ class App extends Application {
         gl.uniform2f(program.uniforms.uOffset, -0.4 + this.offsetX, 0 + this.offsetY);
         gl.uniform2f(program.uniforms.uScale, this.scaleX, this.scaleY);
         gl.drawArrays(gl.TRIANGLES, 0, 3);
-
-        // Unbind the VAO when we do not need it anymore.
-        gl.bindVertexArray(null);
     }
 
 }

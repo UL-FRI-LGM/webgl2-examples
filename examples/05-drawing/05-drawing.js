@@ -24,16 +24,20 @@ class App extends Application {
             TriangleFan   : gl.TRIANGLE_FAN,
         };
 
-        // this.programs now contains a program object and attribute and
-        // uniform locations for each of the supplied shaders.
+        // The functionality from the previous example has been
+        // moved to the WebGL.js function buildPrograms.
+
+        // The variable this.programs now contains a program object,
+        // active attribute locations, and active uniform locations
+        // for each of the supplied shaders.
         this.programs = WebGL.buildPrograms(gl, shaders);
 
         // Triangle vertices. They have to be stored in a typed array
         // to be properly transferred to the GPU memory.
         const vertices = new Float32Array([
-             0.0,  0.5,
-            -0.5, -0.5,
-             0.5, -0.5
+             0.0,  0.5, // vertex 0 position
+            -0.5, -0.5, // vertex 1 position
+             0.5, -0.5, // vertex 2 position
         ]);
 
         // Create a buffer object to represent a chunk of GPU memory.
@@ -49,17 +53,23 @@ class App extends Application {
         // the data rarely and access it from a shader often.
         gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
 
-        // Repeat for color data.
+        // Repeat for color data. Float32Array is actually too accurate,
+        // as displays do not have such large contrasts and bit depth.
+        // We will keep it simple for now, but we should probably be
+        // using a Uint8Array for colors.
         const colors = new Float32Array([
-            1, 0, 0, 1,
-            0, 1, 0, 1,
-            0, 0, 1, 1
+            1, 0, 0, 1, // vertex 0 color
+            0, 1, 0, 1, // vertex 1 color
+            0, 0, 1, 1, // vertex 2 color
         ]);
 
+        // Upload the color data to the GPU.
         this.colorBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, colors, gl.STATIC_DRAW);
 
+        // These two values will be passed into
+        // the shader to offset the vertices.
         this.offsetX = 0;
         this.offsetY = 0;
     }
@@ -98,11 +108,10 @@ class App extends Application {
             0, // offset (ignore for now)
         );
 
-        // Repeat for color data
+        // Repeat for color data.
         gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBuffer);
         gl.enableVertexAttribArray(program.attributes.aColor);
         gl.vertexAttribPointer(program.attributes.aColor, 4, gl.FLOAT, false, 0, 0);
-
 
         // Set all uniforms. Uniform values are program state, so they do not
         // need to be set again when switching to a different program and
@@ -110,7 +119,8 @@ class App extends Application {
         // The uniform uOffset is of type vec2 so we pass in two floats (2f).
         gl.uniform2f(program.uniforms.uOffset, this.offsetX, this.offsetY);
 
-        // Draw! We are drawing triangles, passing in 3 vertices
+        // Draw! The primitive type is chosen by the user from
+        // a list of options (see above). We are drawing 3 vertices
         // and starting with the vertex at index 0.
         gl.drawArrays(this.primitiveType, 0, 3);
     }

@@ -1,6 +1,9 @@
 import { GUI } from '../../lib/dat.gui.module.js';
 import { Application } from '../../common/engine/Application.js';
 
+// The functionality from the previous example
+// has been moved to Application.js.
+
 class App extends Application {
 
     start() {
@@ -20,6 +23,10 @@ class App extends Application {
 document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.querySelector('canvas');
     const app = new App(canvas);
+
+    // Create the GUI manager.
     const gui = new GUI();
+
+    // This color picker widget modifies the variable app.color.
     gui.addColor(app, 'color');
 });

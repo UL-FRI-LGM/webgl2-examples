@@ -58,17 +58,22 @@ class App extends Application {
             1, 0, 5,    5, 0, 4,
         ]);
 
+        // Create the VAO to store the attributes and indices.
+        // All bindings are going to be stored in this VAO.
         this.vao = gl.createVertexArray();
         gl.bindVertexArray(this.vao);
 
+        // Upload attributes to the GPU.
         this.vertexBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
 
+        // Upload indices to the GPU.
         this.indexBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
 
+        // Set up attributes and their formats.
         gl.enableVertexAttribArray(0);
         gl.enableVertexAttribArray(1);
 
@@ -107,10 +112,13 @@ class App extends Application {
     render() {
         const gl = this.gl;
 
+        // Clear both the color and the depth buffer.
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+        // Use the geometry set up in the start method.
         gl.bindVertexArray(this.vao);
 
+        // Use a simple coloring shader.
         const program = this.programs.simple;
         gl.useProgram(program.program);
 
@@ -145,11 +153,11 @@ class App extends Application {
         // transformation of a vertex.
         mat4.copy(matrix, this.modelMatrix);
 
-        // Then, multiply it from the left by the inverse of the view
-        // matrix. We use an inverse because moving the camera in one way
-        // is equivalent of moving the whole world the other way.
-        const viewInverse = mat4.invert(mat4.create(), this.viewMatrix);
-        mat4.mul(matrix, viewInverse, matrix);
+        // Then, multiply it from the left by the inverse of the camera
+        // transformation matrix. We use an inverse because moving the camera
+        // in one way is equivalent of moving the whole world the other way.
+        const view = mat4.invert(mat4.create(), this.viewMatrix);
+        mat4.mul(matrix, view, matrix);
 
         // Finally, multiply the result from the left by the projection
         // matrix. This will be the last transformation of a vertex.
