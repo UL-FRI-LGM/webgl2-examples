@@ -10,7 +10,7 @@ import { SceneBuilder } from './SceneBuilder.js';
 
 class App extends Application {
 
-    start() {
+    async start() {
         const gl = this.gl;
 
         this.renderer = new Renderer(gl);
@@ -21,7 +21,7 @@ class App extends Application {
         this.pointerlockchangeHandler = this.pointerlockchangeHandler.bind(this);
         document.addEventListener('pointerlockchange', this.pointerlockchangeHandler);
 
-        this.load('scene.json');
+        await this.load('scene.json');
     }
 
     async load(uri) {
@@ -64,19 +64,12 @@ class App extends Application {
         const dt = (this.time - this.startTime) * 0.001;
         this.startTime = this.time;
 
-        if (this.camera) {
-            this.camera.update(dt);
-        }
-
-        if (this.physics) {
-            this.physics.update(dt);
-        }
+        this.camera.update(dt);
+        this.physics.update(dt);
     }
 
     render() {
-        if (this.scene) {
-            this.renderer.render(this.scene, this.camera);
-        }
+        this.renderer.render(this.scene, this.camera);
     }
 
     resize() {

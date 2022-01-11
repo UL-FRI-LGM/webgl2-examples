@@ -5,8 +5,11 @@ export class Application {
 
         this.canvas = canvas;
         this._initGL(glOptions);
-        this.start();
+        this._init();
+    }
 
+    async _init() {
+        await this.start();
         requestAnimationFrame(this._update);
     }
 
