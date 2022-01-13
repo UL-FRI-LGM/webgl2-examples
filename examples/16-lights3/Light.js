@@ -2,16 +2,16 @@ import { Node } from './Node.js';
 
 export class Light extends Node {
 
-    constructor() {
+    constructor(options) {
         super();
 
         Object.assign(this, {
-            ambientColor     : [51, 51, 51],
+            ambientColor     : [0, 0, 0],
             diffuseColor     : [0, 0, 0],
             specularColor    : [0, 0 ,0],
-            shininess        : 10,
-            attenuatuion     : [1.0, 0, 0.02]
-        });
+            shininess        : 50,
+            attenuatuion     : [0.5, 0, 0.05],
+        }, options);
     }
 
 }

@@ -22,7 +22,7 @@ export class Renderer {
         this.programs = WebGL.buildPrograms(gl, shaders);
     }
 
-    render(scene, camera) {
+    render(scene, camera, lights) {
         const gl = this.gl;
 
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -42,7 +42,22 @@ export class Renderer {
         mat4.copy(matrix, viewMatrix);
         gl.uniformMatrix4fv(program.uniforms.uProjection, false, camera.projection);
 
-        let lightCounter = 0;
+        for (let i = 0; i < Math.min(lights.length, 4); i++) {
+            const light = lights[i];
+
+            gl.uniform3fv(program.uniforms[`uAmbientColor[${i}]`],
+                vec3.scale(vec3.create(), light.ambientColor, 1 / 255));
+            gl.uniform3fv(program.uniforms[`uDiffuseColor[${i}]`],
+                vec3.scale(vec3.create(), light.diffuseColor, 1 / 255));
+            gl.uniform3fv(program.uniforms[`uSpecularColor[${i}]`],
+                vec3.scale(vec3.create(), light.specularColor, 1 / 255));
+
+            gl.uniform3fv(program.uniforms[`uLightPosition[${i}]`],
+                mat4.getTranslation(vec3.create(), light.matrix));
+            gl.uniform1f(program.uniforms[`uShininess[${i}]`], light.shininess);
+            gl.uniform3fv(program.uniforms[`uLightAttenuation[${i}]`], light.attenuatuion);
+        }
+
         scene.traverse(
             node => {
                 matrixStack.push(mat4.clone(matrix));
@@ -53,20 +68,6 @@ export class Renderer {
                     const texture = node.texture || defaultTexture;
                     gl.bindTexture(gl.TEXTURE_2D, texture);
                     gl.drawElements(gl.TRIANGLES, node.model.indices, gl.UNSIGNED_SHORT, 0);
-                } else if (node instanceof Light) {
-                    gl.uniform3fv(program.uniforms['uAmbientColor[' + lightCounter + ']'],
-                        vec3.scale(vec3.create(), node.ambientColor, 1 / 255));
-                    gl.uniform3fv(program.uniforms['uDiffuseColor[' + lightCounter + ']'],
-                        vec3.scale(vec3.create(), node.diffuseColor, 1 / 255));
-                    gl.uniform3fv(program.uniforms['uSpecularColor[' + lightCounter + ']'],
-                        vec3.scale(vec3.create(), node.specularColor, 1 / 255));
-
-                    gl.uniform3fv(program.uniforms['uLightPosition[' + lightCounter + ']'],
-                        mat4.getTranslation(vec3.create(), node.matrix));
-                    gl.uniform1f(program.uniforms['uShininess[' + lightCounter + ']'], node.shininess);
-                    gl.uniform3fv(program.uniforms['uLightAttenuation[' + lightCounter + ']'], node.attenuatuion);
-
-                    lightCounter++;
                 }
             },
             node => {
@@ -81,22 +82,24 @@ export class Renderer {
         const vao = gl.createVertexArray();
         gl.bindVertexArray(vao);
 
-        const vertexBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, model.vertices, gl.STATIC_DRAW);
+        gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model.vertices), gl.STATIC_DRAW);
+        gl.enableVertexAttribArray(0);
+        gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model.texcoords), gl.STATIC_DRAW);
+        gl.enableVertexAttribArray(1);
+        gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 0, 0);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model.normals), gl.STATIC_DRAW);
+        gl.enableVertexAttribArray(2);
+        gl.vertexAttribPointer(2, 3, gl.FLOAT, false, 0, 0);
 
         const indices = model.indices.length;
-        const indexBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, model.indices, gl.STATIC_DRAW);
-
-        gl.enableVertexAttribArray(0);
-        gl.enableVertexAttribArray(1);
-        gl.enableVertexAttribArray(2);
-
-        gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 32, 0);
-        gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 32, 12);
-        gl.vertexAttribPointer(2, 2, gl.FLOAT, false, 32, 24);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gl.createBuffer());
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(model.indices), gl.STATIC_DRAW);
 
         return { vao, indices };
     }

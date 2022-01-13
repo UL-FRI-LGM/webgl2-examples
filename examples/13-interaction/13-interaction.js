@@ -7,7 +7,6 @@ import { WebGL } from '../../common/engine/WebGL.js';
 import { Node } from './Node.js';
 
 import { shaders } from './shaders.js';
-import * as FloorModel from './floor.js';
 
 class App extends Application {
 
@@ -39,7 +38,6 @@ class App extends Application {
         this.initGL();
         this.initHandlers();
 
-        const floorModel = this.createModel(FloorModel);
         const defaultTexture = WebGL.createTexture(gl, {
             data   : new Uint8Array([255, 255, 255, 255]),
             width  : 1,
@@ -65,10 +63,15 @@ class App extends Application {
         });
 
         this.floor = new Node();
-        this.floor.model = floorModel;
         this.floor.texture = defaultTexture;
         this.root.addChild(this.floor);
         mat4.fromScaling(this.floor.matrix, [10, 1, 10]);
+
+        fetch('../../common/models/floor.json')
+        .then(response => response.json())
+        .then(json => {
+            this.floor.model = this.createModel(json);
+        });
 
         this.loadTexture('../../common/images/grass.png', {
             mip: true,
@@ -230,20 +233,19 @@ class App extends Application {
         const vao = gl.createVertexArray();
         gl.bindVertexArray(vao);
 
-        const vertexBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, model.vertices, gl.STATIC_DRAW);
+        gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model.vertices), gl.STATIC_DRAW);
+        gl.enableVertexAttribArray(0);
+        gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model.texcoords), gl.STATIC_DRAW);
+        gl.enableVertexAttribArray(1);
+        gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 0, 0);
 
         const indices = model.indices.length;
-        const indexBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, model.indices, gl.STATIC_DRAW);
-
-        gl.enableVertexAttribArray(0);
-        gl.enableVertexAttribArray(1);
-
-        gl.vertexAttribPointer(0, 4, gl.FLOAT, false, 24, 0);
-        gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 24, 16);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gl.createBuffer());
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(model.indices), gl.STATIC_DRAW);
 
         return { vao, indices };
     }

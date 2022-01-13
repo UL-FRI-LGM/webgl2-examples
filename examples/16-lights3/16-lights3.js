@@ -6,7 +6,6 @@ import { Renderer } from './Renderer.js';
 import { Node } from './Node.js';
 import { Camera } from './Camera.js';
 import { Light } from './Light.js';
-import { Floor } from './Floor.js';
 
 class App extends Application {
 
@@ -23,23 +22,47 @@ class App extends Application {
         this.camera = new Camera();
         this.root.addChild(this.camera);
 
-        const lightLocations = [[-5, -5], [-5, 5], [5, 5], [5, -5]];
-        for (let i = 0; i < 4; i++) {
-            const light = new Light();
-            mat4.fromTranslation(light.matrix, [lightLocations[i][0], 5, lightLocations[i][1]]);;
+        this.lights = [
+            new Light({
+                diffuseColor: [255, 50, 50],
+                specularColor: [255, 255, 255],
+                phase: 0 * Math.PI / 2
+            }),
+            new Light({
+                diffuseColor: [50, 255, 50],
+                specularColor: [255, 255, 255],
+                phase: 1 * Math.PI / 2
+            }),
+            new Light({
+                diffuseColor: [50, 50, 255],
+                specularColor: [255, 255, 255],
+                phase: 2 * Math.PI / 2
+            }),
+            new Light({
+                diffuseColor: [255, 255, 50],
+                specularColor: [255, 255, 255],
+                phase: 3 * Math.PI / 2
+            }),
+        ];
+        for (const light of this.lights) {
             this.root.addChild(light);
         }
 
-        this.floor = new Floor(10, 10);
-        this.floor.model = this.renderer.createModel(this.floor);
-        this.root.addChild(this.floor);
+        this.cube = new Node();
+        this.root.addChild(this.cube);
 
-        this.renderer.loadTexture('../../common/images/grass.png', {
+        fetch('../../common/models/funky.json')
+        .then(response => response.json())
+        .then(json => {
+            this.cube.model = this.renderer.createModel(json);
+        });
+
+        this.renderer.loadTexture('../../common/images/grayscale.png', {
             mip: true,
             min: gl.NEAREST_MIPMAP_NEAREST,
             mag: gl.NEAREST,
         }, texture => {
-            this.floor.texture = texture;
+            this.cube.texture = texture;
         });
 
         this.pointerlockchangeHandler = this.pointerlockchangeHandler.bind(this);
@@ -63,20 +86,19 @@ class App extends Application {
         const dt = (this.time - this.startTime) * 0.001;
         this.startTime = this.time;
 
-        let lightCounter = 0;
-        this.root.traverse(node => {
-            if (node instanceof Light && lightCounter < 3) {
-                node.diffuseColor[lightCounter] = Math.sin(this.time / 1000 + lightCounter * Math.PI/2) * 255;
-                node.specularColor[lightCounter] = Math.sin(this.time / 1000 + lightCounter * Math.PI/3) * 255;
-                lightCounter++;
-            }
-        });
+        const frequency = 0.002;
+        const radius = 5;
+        for (const light of this.lights) {
+            const x = radius * Math.cos(this.time * frequency + light.phase);
+            const z = radius * Math.sin(this.time * frequency + light.phase);
+            mat4.fromTranslation(light.matrix, [x, 0, z]);
+        }
 
         this.camera.update(dt);
     }
 
     render() {
-        this.renderer.render(this.root, this.camera);
+        this.renderer.render(this.root, this.camera, this.lights);
     }
 
     resize() {

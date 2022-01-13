@@ -7,7 +7,6 @@ import { Renderer } from './Renderer.js';
 import { Node } from './Node.js';
 import { Camera } from './Camera.js';
 import { Light } from './Light.js';
-import { Floor } from './Floor.js';
 
 class App extends Application {
 
@@ -27,16 +26,21 @@ class App extends Application {
         this.light = new Light();
         this.root.addChild(this.light);
 
-        this.floor = new Floor(10, 10);
-        this.floor.model = this.renderer.createModel(this.floor);
-        this.root.addChild(this.floor);
+        this.cube = new Node();
+        this.root.addChild(this.cube);
 
-        this.renderer.loadTexture('../../common/images/grass.png', {
+        fetch('../../common/models/funky.json')
+        .then(response => response.json())
+        .then(json => {
+            this.cube.model = this.renderer.createModel(json);
+        });
+
+        this.renderer.loadTexture('../../common/images/grayscale.png', {
             mip: true,
             min: gl.NEAREST_MIPMAP_NEAREST,
             mag: gl.NEAREST,
         }, texture => {
-            this.floor.texture = texture;
+            this.cube.texture = texture;
         });
 
         this.pointerlockchangeHandler = this.pointerlockchangeHandler.bind(this);
@@ -87,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
     gui.addColor(app.light, 'ambientColor');
     gui.addColor(app.light, 'diffuseColor');
     gui.addColor(app.light, 'specularColor');
-    gui.add(app.light, 'shininess', 0.0, 1000.0);
+    gui.add(app.light, 'shininess', 0.1, 1000.0);
     for (let i = 0; i < 3; i++) {
         gui.add(app.light.position, i, -10.0, 10.0).name('position.' + String.fromCharCode('x'.charCodeAt(0) + i));
     }

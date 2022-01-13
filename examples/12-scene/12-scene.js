@@ -7,7 +7,6 @@ import { WebGL } from '../../common/engine/WebGL.js';
 import { Node } from './Node.js';
 
 import { shaders } from './shaders.js';
-import * as CubeModel from './cube.js';
 
 class App extends Application {
 
@@ -35,11 +34,6 @@ class App extends Application {
         this.camera.projection = mat4.create();
         this.root.addChild(this.camera);
 
-        // Load the model. Here we just hardcoded the model as a javascript
-        // module, but usually the resources would be requested asynchronously
-        // during the loading screen.
-        const cubeModel = this.createModel(CubeModel);
-
         // A default texture is needed before the actual texture is fetched
         // from the server.
         const defaultTexture = WebGL.createTexture(gl, {
@@ -51,19 +45,26 @@ class App extends Application {
         // Create three cubes, two attached to the root node and one
         // attached to another cube. Set the correct models and textures.
         this.cube1 = new Node();
-        this.cube1.model = cubeModel;
         this.cube1.texture = defaultTexture;
         this.root.addChild(this.cube1);
 
         this.cube2 = new Node();
-        this.cube2.model = cubeModel;
         this.cube2.texture = defaultTexture;
         this.root.addChild(this.cube2);
 
         this.cube3 = new Node();
-        this.cube3.model = cubeModel;
         this.cube3.texture = defaultTexture;
         this.cube2.addChild(this.cube3);
+
+        // Load the model.
+        fetch('../../common/models/cube.json')
+        .then(response => response.json())
+        .then(json => {
+            const model = this.createModel(json);
+            this.cube1.model = model;
+            this.cube2.model = model;
+            this.cube3.model = model;
+        });
 
         // Set two variables for controlling the cubes' rotations from GUI.
         this.leftRotation = 0;
@@ -158,20 +159,19 @@ class App extends Application {
         const vao = gl.createVertexArray();
         gl.bindVertexArray(vao);
 
-        const vertexBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, model.vertices, gl.STATIC_DRAW);
+        gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model.vertices), gl.STATIC_DRAW);
+        gl.enableVertexAttribArray(0);
+        gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model.texcoords), gl.STATIC_DRAW);
+        gl.enableVertexAttribArray(1);
+        gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 0, 0);
 
         const indices = model.indices.length;
-        const indexBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, model.indices, gl.STATIC_DRAW);
-
-        gl.enableVertexAttribArray(0);
-        gl.enableVertexAttribArray(1);
-
-        gl.vertexAttribPointer(0, 4, gl.FLOAT, false, 24, 0);
-        gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 24, 16);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gl.createBuffer());
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(model.indices), gl.STATIC_DRAW);
 
         return { vao, indices };
     }
