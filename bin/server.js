@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const http = require('http');
 
-// a map from extname to content type - extent if necessary
+// a map from extname to content type - extend if necessary
 const extnameToContentType = {
     'js'   : 'text/javascript',
     'css'  : 'text/css',
