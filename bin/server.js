@@ -15,11 +15,16 @@ const extnameToContentType = {
 
 const server = http.createServer(async (req, res) => {
     // ensure that request path does not jump out of the project root
-    const requestPath = path.join('/', req.url);
+    const requestPath = path.normalize(req.url);
+    if (requestPath.startsWith('..')) {
+        res.writeHead(403);
+        res.end();
+        console.log(`403 ${req.method} ${req.url}`);
+    }
 
     // get a file path from the project root
     const rootPath = path.join(__dirname, '..');
-    let filePath = path.join(rootPath, req.url);
+    let filePath = path.join(rootPath, requestPath);
     if (filePath.endsWith(path.sep)) {
         filePath = path.join(filePath, 'index.html');
     }
