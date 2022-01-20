@@ -81,7 +81,7 @@ class App extends Application {
 
         mat4.fromTranslation(this.viewMatrix, [ 0, 0, 5 ]);
 
-        this.startTime = Date.now();
+        this.startTime = performance.now();
 
         // Create a texture object.
         this.texture = gl.createTexture();
@@ -173,7 +173,7 @@ class App extends Application {
     }
 
     update() {
-        const time = Date.now() - this.startTime;
+        const time = performance.now() - this.startTime;
         mat4.identity(this.modelMatrix);
         mat4.rotateX(this.modelMatrix, this.modelMatrix, time * 0.0007);
         mat4.rotateY(this.modelMatrix, this.modelMatrix, time * 0.0006);

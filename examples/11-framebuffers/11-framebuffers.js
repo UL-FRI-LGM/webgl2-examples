@@ -8,7 +8,7 @@ class App extends Application {
     start() {
         const gl = this.gl;
 
-        this.startTime = Date.now();
+        this.startTime = performance.now();
 
         this.programs = WebGL.buildPrograms(gl, shaders);
 
@@ -86,7 +86,7 @@ class App extends Application {
     render() {
         const gl = this.gl;
 
-        const time = Date.now() - this.startTime;
+        const time = performance.now() - this.startTime;
         const c = Math.cos(time * 0.0003);
         const s = Math.sin(time * 0.0003);
         const transform = [c, s, -s, c];

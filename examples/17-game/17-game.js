@@ -14,7 +14,7 @@ class App extends Application {
         const gl = this.gl;
 
         this.renderer = new Renderer(gl);
-        this.time = Date.now();
+        this.time = performance.now();
         this.startTime = this.time;
         this.aspect = 1;
 
@@ -60,7 +60,7 @@ class App extends Application {
     }
 
     update() {
-        const t = this.time = Date.now();
+        const t = this.time = performance.now();
         const dt = (this.time - this.startTime) * 0.001;
         this.startTime = this.time;
 

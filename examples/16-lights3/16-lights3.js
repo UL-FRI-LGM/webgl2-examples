@@ -14,7 +14,7 @@ class App extends Application {
 
         this.renderer = new Renderer(gl);
 
-        this.time = Date.now();
+        this.time = performance.now();
         this.startTime = this.time;
 
         this.root = new Node();
@@ -82,7 +82,7 @@ class App extends Application {
     }
 
     update() {
-        this.time = Date.now();
+        this.time = performance.now();
         const dt = (this.time - this.startTime) * 0.001;
         this.startTime = this.time;
 
