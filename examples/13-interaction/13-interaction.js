@@ -21,15 +21,22 @@ class App extends Application {
     }
 
     initHandlers() {
-        this.pointerlockchangeHandler = this.pointerlockchangeHandler.bind(this);
         this.mousemoveHandler = this.mousemoveHandler.bind(this);
         this.keydownHandler = this.keydownHandler.bind(this);
         this.keyupHandler = this.keyupHandler.bind(this);
         this.keys = {};
 
-        document.addEventListener('pointerlockchange', this.pointerlockchangeHandler);
         document.addEventListener('keydown', this.keydownHandler);
         document.addEventListener('keyup', this.keyupHandler);
+
+        this.canvas.addEventListener('click', e => this.canvas.requestPointerLock());
+        document.addEventListener('pointerlockchange', e => {
+            if (document.pointerLockElement === this.canvas) {
+                document.addEventListener('mousemove', this.mousemoveHandler);
+            } else {
+                document.removeEventListener('mousemove', this.mousemoveHandler);
+            }
+        });
     }
 
     start() {
@@ -136,18 +143,6 @@ class App extends Application {
         mat4.translate(m, m, c.translation);
         mat4.rotateY(m, m, c.rotation[1]);
         mat4.rotateX(m, m, c.rotation[0]);
-    }
-
-    enableMouseLook() {
-        this.canvas.requestPointerLock();
-    }
-
-    pointerlockchangeHandler() {
-        if (document.pointerLockElement === this.canvas) {
-            this.canvas.addEventListener('mousemove', this.mousemoveHandler);
-        } else {
-            this.canvas.removeEventListener('mousemove', this.mousemoveHandler);
-        }
     }
 
     mousemoveHandler(e) {
@@ -271,5 +266,4 @@ document.addEventListener('DOMContentLoaded', () => {
     gui.add(app.camera, 'maxSpeed', 0, 10);
     gui.add(app.camera, 'friction', 0.05, 0.75);
     gui.add(app.camera, 'acceleration', 1, 100);
-    gui.add(app, 'enableMouseLook');
 });

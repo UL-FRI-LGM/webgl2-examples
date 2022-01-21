@@ -1,4 +1,3 @@
-import { GUI } from '../../lib/dat.gui.module.js';
 import { mat4 } from '../../lib/gl-matrix-module.js';
 import { Application } from '../../common/engine/Application.js';
 
@@ -65,20 +64,14 @@ class App extends Application {
             this.cube.texture = texture;
         });
 
-        this.pointerlockchangeHandler = this.pointerlockchangeHandler.bind(this);
-        document.addEventListener('pointerlockchange', this.pointerlockchangeHandler);
-    }
-
-    enableCamera() {
-        this.canvas.requestPointerLock();
-    }
-
-    pointerlockchangeHandler() {
-        if (document.pointerLockElement === this.canvas) {
-            this.camera.enable();
-        } else {
-            this.camera.disable();
-        }
+        this.canvas.addEventListener('click', e => this.canvas.requestPointerLock());
+        document.addEventListener('pointerlockchange', e => {
+            if (document.pointerLockElement === this.canvas) {
+                this.camera.enable();
+            } else {
+                this.camera.disable();
+            }
+        });
     }
 
     update() {
@@ -117,6 +110,4 @@ class App extends Application {
 document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.querySelector('canvas');
     const app = new App(canvas);
-    const gui = new GUI();
-    gui.add(app, 'enableCamera');
 });
