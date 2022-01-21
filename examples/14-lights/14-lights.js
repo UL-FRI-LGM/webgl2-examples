@@ -92,6 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const light = gui.addFolder('Light');
     light.open();
+    light.add(app.light, 'intensity', 0, 5);
     light.addColor(app.light, 'color');
     const lightPosition = light.addFolder('Position');
     lightPosition.open();
