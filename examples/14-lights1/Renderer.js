@@ -13,13 +13,9 @@ export class Renderer {
         gl.enable(gl.DEPTH_TEST);
         gl.enable(gl.CULL_FACE);
 
-        this.defaultTexture = WebGL.createTexture(gl, {
-            data   : new Uint8Array([255, 255, 255, 255]),
-            width  : 1,
-            height : 1,
-        });
-
         this.programs = WebGL.buildPrograms(gl, shaders);
+        this.currentProgram = this.programs.perVertex;
+        this.perFragment = false;
     }
 
     render(scene, camera, light) {
@@ -27,46 +23,51 @@ export class Renderer {
 
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        const program = this.programs.phong;
-        gl.useProgram(program.program);
-
-        const defaultTexture = this.defaultTexture;
-        gl.activeTexture(gl.TEXTURE0);
-        gl.uniform1i(program.uniforms.uTexture, 0);
-
-        const matrix = mat4.create();
-        const matrixStack = [];
+        const { program, uniforms } = this.currentProgram;
+        gl.useProgram(program);
 
         const viewMatrix = camera.getGlobalTransform();
         mat4.invert(viewMatrix, viewMatrix);
-        mat4.copy(matrix, viewMatrix);
-        gl.uniformMatrix4fv(program.uniforms.uProjection, false, camera.projection);
+        gl.uniformMatrix4fv(uniforms.uViewMatrix, false, viewMatrix);
+        gl.uniformMatrix4fv(uniforms.uProjectionMatrix, false, camera.projection);
+        gl.uniform3fv(uniforms.uCameraPosition,
+            mat4.getTranslation(vec3.create(), camera.getGlobalTransform()));
 
-        gl.uniform1f(program.uniforms.uAmbient, light.ambient);
-        gl.uniform1f(program.uniforms.uDiffuse, light.diffuse);
-        gl.uniform1f(program.uniforms.uSpecular, light.specular);
-        gl.uniform1f(program.uniforms.uShininess, light.shininess);
-        gl.uniform3fv(program.uniforms.uLightPosition, light.position);
-        gl.uniform3fv(program.uniforms.uLightAttenuation, light.attenuatuion);
-        gl.uniform3fv(program.uniforms.uLightColor,
-            vec3.scale(vec3.create(), light.color, 1 / 255));
+        gl.uniform3fv(uniforms.uLightColor,
+            vec3.scale(vec3.create(), light.color, light.intensity / 255));
+        gl.uniform3fv(uniforms.uLightPosition,
+            mat4.getTranslation(vec3.create(), light.getGlobalTransform()));
+        gl.uniform3fv(uniforms.uLightAttenuation, light.attenuation);
 
-        scene.traverse(
-            node => {
-                matrixStack.push(mat4.clone(matrix));
-                mat4.mul(matrix, matrix, node.matrix);
-                if (node.model) {
-                    gl.bindVertexArray(node.model.vao);
-                    gl.uniformMatrix4fv(program.uniforms.uViewModel, false, matrix);
-                    const texture = node.texture || defaultTexture;
-                    gl.bindTexture(gl.TEXTURE_2D, texture);
-                    gl.drawElements(gl.TRIANGLES, node.model.indices, gl.UNSIGNED_SHORT, 0);
-                }
-            },
-            node => {
-                mat4.copy(matrix, matrixStack.pop());
-            }
-        );
+        this.renderNode(scene, scene.getGlobalTransform());
+    }
+
+    renderNode(node, modelMatrix) {
+        const gl = this.gl;
+
+        modelMatrix = mat4.clone(modelMatrix);
+        mat4.mul(modelMatrix, modelMatrix, node.matrix);
+
+        const { uniforms } = this.currentProgram;
+
+        if (node.model && node.material) {
+            gl.bindVertexArray(node.model.vao);
+
+            gl.uniformMatrix4fv(uniforms.uModelMatrix, false, modelMatrix);
+
+            gl.activeTexture(gl.TEXTURE0);
+            gl.uniform1i(uniforms.uTexture, 0);
+            gl.bindTexture(gl.TEXTURE_2D, node.material.texture);
+
+            gl.uniform1f(uniforms.uMaterialSpecular, node.material.specular);
+            gl.uniform1f(uniforms.uMaterialShininess, node.material.shininess);
+
+            gl.drawElements(gl.TRIANGLES, node.model.indices, gl.UNSIGNED_SHORT, 0);
+        }
+
+        for (const child of node.children) {
+            this.renderNode(child, modelMatrix);
+        }
     }
 
     createModel(model) {

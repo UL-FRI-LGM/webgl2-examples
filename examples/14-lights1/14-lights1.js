@@ -7,6 +7,7 @@ import { Renderer } from './Renderer.js';
 import { Node } from './Node.js';
 import { Camera } from './Camera.js';
 import { Light } from './Light.js';
+import { Material } from './Material.js';
 
 class App extends Application {
 
@@ -19,20 +20,19 @@ class App extends Application {
         this.startTime = this.time;
 
         this.root = new Node();
-
         this.camera = new Camera();
-        this.root.addChild(this.camera);
-
         this.light = new Light();
+        this.funky = new Node();
+        this.root.addChild(this.camera);
         this.root.addChild(this.light);
+        this.root.addChild(this.funky);
 
-        this.cube = new Node();
-        this.root.addChild(this.cube);
+        this.funky.material = new Material();
 
         fetch('../../common/models/funky.json')
         .then(response => response.json())
         .then(json => {
-            this.cube.model = this.renderer.createModel(json);
+            this.funky.model = this.renderer.createModel(json);
         });
 
         this.renderer.loadTexture('../../common/images/grayscale.png', {
@@ -40,29 +40,24 @@ class App extends Application {
             min: gl.NEAREST_MIPMAP_NEAREST,
             mag: gl.NEAREST,
         }, texture => {
-            this.cube.texture = texture;
+            this.funky.material.texture = texture;
         });
 
-        this.pointerlockchangeHandler = this.pointerlockchangeHandler.bind(this);
-        document.addEventListener('pointerlockchange', this.pointerlockchangeHandler);
-    }
-
-    enableCamera() {
-        this.canvas.requestPointerLock();
-    }
-
-    pointerlockchangeHandler() {
-        if (document.pointerLockElement === this.canvas) {
-            this.camera.enable();
-        } else {
-            this.camera.disable();
-        }
+        this.canvas.addEventListener('click', e => this.canvas.requestPointerLock());
+        document.addEventListener('pointerlockchange', e => {
+            if (document.pointerLockElement === this.canvas) {
+                this.camera.enable();
+            } else {
+                this.camera.disable();
+            }
+        });
     }
 
     update() {
         this.time = performance.now();
         const dt = (this.time - this.startTime) * 0.001;
         this.startTime = this.time;
+
 
         this.camera.update(dt);
     }
@@ -87,14 +82,30 @@ class App extends Application {
 document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.querySelector('canvas');
     const app = new App(canvas);
+
     const gui = new GUI();
-    gui.add(app.light, 'ambient', 0.0, 1.0);
-    gui.add(app.light, 'diffuse', 0.0, 1.0);
-    gui.add(app.light, 'specular', 0.0, 1.0);
-    gui.add(app.light, 'shininess', 0.1, 1000.0);
-    gui.addColor(app.light, 'color');
-    for (let i = 0; i < 3; i++) {
-        gui.add(app.light.position, i, -10.0, 10.0).name('position.' + String.fromCharCode('x'.charCodeAt(0) + i));
-    }
-    gui.add(app, 'enableCamera');
+    gui.add(app.renderer, 'perFragment').onChange(perFragment => {
+        app.renderer.currentProgram = perFragment
+            ? app.renderer.programs.perFragment
+            : app.renderer.programs.perVertex;
+    });
+
+    const light = gui.addFolder('Light');
+    light.open();
+    light.addColor(app.light, 'color');
+    const lightPosition = light.addFolder('Position');
+    lightPosition.open();
+    lightPosition.add(app.light.matrix, 12, -10, 10).name('x');
+    lightPosition.add(app.light.matrix, 13, -10, 10).name('y');
+    lightPosition.add(app.light.matrix, 14, -10, 10).name('z');
+    const lightAttenuation = light.addFolder('Attenuation');
+    lightAttenuation.open();
+    lightAttenuation.add(app.light.attenuation, 0, 0, 5).name('constant');
+    lightAttenuation.add(app.light.attenuation, 1, 0, 2).name('linear');
+    lightAttenuation.add(app.light.attenuation, 2, 0, 1).name('quadratic');
+
+    const material = gui.addFolder('Material');
+    material.open();
+    material.add(app.funky.material, 'shininess', 1, 200);
+    material.add(app.funky.material, 'specular', 0, 1);
 });
