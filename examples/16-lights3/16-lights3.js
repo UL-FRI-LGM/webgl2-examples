@@ -47,13 +47,13 @@ class App extends Application {
             this.root.addChild(light);
         }
 
-        this.cube = new Node();
-        this.root.addChild(this.cube);
+        this.funky = new Node();
+        this.root.addChild(this.funky);
 
         fetch('../../common/models/funky.json')
         .then(response => response.json())
         .then(json => {
-            this.cube.model = this.renderer.createModel(json);
+            this.funky.model = this.renderer.createModel(json);
         });
 
         this.renderer.loadTexture('../../common/images/grayscale.png', {
@@ -61,7 +61,7 @@ class App extends Application {
             min: gl.NEAREST_MIPMAP_NEAREST,
             mag: gl.NEAREST,
         }, texture => {
-            this.cube.texture = texture;
+            this.funky.texture = texture;
         });
 
         this.canvas.addEventListener('click', e => this.canvas.requestPointerLock());
