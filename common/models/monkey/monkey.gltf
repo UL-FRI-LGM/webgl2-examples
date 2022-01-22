@@ -16,7 +16,7 @@
     "nodes" : [
         {
             "camera" : 0,
-            "name" : "Camera",
+            "name" : "Camera_Orientation",
             "rotation" : [
                 -0.7071067690849304,
                 0,

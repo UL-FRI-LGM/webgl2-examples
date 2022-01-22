@@ -7,10 +7,10 @@ class App extends Application {
 
     async start() {
         this.loader = new GLTFLoader();
-        await this.loader.load('../../common/models/monkey/monkey.gltf');
+        await this.loader.load('../../common/models/rocks/rocks.gltf');
 
         this.scene = await this.loader.loadScene(this.loader.defaultScene);
-        this.camera = await this.loader.loadNode('Camera');
+        this.camera = await this.loader.loadNode('Camera_Orientation');
 
         if (!this.scene || !this.camera) {
             throw new Error('Scene or Camera not present in glTF');
