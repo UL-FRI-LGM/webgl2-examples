@@ -27,6 +27,9 @@ class App extends Application {
         this.root.addChild(this.light);
         this.root.addChild(this.funky);
 
+        this.camera.translation = [0, 2, 5];
+        this.camera.rotation = [-0.6, 0, 0];
+
         this.funky.material = new Material();
 
         fetch('../../common/models/funky.json')

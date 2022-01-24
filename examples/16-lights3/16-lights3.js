@@ -19,6 +19,8 @@ class App extends Application {
         this.root = new Node();
 
         this.camera = new Camera();
+        this.camera.translation = [0, 2, 5];
+        this.camera.rotation = [-0.6, 0, 0];
         this.root.addChild(this.camera);
 
         this.lights = [
