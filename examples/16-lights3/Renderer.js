@@ -9,7 +9,7 @@ export class Renderer {
     constructor(gl) {
         this.gl = gl;
 
-        gl.clearColor(0.85, 0.98, 1, 1);
+        gl.clearColor(1, 1, 1, 1);
         gl.enable(gl.DEPTH_TEST);
         gl.enable(gl.CULL_FACE);
 
