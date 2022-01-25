@@ -25,7 +25,8 @@ uniform Light uLight;
 uniform Material uMaterial;
 
 out vec2 vTexCoord;
-out vec3 vLight;
+out vec3 vDiffuseLight;
+out vec3 vSpecularLight;
 
 void main() {
     vec3 surfacePosition = (uModelMatrix * vec4(aPosition, 1)).xyz;
@@ -41,7 +42,9 @@ void main() {
     float lambert = max(0.0, dot(L, N)) * uMaterial.diffuse;
     float phong = pow(max(0.0, dot(E, R)), uMaterial.shininess) * uMaterial.specular;
 
-    vLight = (lambert + phong) * attenuation * uLight.color;
+    vDiffuseLight = lambert * attenuation * uLight.color;
+    vSpecularLight = phong * attenuation * uLight.color;
+
     vTexCoord = aTexCoord;
     gl_Position = uProjectionMatrix * (uViewMatrix * vec4(surfacePosition, 1));
 }
@@ -53,12 +56,13 @@ precision mediump float;
 uniform mediump sampler2D uTexture;
 
 in vec2 vTexCoord;
-in vec3 vLight;
+in vec3 vDiffuseLight;
+in vec3 vSpecularLight;
 
 out vec4 oColor;
 
 void main() {
-    oColor = texture(uTexture, vTexCoord) * vec4(vLight, 1);
+    oColor = vec4(texture(uTexture, vTexCoord).rgb * vDiffuseLight + vSpecularLight, 1);
 }
 `;
 
@@ -126,9 +130,10 @@ void main() {
     float lambert = max(0.0, dot(L, N)) * uMaterial.diffuse;
     float phong = pow(max(0.0, dot(E, R)), uMaterial.shininess) * uMaterial.specular;
 
-    vec3 light = (lambert + phong) * attenuation * uLight.color;
+    vec3 diffuseLight = lambert * attenuation * uLight.color;
+    vec3 specularLight = phong * attenuation * uLight.color;
 
-    oColor = texture(uTexture, vTexCoord) * vec4(light, 1);
+    oColor = vec4(texture(uTexture, vTexCoord).rgb * diffuseLight + specularLight, 1);
 }
 `;
 
