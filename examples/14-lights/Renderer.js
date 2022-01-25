@@ -33,11 +33,11 @@ export class Renderer {
         gl.uniform3fv(uniforms.uCameraPosition,
             mat4.getTranslation(vec3.create(), camera.getGlobalTransform()));
 
-        gl.uniform3fv(uniforms.uLightColor,
+        gl.uniform3fv(uniforms.uLight.color,
             vec3.scale(vec3.create(), light.color, light.intensity / 255));
-        gl.uniform3fv(uniforms.uLightPosition,
+        gl.uniform3fv(uniforms.uLight.position,
             mat4.getTranslation(vec3.create(), light.getGlobalTransform()));
-        gl.uniform3fv(uniforms.uLightAttenuation, light.attenuation);
+        gl.uniform3fv(uniforms.uLight.attenuation, light.attenuation);
 
         this.renderNode(scene, scene.getGlobalTransform());
     }
@@ -59,8 +59,9 @@ export class Renderer {
             gl.uniform1i(uniforms.uTexture, 0);
             gl.bindTexture(gl.TEXTURE_2D, node.material.texture);
 
-            gl.uniform1f(uniforms.uMaterialSpecular, node.material.specular);
-            gl.uniform1f(uniforms.uMaterialShininess, node.material.shininess);
+            gl.uniform1f(uniforms.uMaterial.diffuse, node.material.diffuse);
+            gl.uniform1f(uniforms.uMaterial.specular, node.material.specular);
+            gl.uniform1f(uniforms.uMaterial.shininess, node.material.shininess);
 
             gl.drawElements(gl.TRIANGLES, node.model.indices, gl.UNSIGNED_SHORT, 0);
         }

@@ -110,6 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const material = gui.addFolder('Material');
     material.open();
-    material.add(app.funky.material, 'shininess', 1, 200);
+    material.add(app.funky.material, 'diffuse', 0, 1);
     material.add(app.funky.material, 'specular', 0, 1);
+    material.add(app.funky.material, 'shininess', 1, 200);
 });

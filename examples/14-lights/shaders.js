@@ -9,12 +9,20 @@ uniform mat4 uProjectionMatrix;
 
 uniform vec3 uCameraPosition;
 
-uniform vec3 uLightColor;
-uniform vec3 uLightPosition;
-uniform vec3 uLightAttenuation;
+struct Light {
+    vec3 position;
+    vec3 attenuation;
+    vec3 color;
+};
 
-uniform float uMaterialShininess;
-uniform float uMaterialSpecular;
+struct Material {
+    float diffuse;
+    float specular;
+    float shininess;
+};
+
+uniform Light uLight;
+uniform Material uMaterial;
 
 out vec2 vTexCoord;
 out vec3 vLight;
@@ -22,18 +30,18 @@ out vec3 vLight;
 void main() {
     vec3 surfacePosition = (uModelMatrix * vec4(aPosition, 1)).xyz;
 
-    float d = distance(surfacePosition, uLightPosition);
-    float attenuation = 1.0 / dot(uLightAttenuation, vec3(1, d, d * d));
+    float d = distance(surfacePosition, uLight.position);
+    float attenuation = 1.0 / dot(uLight.attenuation, vec3(1, d, d * d));
 
     vec3 N = normalize(mat3(uModelMatrix) * aNormal);
-    vec3 L = normalize(uLightPosition - surfacePosition);
+    vec3 L = normalize(uLight.position - surfacePosition);
     vec3 E = normalize(uCameraPosition - surfacePosition);
     vec3 R = normalize(reflect(-L, N));
 
-    float lambert = max(0.0, dot(L, N));
-    float phong = pow(max(0.0, dot(E, R)), uMaterialShininess) * uMaterialSpecular;
+    float lambert = max(0.0, dot(L, N)) * uMaterial.diffuse;
+    float phong = pow(max(0.0, dot(E, R)), uMaterial.shininess) * uMaterial.specular;
 
-    vLight = ((lambert + phong) * attenuation) * uLightColor;
+    vLight = (lambert + phong) * attenuation * uLight.color;
     vTexCoord = aTexCoord;
     gl_Position = uProjectionMatrix * (uViewMatrix * vec4(surfacePosition, 1));
 }
@@ -83,12 +91,20 @@ uniform mediump sampler2D uTexture;
 
 uniform vec3 uCameraPosition;
 
-uniform vec3 uLightColor;
-uniform vec3 uLightPosition;
-uniform vec3 uLightAttenuation;
+struct Light {
+    vec3 position;
+    vec3 attenuation;
+    vec3 color;
+};
 
-uniform float uMaterialShininess;
-uniform float uMaterialSpecular;
+struct Material {
+    float diffuse;
+    float specular;
+    float shininess;
+};
+
+uniform Light uLight;
+uniform Material uMaterial;
 
 in vec3 vPosition;
 in vec3 vNormal;
@@ -99,18 +115,18 @@ out vec4 oColor;
 void main() {
     vec3 surfacePosition = vPosition;
 
-    float d = distance(surfacePosition, uLightPosition);
-    float attenuation = 1.0 / dot(uLightAttenuation, vec3(1, d, d * d));
+    float d = distance(surfacePosition, uLight.position);
+    float attenuation = 1.0 / dot(uLight.attenuation, vec3(1, d, d * d));
 
     vec3 N = normalize(vNormal);
-    vec3 L = normalize(uLightPosition - surfacePosition);
+    vec3 L = normalize(uLight.position - surfacePosition);
     vec3 E = normalize(uCameraPosition - surfacePosition);
     vec3 R = normalize(reflect(-L, N));
 
-    float lambert = max(0.0, dot(L, N));
-    float phong = pow(max(0.0, dot(E, R)), uMaterialShininess) * uMaterialSpecular;
+    float lambert = max(0.0, dot(L, N)) * uMaterial.diffuse;
+    float phong = pow(max(0.0, dot(E, R)), uMaterial.shininess) * uMaterial.specular;
 
-    vec3 light = ((lambert + phong) * attenuation) * uLightColor;
+    vec3 light = (lambert + phong) * attenuation * uLight.color;
 
     oColor = texture(uTexture, vTexCoord) * vec4(light, 1);
 }
