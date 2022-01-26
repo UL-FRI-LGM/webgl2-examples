@@ -53,14 +53,36 @@ class App extends Application {
         this.camera = new Node();
         this.root.addChild(this.camera);
         Object.assign(this.camera, {
-            projection       : mat4.create(),
-            rotation         : vec3.set(vec3.create(), 0, 0, 0),
-            translation      : vec3.set(vec3.create(), 0, 1, 0),
-            velocity         : vec3.set(vec3.create(), 0, 0, 0),
+            projection: mat4.create(),
+
+            // We are going to use Euler angles for rotation.
+            // Specifically, we are going to use x-rotation for tilting
+            // and y-rotation for panning.
+            rotation: vec3.set(vec3.create(), 0, 0, 0),
+
+            // We are also going to store the translation separately and
+            // use it to recompute the transformation matrix every frame.
+            translation: vec3.set(vec3.create(), 0, 1, 0),
+
+            // This is going to be a simple decay-based model, where
+            // the user input is used as acceleration. The acceleration
+            // is used to update velocity, which is in turn used to update
+            // translation. If there is no user input, speed will decay.
+            velocity: vec3.set(vec3.create(), 0, 0, 0),
+
+            // The model needs some limits and parameters.
+
+            // Acceleration in meters per second squared.
+            acceleration: 20,
+
+            // Maximum speed in meters per second.
+            maxSpeed: 3,
+
+            // Decay as 1 - log percent max speed loss per second.
+            decay: 0.9,
+
+            // Mouse sensitivity in radians per pixel.
             mouseSensitivity : 0.002,
-            maxSpeed         : 3,
-            friction         : 0.2,
-            acceleration     : 20
         });
 
         this.floor = new Node();
@@ -81,18 +103,42 @@ class App extends Application {
     }
 
     update() {
+        // We are essentially solving the system of differential equations
+        //
+        //   a = dv/dt
+        //   v = dx/dt
+        //
+        // where a is acceleration, v is speed and x is translation.
+        // The system can be sufficiently solved with Euler's method:
+        //
+        //   v(t + dt) = v(t) + a(t) * dt
+        //   x(t + dt) = x(t) + v(t) * dt
+        //
+        // which can be implemented as
+        //
+        //   v += a * dt
+        //   x += v * dt
+        //
+        // Needless to say, better methods exist. Specifically, second order
+        // methods accurately compute the solution to our second order system,
+        // whereas there is always going to be some error related to the
+        // exponential decay.
+
+        const c = this.camera;
+
+        // Calculate dt as the time difference from the previous frame.
         this.time = performance.now();
         const dt = (this.time - this.startTime) * 0.001;
         this.startTime = this.time;
 
-        const c = this.camera;
 
-        const forward = vec3.set(vec3.create(),
-            -Math.sin(c.rotation[1]), 0, -Math.cos(c.rotation[1]));
-        const right = vec3.set(vec3.create(),
-            Math.cos(c.rotation[1]), 0, -Math.sin(c.rotation[1]));
+        // Calculate forward and right vectors from the y-orientation.
+        const cos = Math.cos(c.rotation[1]);
+        const sin = Math.sin(c.rotation[1]);
+        const forward = [-sin, 0, -cos];
+        const right = [cos, 0, -sin];
 
-        // 1: add movement acceleration
+        // Map user input to the acceleration vector.
         const acc = vec3.create();
         if (this.keys['KeyW']) {
             vec3.add(acc, acc, forward);
@@ -107,28 +153,29 @@ class App extends Application {
             vec3.sub(acc, acc, right);
         }
 
-        // 2: update velocity
+        // Update velocity based on acceleration (first line of Euler's method).
         vec3.scaleAndAdd(c.velocity, c.velocity, acc, dt * c.acceleration);
 
-        // 3: if no movement, apply friction
+        // If there is no user input, apply decay.
         if (!this.keys['KeyW'] &&
             !this.keys['KeyS'] &&
             !this.keys['KeyD'] &&
             !this.keys['KeyA'])
         {
-            vec3.scale(c.velocity, c.velocity, 1 - c.friction);
+            const decay = Math.exp(dt * Math.log(1 - c.decay));
+            vec3.scale(c.velocity, c.velocity, decay);
         }
 
-        // 4: limit speed
+        // Limit speed to prevent accelerating to infinity and beyond.
         const len = vec3.len(c.velocity);
         if (len > c.maxSpeed) {
             vec3.scale(c.velocity, c.velocity, c.maxSpeed / len);
         }
 
-        // 5: update translation
+        // Update translation based on velocity (second line of Euler's method).
         vec3.scaleAndAdd(c.translation, c.translation, c.velocity, dt);
 
-        // 6: update the final transform
+        // Update the final transformation matrix based on the updated variables.
         const m = c.matrix;
         mat4.identity(m);
         mat4.translate(m, m, c.translation);
@@ -137,9 +184,16 @@ class App extends Application {
     }
 
     mousemoveHandler(e) {
+        // Rotation can be updated through the mousemove handler.
+        // Given that mousemove is only called under pointer lock,
+        // movementX/Y will be available.
+
+        const c = this.camera;
+
+        // Horizontal mouse movement causes camera panning (y-rotation),
+        // vertical mouse movement causes camera tilting (x-rotation).
         const dx = e.movementX;
         const dy = e.movementY;
-        const c = this.camera;
         c.rotation[0] -= dy * c.mouseSensitivity;
         c.rotation[1] -= dx * c.mouseSensitivity;
 
@@ -147,7 +201,7 @@ class App extends Application {
         const twopi = pi * 2;
         const halfpi = pi / 2;
 
-        // Limit pitch
+        // Limit pitch so that the camera does not invert on itself.
         if (c.rotation[0] > halfpi) {
             c.rotation[0] = halfpi;
         }
@@ -258,6 +312,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const gui = new GUI();
     gui.add(app.camera, 'mouseSensitivity', 0.0001, 0.01);
     gui.add(app.camera, 'maxSpeed', 0, 10);
-    gui.add(app.camera, 'friction', 0.05, 0.75);
+    gui.add(app.camera, 'decay', 0, 1);
     gui.add(app.camera, 'acceleration', 1, 100);
 });
