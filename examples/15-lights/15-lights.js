@@ -41,7 +41,7 @@ class App extends Application {
             }),
         ]);
 
-        this.funky.model = this.renderer.createModel(json);
+        this.funky.model = model;
         this.funky.material.texture = texture;
 
         this.canvas.addEventListener('click', e => this.canvas.requestPointerLock());
