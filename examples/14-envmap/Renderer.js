@@ -96,15 +96,18 @@ export class Renderer {
         return { vao, indices };
     }
 
-    loadTexture(url, options, handler) {
-        const gl = this.gl;
+    async loadModel(url) {
+        const response = await fetch(url);
+        const json = await response.json();
+        return this.createModel(json);
+    }
 
-        const image = new Image();
-        image.addEventListener('load', () => {
-            const opts = Object.assign({ image }, options);
-            handler(WebGL.createTexture(gl, opts));
-        });
-        image.src = url;
+    async loadTexture(url, options) {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        const image = await createImageBitmap(blob);
+        const spec = Object.assign({ image }, options);
+        return WebGL.createTexture(this.gl, spec);
     }
 
 }

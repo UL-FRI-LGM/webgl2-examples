@@ -14,12 +14,6 @@ export class Renderer {
         gl.enable(gl.CULL_FACE);
 
         this.programs = WebGL.buildPrograms(gl, shaders);
-
-        this.defaultTexture = WebGL.createTexture(gl, {
-            width  : 1,
-            height : 1,
-            data   : new Uint8Array([255, 255, 255, 255])
-        });
     }
 
     prepare(scene) {

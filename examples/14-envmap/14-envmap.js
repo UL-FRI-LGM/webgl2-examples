@@ -10,7 +10,7 @@ import { Material } from './Material.js';
 
 class App extends Application {
 
-    start() {
+    async start() {
         const gl = this.gl;
 
         this.renderer = new Renderer(gl);
@@ -29,25 +29,22 @@ class App extends Application {
 
         this.funky.material = new Material();
 
-        fetch('../../common/models/funky.json')
-        .then(response => response.json())
-        .then(json => {
-            this.funky.model = this.renderer.createModel(json);
-        });
+        const [model, texture, envmap] = await Promise.all([
+            this.renderer.loadModel('../../common/models/funky.json'),
+            this.renderer.loadTexture('../../common/images/grayscale.png', {
+                mip: true,
+                min: gl.NEAREST_MIPMAP_NEAREST,
+                mag: gl.NEAREST,
+            }),
+            this.renderer.loadTexture('../../common/images/cambridge.webp', {
+                min: gl.LINEAR,
+                mag: gl.LINEAR,
+            }),
+        ]);
 
-        this.renderer.loadTexture('../../common/images/grayscale.png', {
-            min: gl.NEAREST,
-            mag: gl.NEAREST,
-        }, texture => {
-            this.funky.material.texture = texture;
-        });
-
-        this.renderer.loadTexture('../../common/images/cambridge.webp', {
-            min: gl.LINEAR,
-            mag: gl.LINEAR,
-        }, envmap => {
-            this.funky.material.envmap = envmap;
-        });
+        this.funky.model = model;
+        this.funky.material.texture = texture;
+        this.funky.material.envmap = envmap;
 
         this.canvas.addEventListener('click', e => this.canvas.requestPointerLock());
         document.addEventListener('pointerlockchange', e => {

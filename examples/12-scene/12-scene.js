@@ -20,7 +20,7 @@ class App extends Application {
         this.programs = WebGL.buildPrograms(gl, shaders);
     }
 
-    start() {
+    async start() {
         const gl = this.gl;
 
         this.initGL();
@@ -34,54 +34,36 @@ class App extends Application {
         this.camera.projection = mat4.create();
         this.root.addChild(this.camera);
 
-        // A default texture is needed before the actual texture is fetched
-        // from the server.
-        const defaultTexture = WebGL.createTexture(gl, {
-            data   : new Uint8Array([255, 255, 255, 255]),
-            width  : 1,
-            height : 1,
-        });
-
         // Create three cubes, two attached to the root node and one
-        // attached to another cube. Set the correct models and textures.
+        // attached to another cube.
         this.cube1 = new Node();
-        this.cube1.texture = defaultTexture;
-        this.root.addChild(this.cube1);
-
         this.cube2 = new Node();
-        this.cube2.texture = defaultTexture;
-        this.root.addChild(this.cube2);
-
         this.cube3 = new Node();
-        this.cube3.texture = defaultTexture;
-        this.cube2.addChild(this.cube3);
 
-        // Load the model.
-        fetch('../../common/models/cube.json')
-        .then(response => response.json())
-        .then(json => {
-            const model = this.createModel(json);
-            this.cube1.model = model;
-            this.cube2.model = model;
-            this.cube3.model = model;
-        });
+        this.root.addChild(this.cube1);
+        this.root.addChild(this.cube2);
+        this.cube2.addChild(this.cube3);
 
         // Set two variables for controlling the cubes' rotations from GUI.
         this.leftRotation = 0;
         this.rightRotation = 0;
 
-        // Finally, send a request for a texture and attach the texture to
-        // all three cubes when the response arrives. This example shows how
-        // to handle resource loading asynchronously.
-        this.loadTexture('../../common/images/crate-diffuse.png', {
-            mip: true,
-            min: gl.NEAREST_MIPMAP_NEAREST,
-            mag: gl.NEAREST,
-        }, texture => {
-            this.cube1.texture = texture;
-            this.cube2.texture = texture;
-            this.cube3.texture = texture;
-        });
+        // Load the model and texture.
+        const [model, texture] = await Promise.all([
+            this.loadModel('../../common/models/cube.json'),
+            this.loadTexture('../../common/images/crate-diffuse.png', {
+                mip: true,
+                min: gl.NEAREST_MIPMAP_NEAREST,
+                mag: gl.NEAREST,
+            }),
+        ]);
+
+        this.cube1.model = model;
+        this.cube2.model = model;
+        this.cube3.model = model;
+        this.cube1.texture = texture;
+        this.cube2.texture = texture;
+        this.cube3.texture = texture;
     }
 
     update() {
@@ -176,15 +158,18 @@ class App extends Application {
         return { vao, indices };
     }
 
-    loadTexture(url, options, handler) {
-        const gl = this.gl;
+    async loadModel(url) {
+        const response = await fetch(url);
+        const json = await response.json();
+        return this.createModel(json);
+    }
 
-        const image = new Image();
-        image.addEventListener('load', () => {
-            const opts = Object.assign({ image }, options);
-            handler(WebGL.createTexture(gl, opts));
-        });
-        image.src = url;
+    async loadTexture(url, options) {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        const image = await createImageBitmap(blob);
+        const spec = Object.assign({ image }, options);
+        return WebGL.createTexture(this.gl, spec);
     }
 
 }

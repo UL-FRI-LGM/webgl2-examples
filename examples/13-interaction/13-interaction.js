@@ -39,17 +39,11 @@ class App extends Application {
         });
     }
 
-    start() {
+    async start() {
         const gl = this.gl;
 
         this.initGL();
         this.initHandlers();
-
-        const defaultTexture = WebGL.createTexture(gl, {
-            data   : new Uint8Array([255, 255, 255, 255]),
-            width  : 1,
-            height : 1,
-        });
 
         this.time = performance.now();
         this.startTime = this.time;
@@ -70,23 +64,20 @@ class App extends Application {
         });
 
         this.floor = new Node();
-        this.floor.texture = defaultTexture;
         this.root.addChild(this.floor);
         mat4.fromScaling(this.floor.matrix, [10, 1, 10]);
 
-        fetch('../../common/models/floor.json')
-        .then(response => response.json())
-        .then(json => {
-            this.floor.model = this.createModel(json);
-        });
+        const [model, texture] = await Promise.all([
+            this.loadModel('../../common/models/floor.json'),
+            this.loadTexture('../../common/images/grass.png', {
+                mip: true,
+                min: gl.NEAREST_MIPMAP_NEAREST,
+                mag: gl.NEAREST,
+            }),
+        ]);
 
-        this.loadTexture('../../common/images/grass.png', {
-            mip: true,
-            min: gl.NEAREST_MIPMAP_NEAREST,
-            mag: gl.NEAREST,
-        }, texture => {
-            this.floor.texture = texture;
-        });
+        this.floor.model = model;
+        this.floor.texture = texture;
     }
 
     update() {
@@ -245,15 +236,18 @@ class App extends Application {
         return { vao, indices };
     }
 
-    loadTexture(url, options, handler) {
-        const gl = this.gl;
+    async loadModel(url) {
+        const response = await fetch(url);
+        const json = await response.json();
+        return this.createModel(json);
+    }
 
-        const image = new Image();
-        image.addEventListener('load', () => {
-            const opts = Object.assign({ image }, options);
-            handler(WebGL.createTexture(gl, opts));
-        });
-        image.src = url;
+    async loadTexture(url, options) {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        const image = await createImageBitmap(blob);
+        const spec = Object.assign({ image }, options);
+        return WebGL.createTexture(this.gl, spec);
     }
 
 }

@@ -11,7 +11,7 @@ import { Material } from './Material.js';
 
 class App extends Application {
 
-    start() {
+    async start() {
         const gl = this.gl;
 
         this.renderer = new Renderer(gl);
@@ -32,19 +32,17 @@ class App extends Application {
 
         this.funky.material = new Material();
 
-        fetch('../../common/models/funky.json')
-        .then(response => response.json())
-        .then(json => {
-            this.funky.model = this.renderer.createModel(json);
-        });
+        const [model, texture, envmap] = await Promise.all([
+            this.renderer.loadModel('../../common/models/funky.json'),
+            this.renderer.loadTexture('../../common/images/grayscale.png', {
+                mip: true,
+                min: gl.NEAREST_MIPMAP_NEAREST,
+                mag: gl.NEAREST,
+            }),
+        ]);
 
-        this.renderer.loadTexture('../../common/images/grayscale.png', {
-            mip: true,
-            min: gl.NEAREST_MIPMAP_NEAREST,
-            mag: gl.NEAREST,
-        }, texture => {
-            this.funky.material.texture = texture;
-        });
+        this.funky.model = this.renderer.createModel(json);
+        this.funky.material.texture = texture;
 
         this.canvas.addEventListener('click', e => this.canvas.requestPointerLock());
         document.addEventListener('pointerlockchange', e => {
@@ -60,7 +58,6 @@ class App extends Application {
         this.time = performance.now();
         const dt = (this.time - this.startTime) * 0.001;
         this.startTime = this.time;
-
 
         this.camera.update(dt);
     }
