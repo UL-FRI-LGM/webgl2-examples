@@ -62,7 +62,10 @@ in vec3 vSpecularLight;
 out vec4 oColor;
 
 void main() {
-    oColor = vec4(texture(uTexture, vTexCoord).rgb * vDiffuseLight + vSpecularLight, 1);
+    const float gamma = 2.2;
+    vec3 albedo = pow(texture(uTexture, vTexCoord).rgb, vec3(gamma));
+    vec3 finalColor = albedo * vDiffuseLight + vSpecularLight;
+    oColor = pow(vec4(finalColor, 1), vec4(1.0 / gamma));
 }
 `;
 
@@ -133,7 +136,10 @@ void main() {
     vec3 diffuseLight = lambert * attenuation * uLight.color;
     vec3 specularLight = phong * attenuation * uLight.color;
 
-    oColor = vec4(texture(uTexture, vTexCoord).rgb * diffuseLight + specularLight, 1);
+    const float gamma = 2.2;
+    vec3 albedo = pow(texture(uTexture, vTexCoord).rgb, vec3(gamma));
+    vec3 finalColor = albedo * diffuseLight + specularLight;
+    oColor = pow(vec4(finalColor, 1), vec4(1.0 / gamma));
 }
 `;
 
