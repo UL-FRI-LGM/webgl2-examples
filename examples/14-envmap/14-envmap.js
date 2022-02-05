@@ -21,6 +21,7 @@ class App extends Application {
         this.root = new Node();
         this.camera = new Camera();
         this.funky = new Node();
+        this.skybox = new Node();
         this.root.addChild(this.camera);
         this.root.addChild(this.funky);
 
@@ -28,8 +29,10 @@ class App extends Application {
         this.camera.rotation = [-0.6, 0, 0];
 
         this.funky.material = new Material();
+        this.skybox.material = new Material();
 
-        const [model, texture, envmap] = await Promise.all([
+        const [cube, funky, texture, envmap] = await Promise.all([
+            this.renderer.loadModel('../../common/models/cube.json'),
             this.renderer.loadModel('../../common/models/funky.json'),
             this.renderer.loadTexture('../../common/images/grayscale.png', {
                 mip: true,
@@ -42,7 +45,10 @@ class App extends Application {
             }),
         ]);
 
-        this.funky.model = model;
+        this.skybox.model = cube;
+        this.skybox.material.envmap = envmap;
+
+        this.funky.model = funky;
         this.funky.material.texture = texture;
         this.funky.material.envmap = envmap;
 
@@ -65,7 +71,7 @@ class App extends Application {
     }
 
     render() {
-        this.renderer.render(this.root, this.camera);
+        this.renderer.render(this.root, this.camera, this.skybox);
     }
 
     resize() {

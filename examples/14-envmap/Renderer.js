@@ -16,7 +16,7 @@ export class Renderer {
         this.programs = WebGL.buildPrograms(gl, shaders);
     }
 
-    render(scene, camera) {
+    render(scene, camera, skybox) {
         const gl = this.gl;
 
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -32,6 +32,7 @@ export class Renderer {
             mat4.getTranslation(vec3.create(), camera.getGlobalTransform()));
 
         this.renderNode(scene, scene.getGlobalTransform());
+        this.renderSkybox(skybox, camera);
     }
 
     renderNode(node, modelMatrix) {
@@ -66,6 +67,30 @@ export class Renderer {
         for (const child of node.children) {
             this.renderNode(child, modelMatrix);
         }
+    }
+
+    renderSkybox(skybox, camera) {
+        const gl = this.gl;
+
+        const { program, uniforms } = this.programs.skybox;
+        gl.useProgram(program);
+
+        const viewMatrix = camera.getGlobalTransform();
+        mat4.invert(viewMatrix, viewMatrix);
+        gl.uniformMatrix4fv(uniforms.uViewMatrix, false, viewMatrix);
+        gl.uniformMatrix4fv(uniforms.uProjectionMatrix, false, camera.projection);
+
+        gl.bindVertexArray(skybox.model.vao);
+
+        gl.activeTexture(gl.TEXTURE1);
+        gl.uniform1i(uniforms.uEnvmap, 1);
+        gl.bindTexture(gl.TEXTURE_2D, skybox.material.envmap);
+
+        gl.depthFunc(gl.LEQUAL);
+        gl.disable(gl.CULL_FACE);
+        gl.drawElements(gl.TRIANGLES, skybox.model.indices, gl.UNSIGNED_SHORT, 0);
+        gl.enable(gl.CULL_FACE);
+        gl.depthFunc(gl.LESS);
     }
 
     createModel(model) {
