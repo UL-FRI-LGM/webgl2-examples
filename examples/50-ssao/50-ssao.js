@@ -115,9 +115,12 @@ class App extends Application {
 
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async e => {
     const canvas = document.querySelector('canvas');
     const app = new App(canvas, { antialias: false });
+    await app.init();
+    document.querySelector('.loader-container').remove();
+
     const gui = new GUI();
     gui.add(app.renderer, 'occlusionEnabled');
     gui.add(app.renderer, 'occlusionStrength', 0, 10);

@@ -28,9 +28,6 @@ class App extends Application {
         this.camera.translation = [0, 2, 5];
         this.camera.rotation = [-0.6, 0, 0];
 
-        this.funky.material = new Material();
-        this.skybox.material = new Material();
-
         const [cube, funky, texture, envmap] = await Promise.all([
             this.renderer.loadModel('../../common/models/cube.json'),
             this.renderer.loadModel('../../common/models/funky.json'),
@@ -46,9 +43,11 @@ class App extends Application {
         ]);
 
         this.skybox.model = cube;
+        this.skybox.material = new Material();
         this.skybox.material.envmap = envmap;
 
         this.funky.model = funky;
+        this.funky.material = new Material();
         this.funky.material.texture = texture;
         this.funky.material.envmap = envmap;
 
@@ -87,9 +86,12 @@ class App extends Application {
 
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async e => {
     const canvas = document.querySelector('canvas');
     const app = new App(canvas);
+    await app.init();
+    document.querySelector('.loader-container').remove();
+
     const gui = new GUI();
     gui.add(app.funky.material, 'effect', 0, 1);
     gui.add(app.funky.material, 'reflectance', 0, 1);

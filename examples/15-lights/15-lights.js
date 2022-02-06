@@ -30,8 +30,6 @@ class App extends Application {
         this.camera.translation = [0, 2, 5];
         this.camera.rotation = [-0.6, 0, 0];
 
-        this.funky.material = new Material();
-
         const [model, texture, envmap] = await Promise.all([
             this.renderer.loadModel('../../common/models/funky.json'),
             this.renderer.loadTexture('../../common/images/grayscale.png', {
@@ -42,6 +40,7 @@ class App extends Application {
         ]);
 
         this.funky.model = model;
+        this.funky.material = new Material();
         this.funky.material.texture = texture;
 
         this.canvas.addEventListener('click', e => this.canvas.requestPointerLock());
@@ -79,9 +78,11 @@ class App extends Application {
 
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async e => {
     const canvas = document.querySelector('canvas');
     const app = new App(canvas);
+    await app.init();
+    document.querySelector('.loader-container').remove();
 
     const gui = new GUI();
     gui.add(app.renderer, 'perFragment').onChange(perFragment => {

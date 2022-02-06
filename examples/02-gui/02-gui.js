@@ -20,9 +20,11 @@ class App extends Application {
 
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async e => {
     const canvas = document.querySelector('canvas');
     const app = new App(canvas);
+    await app.init();
+    document.querySelector('.loader-container').remove();
 
     // Create the GUI manager.
     const gui = new GUI();

@@ -20,12 +20,13 @@ body, html {
 
 .overlay {
     position: fixed;
-    left: 20px;
-    top: 20px;
+    left: 0;
+    top: 0;
 }
 
 a.back {
     display: block;
+    margin: 20px;
     padding: 5px 10px;
     background: #fff;
     border: 1px solid #ccc;
@@ -36,4 +37,27 @@ a.back {
 
 a.back:hover {
     background: #ddd;
+}
+
+.loader-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loader {
+    width: 100px;
+    height: 100px;
+
+    border: 15px solid transparent;
+    border-radius: 50%;
+    border-top-color: #999;
+    border-bottom-color: #999;
+
+    animation: spin 2s ease-in-out infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+  100% { transform: rotate(1800deg); }
 }

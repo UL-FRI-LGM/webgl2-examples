@@ -5,10 +5,9 @@ export class Application {
 
         this.canvas = canvas;
         this._initGL(glOptions);
-        this._init();
     }
 
-    async _init() {
+    async init() {
         await this.start();
         requestAnimationFrame(this._update);
     }
