@@ -115,19 +115,17 @@ class App extends Application {
 
 }
 
-document.addEventListener('DOMContentLoaded', async e => {
-    const canvas = document.querySelector('canvas');
-    const app = new App(canvas, { antialias: false });
-    await app.init();
-    document.querySelector('.loader-container').remove();
+const canvas = document.querySelector('canvas');
+const app = new App(canvas, { antialias: false });
+await app.init();
+document.querySelector('.loader-container').remove();
 
-    const gui = new GUI();
-    gui.add(app.renderer, 'occlusionEnabled');
-    gui.add(app.renderer, 'occlusionStrength', 0, 10);
-    gui.add(app.renderer, 'occlusionScale', 0, 2);
-    gui.add(app.renderer, 'occlusionRange', 0, 2);
-    gui.add(app.renderer, 'depthBias', 0, 0.5);
-    gui.add(app.renderer, 'occlusionSampleCount',
-        [1, 2, 4, 8, 16, 32, 64]
-    ).onChange(value => app.renderer.createSSAOSamples());
-});
+const gui = new GUI();
+gui.add(app.renderer, 'occlusionEnabled');
+gui.add(app.renderer, 'occlusionStrength', 0, 10);
+gui.add(app.renderer, 'occlusionScale', 0, 2);
+gui.add(app.renderer, 'occlusionRange', 0, 2);
+gui.add(app.renderer, 'depthBias', 0, 0.5);
+gui.add(app.renderer, 'occlusionSampleCount',
+    [1, 2, 4, 8, 16, 32, 64]
+).onChange(value => app.renderer.createSSAOSamples());

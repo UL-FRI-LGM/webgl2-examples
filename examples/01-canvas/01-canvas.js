@@ -75,10 +75,6 @@ class Application {
 
 }
 
-// Create a new Application only after the body
-// and the canvas element are created.
-document.addEventListener('DOMContentLoaded', async e => {
-    const canvas = document.querySelector('canvas');
-    const app = new Application(canvas);
-    document.querySelector('.loader-container').remove();
-});
+const canvas = document.querySelector('canvas');
+const app = new Application(canvas);
+document.querySelector('.loader-container').remove();

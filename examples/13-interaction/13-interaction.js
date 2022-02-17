@@ -306,15 +306,13 @@ class App extends Application {
 
 }
 
-document.addEventListener('DOMContentLoaded', async e => {
-    const canvas = document.querySelector('canvas');
-    const app = new App(canvas);
-    await app.init();
-    document.querySelector('.loader-container').remove();
+const canvas = document.querySelector('canvas');
+const app = new App(canvas);
+await app.init();
+document.querySelector('.loader-container').remove();
 
-    const gui = new GUI();
-    gui.add(app.camera, 'mouseSensitivity', 0.0001, 0.01);
-    gui.add(app.camera, 'maxSpeed', 0, 10);
-    gui.add(app.camera, 'decay', 0, 1);
-    gui.add(app.camera, 'acceleration', 1, 100);
-});
+const gui = new GUI();
+gui.add(app.camera, 'mouseSensitivity', 0.0001, 0.01);
+gui.add(app.camera, 'maxSpeed', 0, 10);
+gui.add(app.camera, 'decay', 0, 1);
+gui.add(app.camera, 'acceleration', 1, 100);

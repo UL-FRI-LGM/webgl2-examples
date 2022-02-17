@@ -119,15 +119,13 @@ class App extends Application {
 
 }
 
-document.addEventListener('DOMContentLoaded', async e => {
-    const canvas = document.querySelector('canvas');
-    const app = new App(canvas);
-    await app.init();
-    document.querySelector('.loader-container').remove();
+const canvas = document.querySelector('canvas');
+const app = new App(canvas);
+await app.init();
+document.querySelector('.loader-container').remove();
 
-    const gui = new GUI();
-    gui.add(app.renderer, 'emissionStrength', 0, 5);
-    gui.add(app.renderer, 'bloomThreshold', 0, 5);
-    gui.add(app.renderer, 'bloomStepWidth', 0, 1);
-    gui.add(app.renderer, 'exposure', 0, 5);
-});
+const gui = new GUI();
+gui.add(app.renderer, 'emissionStrength', 0, 5);
+gui.add(app.renderer, 'bloomThreshold', 0, 5);
+gui.add(app.renderer, 'bloomStepWidth', 0, 1);
+gui.add(app.renderer, 'exposure', 0, 5);

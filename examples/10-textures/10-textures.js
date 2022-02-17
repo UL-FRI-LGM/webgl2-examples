@@ -238,14 +238,12 @@ class App extends Application {
 
 }
 
-document.addEventListener('DOMContentLoaded', async e => {
-    const canvas = document.querySelector('canvas');
-    const app = new App(canvas);
-    await app.init();
-    document.querySelector('.loader-container').remove();
+const canvas = document.querySelector('canvas');
+const app = new App(canvas);
+await app.init();
+document.querySelector('.loader-container').remove();
 
-    const gui = new GUI();
-    gui.add(app, 'isLinearFilter')
-       .name('Linear filtering')
-       .onChange(e => app.changeFilter());
-});
+const gui = new GUI();
+gui.add(app, 'isLinearFilter')
+   .name('Linear filtering')
+   .onChange(e => app.changeFilter());

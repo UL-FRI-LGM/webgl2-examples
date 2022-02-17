@@ -174,13 +174,11 @@ class App extends Application {
 
 }
 
-document.addEventListener('DOMContentLoaded', async e => {
-    const canvas = document.querySelector('canvas');
-    const app = new App(canvas);
-    await app.init();
-    document.querySelector('.loader-container').remove();
+const canvas = document.querySelector('canvas');
+const app = new App(canvas);
+await app.init();
+document.querySelector('.loader-container').remove();
 
-    const gui = new GUI();
-    gui.add(app, 'leftRotation', -3, 3);
-    gui.add(app, 'rightRotation', -3, 3);
-});
+const gui = new GUI();
+gui.add(app, 'leftRotation', -3, 3);
+gui.add(app, 'rightRotation', -3, 3);

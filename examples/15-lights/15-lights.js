@@ -78,37 +78,35 @@ class App extends Application {
 
 }
 
-document.addEventListener('DOMContentLoaded', async e => {
-    const canvas = document.querySelector('canvas');
-    const app = new App(canvas);
-    await app.init();
-    document.querySelector('.loader-container').remove();
+const canvas = document.querySelector('canvas');
+const app = new App(canvas);
+await app.init();
+document.querySelector('.loader-container').remove();
 
-    const gui = new GUI();
-    gui.add(app.renderer, 'perFragment').onChange(perFragment => {
-        app.renderer.currentProgram = perFragment
-            ? app.renderer.programs.perFragment
-            : app.renderer.programs.perVertex;
-    });
-
-    const light = gui.addFolder('Light');
-    light.open();
-    light.add(app.light, 'intensity', 0, 5);
-    light.addColor(app.light, 'color');
-    const lightPosition = light.addFolder('Position');
-    lightPosition.open();
-    lightPosition.add(app.light.matrix, 12, -10, 10).name('x');
-    lightPosition.add(app.light.matrix, 13, -10, 10).name('y');
-    lightPosition.add(app.light.matrix, 14, -10, 10).name('z');
-    const lightAttenuation = light.addFolder('Attenuation');
-    lightAttenuation.open();
-    lightAttenuation.add(app.light.attenuation, 0, 0, 5).name('constant');
-    lightAttenuation.add(app.light.attenuation, 1, 0, 2).name('linear');
-    lightAttenuation.add(app.light.attenuation, 2, 0, 1).name('quadratic');
-
-    const material = gui.addFolder('Material');
-    material.open();
-    material.add(app.funky.material, 'diffuse', 0, 1);
-    material.add(app.funky.material, 'specular', 0, 1);
-    material.add(app.funky.material, 'shininess', 1, 200);
+const gui = new GUI();
+gui.add(app.renderer, 'perFragment').onChange(perFragment => {
+    app.renderer.currentProgram = perFragment
+        ? app.renderer.programs.perFragment
+        : app.renderer.programs.perVertex;
 });
+
+const light = gui.addFolder('Light');
+light.open();
+light.add(app.light, 'intensity', 0, 5);
+light.addColor(app.light, 'color');
+const lightPosition = light.addFolder('Position');
+lightPosition.open();
+lightPosition.add(app.light.matrix, 12, -10, 10).name('x');
+lightPosition.add(app.light.matrix, 13, -10, 10).name('y');
+lightPosition.add(app.light.matrix, 14, -10, 10).name('z');
+const lightAttenuation = light.addFolder('Attenuation');
+lightAttenuation.open();
+lightAttenuation.add(app.light.attenuation, 0, 0, 5).name('constant');
+lightAttenuation.add(app.light.attenuation, 1, 0, 2).name('linear');
+lightAttenuation.add(app.light.attenuation, 2, 0, 1).name('quadratic');
+
+const material = gui.addFolder('Material');
+material.open();
+material.add(app.funky.material, 'diffuse', 0, 1);
+material.add(app.funky.material, 'specular', 0, 1);
+material.add(app.funky.material, 'shininess', 1, 200);
