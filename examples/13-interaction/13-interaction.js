@@ -21,7 +21,7 @@ class App extends Application {
     }
 
     initHandlers() {
-        this.mousemoveHandler = this.mousemoveHandler.bind(this);
+        this.pointermoveHandler = this.pointermoveHandler.bind(this);
         this.keydownHandler = this.keydownHandler.bind(this);
         this.keyupHandler = this.keyupHandler.bind(this);
         this.keys = {};
@@ -32,9 +32,9 @@ class App extends Application {
         this.canvas.addEventListener('click', e => this.canvas.requestPointerLock());
         document.addEventListener('pointerlockchange', e => {
             if (document.pointerLockElement === this.canvas) {
-                document.addEventListener('mousemove', this.mousemoveHandler);
+                document.addEventListener('pointermove', this.pointermoveHandler);
             } else {
-                document.removeEventListener('mousemove', this.mousemoveHandler);
+                document.removeEventListener('pointermove', this.pointermoveHandler);
             }
         });
     }
@@ -81,8 +81,8 @@ class App extends Application {
             // Decay as 1 - log percent max speed loss per second.
             decay: 0.9,
 
-            // Mouse sensitivity in radians per pixel.
-            mouseSensitivity : 0.002,
+            // Pointer sensitivity in radians per pixel.
+            pointerSensitivity : 0.002,
         });
 
         this.floor = new Node();
@@ -183,19 +183,19 @@ class App extends Application {
         mat4.rotateX(m, m, c.rotation[0]);
     }
 
-    mousemoveHandler(e) {
-        // Rotation can be updated through the mousemove handler.
-        // Given that mousemove is only called under pointer lock,
+    pointermoveHandler(e) {
+        // Rotation can be updated through the pointermove handler.
+        // Given that pointermove is only called under pointer lock,
         // movementX/Y will be available.
 
         const c = this.camera;
 
-        // Horizontal mouse movement causes camera panning (y-rotation),
-        // vertical mouse movement causes camera tilting (x-rotation).
+        // Horizontal pointer movement causes camera panning (y-rotation),
+        // vertical pointer movement causes camera tilting (x-rotation).
         const dx = e.movementX;
         const dy = e.movementY;
-        c.rotation[0] -= dy * c.mouseSensitivity;
-        c.rotation[1] -= dx * c.mouseSensitivity;
+        c.rotation[0] -= dy * c.pointerSensitivity;
+        c.rotation[1] -= dx * c.pointerSensitivity;
 
         const pi = Math.PI;
         const twopi = pi * 2;
@@ -312,7 +312,7 @@ await app.init();
 document.querySelector('.loader-container').remove();
 
 const gui = new GUI();
-gui.add(app.camera, 'mouseSensitivity', 0.0001, 0.01);
+gui.add(app.camera, 'pointerSensitivity', 0.0001, 0.01);
 gui.add(app.camera, 'maxSpeed', 0, 10);
 gui.add(app.camera, 'decay', 0, 1);
 gui.add(app.camera, 'acceleration', 1, 100);

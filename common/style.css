@@ -24,6 +24,10 @@ body, html {
     top: 0;
 }
 
+.no-touch {
+    touch-action: none;
+}
+
 a.back {
     display: block;
     margin: 20px;

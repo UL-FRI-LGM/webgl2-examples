@@ -14,11 +14,11 @@ class App extends Application {
         this.renderer = new Renderer(this.gl);
         this.aspect = 1;
 
-        this.mousedownHandler = this.mousedownHandler.bind(this);
-        this.mouseupHandler = this.mouseupHandler.bind(this);
-        this.mousemoveHandler = this.mousemoveHandler.bind(this);
+        this.pointerdownHandler = this.pointerdownHandler.bind(this);
+        this.pointerupHandler = this.pointerupHandler.bind(this);
+        this.pointermoveHandler = this.pointermoveHandler.bind(this);
 
-        this.canvas.addEventListener('mousedown', this.mousedownHandler);
+        this.canvas.addEventListener('pointerdown', this.pointerdownHandler);
 
         this.scene = new Scene();
         this.camera = new Camera();
@@ -89,29 +89,29 @@ class App extends Application {
         this.renderer.createBlurBuffer();
     }
 
-    mousedownHandler(e) {
-        this.mouseStart = [e.clientX, e.clientY];
-        this.canvas.removeEventListener('mousedown', this.mousedownHandler);
-        window.addEventListener('mouseup', this.mouseupHandler);
-        window.addEventListener('mousemove', this.mousemoveHandler);
+    pointerdownHandler(e) {
+        this.pointerStart = [e.clientX, e.clientY];
+        this.canvas.removeEventListener('pointerdown', this.pointerdownHandler);
+        window.addEventListener('pointerup', this.pointerupHandler);
+        window.addEventListener('pointermove', this.pointermoveHandler);
     }
 
-    mouseupHandler() {
-        this.canvas.addEventListener('mousedown', this.mousedownHandler);
-        window.removeEventListener('mouseup', this.mouseupHandler);
-        window.removeEventListener('mousemove', this.mousemoveHandler);
+    pointerupHandler() {
+        this.canvas.addEventListener('pointerdown', this.pointerdownHandler);
+        window.removeEventListener('pointerup', this.pointerupHandler);
+        window.removeEventListener('pointermove', this.pointermoveHandler);
     }
 
-    mousemoveHandler(e) {
-        const [x0, y0] = this.mouseStart;
+    pointermoveHandler(e) {
+        const [x0, y0] = this.pointerStart;
         const [x1, y1] = [e.clientX, e.clientY];
         const [dx, dy] = [x1 - x0, y1 - y0];
-        this.mouseStart = [x1, y1];
+        this.pointerStart = [x1, y1];
 
-        const mouseSensitivity = 0.003;
+        const pointerSensitivity = 0.003;
         const q = quat.create();
-        quat.rotateX(q, q, dy * mouseSensitivity);
-        quat.rotateY(q, q, dx * mouseSensitivity);
+        quat.rotateX(q, q, dy * pointerSensitivity);
+        quat.rotateY(q, q, dx * pointerSensitivity);
         const r = this.cubeRoot.rotation;
         quat.mul(r, q, r);
         this.cubeRoot.updateMatrix();

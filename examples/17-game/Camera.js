@@ -12,7 +12,7 @@ export class Camera extends Node {
         this.projection = mat4.create();
         this.updateProjection();
 
-        this.mousemoveHandler = this.mousemoveHandler.bind(this);
+        this.pointermoveHandler = this.pointermoveHandler.bind(this);
         this.keydownHandler = this.keydownHandler.bind(this);
         this.keyupHandler = this.keyupHandler.bind(this);
         this.keys = {};
@@ -65,13 +65,13 @@ export class Camera extends Node {
     }
 
     enable() {
-        document.addEventListener('mousemove', this.mousemoveHandler);
+        document.addEventListener('pointermove', this.pointermoveHandler);
         document.addEventListener('keydown', this.keydownHandler);
         document.addEventListener('keyup', this.keyupHandler);
     }
 
     disable() {
-        document.removeEventListener('mousemove', this.mousemoveHandler);
+        document.removeEventListener('pointermove', this.pointermoveHandler);
         document.removeEventListener('keydown', this.keydownHandler);
         document.removeEventListener('keyup', this.keyupHandler);
 
@@ -80,13 +80,13 @@ export class Camera extends Node {
         }
     }
 
-    mousemoveHandler(e) {
+    pointermoveHandler(e) {
         const dx = e.movementX;
         const dy = e.movementY;
         const c = this;
 
-        c.rotation[0] -= dy * c.mouseSensitivity;
-        c.rotation[1] -= dx * c.mouseSensitivity;
+        c.rotation[0] -= dy * c.pointerSensitivity;
+        c.rotation[1] -= dx * c.pointerSensitivity;
 
         const pi = Math.PI;
         const twopi = pi * 2;
@@ -118,7 +118,7 @@ Camera.defaults = {
     near             : 0.01,
     far              : 100,
     velocity         : [0, 0, 0],
-    mouseSensitivity : 0.002,
+    pointerSensitivity : 0.002,
     maxSpeed         : 3,
     friction         : 0.2,
     acceleration     : 20
