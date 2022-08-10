@@ -17,6 +17,7 @@ export class Renderer {
 
         this.programs = WebGL.buildPrograms(gl, shaders);
 
+        this.colorEnabled = true;
         this.occlusionEnabled = true;
         this.occlusionStrength = 2;
         this.occlusionSampleCount = 32;
@@ -33,6 +34,17 @@ export class Renderer {
             type: gl.UNSIGNED_BYTE,
             min: gl.LINEAR,
             mag: gl.LINEAR,
+        });
+
+        this.noColor = WebGL.createTexture(gl, {
+            width: 1,
+            height: 1,
+            data: new Uint8Array([255, 255, 255, 255]),
+            format: gl.RGBA,
+            iformat: gl.RGBA,
+            type: gl.UNSIGNED_BYTE,
+            min: gl.NEAREST,
+            mag: gl.NEAREST,
         });
 
         this.createGeometryBuffer();
@@ -118,7 +130,7 @@ export class Renderer {
         gl.uniform1f(program.uniforms.uOcclusionStrength, this.occlusionStrength);
 
         gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, this.geometryBuffer.colorTexture);
+        gl.bindTexture(gl.TEXTURE_2D, this.colorEnabled ? this.geometryBuffer.colorTexture : this.noColor);
         gl.uniform1i(program.uniforms.uColor, 0);
 
         gl.activeTexture(gl.TEXTURE1);
