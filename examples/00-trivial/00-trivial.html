@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>00 - Trivial example - ES6/WebGL 2.0 Examples</title>
+</head>
+<body>
+
+    <canvas></canvas>
+
+    <script>
+        const canvas = document.querySelector('canvas');
+        const gl = canvas.getContext('webgl2');
+
+        gl.clearColor(0.3, 0.4, 0.9, 1.0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+    </script>
+
+</body>
+</html>
