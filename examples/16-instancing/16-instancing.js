@@ -46,6 +46,22 @@ function createGrassTextureAtlas() {
             ctx.stroke();
         }
 
+        const flowerCount = 1 + Math.floor(Math.random() * 2);
+        for (let flower = 0; flower < flowerCount; flower++) {
+            const x = (Math.random() - 0.5) * 0.8;
+            const y = 0.95 - 5 * x ** 2;
+            const radius = 0.02 + Math.random() * 0.05;
+
+            const H = 0 + Math.random() * 50;
+            const S = 70 + Math.random() * 20;
+            const L = 40 + Math.random() * 20;
+
+            ctx.fillStyle = `hsl(${H} ${S}% ${L}%)`;
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
         ctx.restore();
     }
 
@@ -93,6 +109,7 @@ class App extends Application {
         const gl = this.gl;
 
         this.renderer = new Renderer(gl);
+        gl.clearColor(0.92, 0.98, 1, 1);
 
         this.time = performance.now();
         this.startTime = this.time;
