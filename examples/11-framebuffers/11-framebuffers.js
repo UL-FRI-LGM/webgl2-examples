@@ -1,3 +1,5 @@
+import { mat2 } from '../../lib/gl-matrix-module.js';
+
 import { Application } from '../../common/engine/Application.js';
 import { WebGL } from '../../common/engine/WebGL.js';
 
@@ -8,7 +10,7 @@ class App extends Application {
     start() {
         const gl = this.gl;
 
-        this.startTime = performance.now();
+        this.resolution = 64;
 
         this.programs = WebGL.buildPrograms(gl, shaders);
 
@@ -45,8 +47,8 @@ class App extends Application {
         // Rendering into mipmapped textures is not supported, so we have to
         // explicitly set the filter.
         this.texture = WebGL.createTexture(gl, {
-            width  : 32,
-            height : 32,
+            width  : this.resolution,
+            height : this.resolution,
             min    : gl.NEAREST,
             mag    : gl.NEAREST,
         });
@@ -86,23 +88,24 @@ class App extends Application {
     render() {
         const gl = this.gl;
 
-        const time = performance.now() - this.startTime;
-        const c = Math.cos(time * 0.0003);
-        const s = Math.sin(time * 0.0003);
-        const transform = [c, s, -s, c];
+        const time = performance.now() / 1000;
+        const angularVelocity = 0.3;
+        const rotation = mat2.fromRotation(mat2.create(), time * angularVelocity);
+        const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
+        const viewport = mat2.fromScaling(mat2.create(), [ 1 / aspect, 1 ]);
 
         // First, we are going to draw a triangle into the framebuffer
         // we created earlier. First, we have to bind it.
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
 
         // Set the viewport transform to cover the whole framebuffer.
-        gl.viewport(0, 0, 32, 32);
+        gl.viewport(0, 0, this.resolution, this.resolution);
 
         // Set up the simple program and the triangle mesh.
         let program = this.programs.simple;
         gl.useProgram(program.program);
         gl.bindVertexArray(this.triangle);
-        gl.uniformMatrix2fv(program.uniforms.uTransform, false, transform);
+        gl.uniformMatrix2fv(program.uniforms.uTransform, false, rotation);
 
         // Draw it with a black background.
         gl.clearColor(0, 0, 0, 1);
@@ -122,6 +125,7 @@ class App extends Application {
         gl.useProgram(program.program);
         gl.bindVertexArray(this.square);
 
+        const transform = mat2.mul(mat2.create(), viewport, rotation);
         gl.uniformMatrix2fv(program.uniforms.uTransform, false, transform);
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
