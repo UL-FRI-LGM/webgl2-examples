@@ -42,18 +42,18 @@ export class Renderer {
 
         gl.clear(gl.DEPTH_BUFFER_BIT);
 
-        const program = this.programs.renderShadows;
-        gl.useProgram(program.program);
+        const { program, uniforms } = this.programs.renderShadows;
+        gl.useProgram(program);
 
         const lightMatrix = mat4.create();
         const lightTransformMatrix = shadowCamera.getGlobalTransform();
         mat4.invert(lightTransformMatrix, lightTransformMatrix);
         mat4.mul(lightMatrix, shadowCamera.projection, lightTransformMatrix);
-        gl.uniformMatrix4fv(program.uniforms.uLightMatrix, false, lightMatrix);
+        gl.uniformMatrix4fv(uniforms.uLightMatrix, false, lightMatrix);
 
         const modelMatrix = mat4.create();
         for (const node of scene.nodes) {
-            this.renderNode(node, modelMatrix, program);
+            this.renderNode(node, modelMatrix, uniforms);
         }
     }
 
@@ -74,32 +74,32 @@ export class Renderer {
 
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        const program = this.programs.renderGeometry;
-        gl.useProgram(program.program);
+        const { program, uniforms } = this.programs.renderGeometry;
+        gl.useProgram(program);
 
         const cameraMatrix = mat4.create();
         const cameraTransformMatrix = camera.getGlobalTransform();
         mat4.invert(cameraTransformMatrix, cameraTransformMatrix);
         mat4.mul(cameraMatrix, camera.projection, cameraTransformMatrix);
-        gl.uniformMatrix4fv(program.uniforms.uCameraMatrix, false, cameraMatrix);
+        gl.uniformMatrix4fv(uniforms.uCameraMatrix, false, cameraMatrix);
 
         const lightMatrix = mat4.create();
         const lightTransformMatrix = shadowCamera.getGlobalTransform();
         mat4.invert(lightTransformMatrix, lightTransformMatrix);
         mat4.mul(lightMatrix, shadowCamera.projection, lightTransformMatrix);
-        gl.uniformMatrix4fv(program.uniforms.uLightMatrix, false, lightMatrix);
+        gl.uniformMatrix4fv(uniforms.uLightMatrix, false, lightMatrix);
 
         gl.activeTexture(gl.TEXTURE1);
         gl.bindTexture(gl.TEXTURE_2D, this.shadowBuffer.depthTexture);
-        gl.uniform1i(program.uniforms.uDepth, 1);
+        gl.uniform1i(uniforms.uDepth, 1);
 
         const modelMatrix = mat4.create();
         for (const node of scene.nodes) {
-            this.renderNode(node, modelMatrix, program);
+            this.renderNode(node, modelMatrix, uniforms);
         }
     }
 
-    renderNode(node, modelMatrix, program) {
+    renderNode(node, modelMatrix, uniforms) {
         const gl = this.gl;
 
         modelMatrix = mat4.clone(modelMatrix);
@@ -107,17 +107,17 @@ export class Renderer {
 
         if (node.mesh) {
             gl.bindVertexArray(node.mesh.vao);
-            gl.uniformMatrix4fv(program.uniforms.uModelMatrix, false, modelMatrix);
+            gl.uniformMatrix4fv(uniforms.uModelMatrix, false, modelMatrix);
 
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, node.texture);
-            gl.uniform1i(program.uniforms.uTexture, 0);
+            gl.uniform1i(uniforms.uTexture, 0);
 
             gl.drawElements(gl.TRIANGLES, node.mesh.indices, gl.UNSIGNED_SHORT, 0);
         }
 
         for (const child of node.children) {
-            this.renderNode(child, modelMatrix, program);
+            this.renderNode(child, modelMatrix, uniforms);
         }
     }
 

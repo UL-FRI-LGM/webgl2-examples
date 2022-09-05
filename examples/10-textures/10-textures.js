@@ -188,10 +188,10 @@ class App extends Application {
 
         gl.bindVertexArray(this.vao);
 
-        const program = this.programs.simple;
-        gl.useProgram(program.program);
+        const { program, uniforms } = this.programs.simple;
+        gl.useProgram(program);
 
-        gl.uniformMatrix4fv(program.uniforms.uModelViewProjection,
+        gl.uniformMatrix4fv(uniforms.uModelViewProjection,
             false, this.mvpMatrix);
 
         // Set the texture unit 0 to be active.
@@ -202,7 +202,7 @@ class App extends Application {
 
         // Set the uniform uTexture to use the texture unit 0.
         // Note that the type of the uniform is 1i (1 integer).
-        gl.uniform1i(program.uniforms.uTexture, 0);
+        gl.uniform1i(uniforms.uTexture, 0);
 
         gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0);
     }

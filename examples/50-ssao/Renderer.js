@@ -69,17 +69,17 @@ export class Renderer {
 
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        const program = this.programs.renderGeometryBuffer;
-        gl.useProgram(program.program);
+        const { program, uniforms } = this.programs.renderGeometryBuffer;
+        gl.useProgram(program);
 
         const matrix = mat4.create();
         const viewMatrix = camera.getGlobalTransform();
         mat4.invert(viewMatrix, viewMatrix);
         mat4.copy(matrix, viewMatrix);
-        gl.uniformMatrix4fv(program.uniforms.uProjection, false, camera.projection);
+        gl.uniformMatrix4fv(uniforms.uProjection, false, camera.projection);
 
         for (const node of scene.nodes) {
-            this.renderNode(node, matrix, program);
+            this.renderNode(node, matrix, uniforms);
         }
     }
 
@@ -91,26 +91,26 @@ export class Renderer {
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.ssaoBuffer.framebuffer);
 
-        const program = this.programs.ssao;
-        gl.useProgram(program.program);
+        const { program, uniforms } = this.programs.ssao;
+        gl.useProgram(program);
 
-        gl.uniformMatrix4fv(program.uniforms.uProjection, false, camera.projection);
-        gl.uniform1i(program.uniforms.uOcclusionSampleCount, this.occlusionSampleCount);
-        gl.uniform1f(program.uniforms.uOcclusionScale, this.occlusionScale);
-        gl.uniform1f(program.uniforms.uOcclusionRange, this.occlusionRange);
-        gl.uniform1f(program.uniforms.uDepthBias, this.depthBias);
+        gl.uniformMatrix4fv(uniforms.uProjection, false, camera.projection);
+        gl.uniform1i(uniforms.uOcclusionSampleCount, this.occlusionSampleCount);
+        gl.uniform1f(uniforms.uOcclusionScale, this.occlusionScale);
+        gl.uniform1f(uniforms.uOcclusionRange, this.occlusionRange);
+        gl.uniform1f(uniforms.uDepthBias, this.depthBias);
 
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this.ssaoSamples);
-        gl.uniform1i(program.uniforms.uOcclusionSamples, 0);
+        gl.uniform1i(uniforms.uOcclusionSamples, 0);
 
         gl.activeTexture(gl.TEXTURE1);
         gl.bindTexture(gl.TEXTURE_2D, this.geometryBuffer.positionTexture);
-        gl.uniform1i(program.uniforms.uPosition, 1);
+        gl.uniform1i(uniforms.uPosition, 1);
 
         gl.activeTexture(gl.TEXTURE2);
         gl.bindTexture(gl.TEXTURE_2D, this.geometryBuffer.normalTexture);
-        gl.uniform1i(program.uniforms.uNormal, 2);
+        gl.uniform1i(uniforms.uNormal, 2);
 
         gl.bindVertexArray(this.clipQuad.vao);
         gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
@@ -124,28 +124,28 @@ export class Renderer {
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-        const program = this.programs.renderToCanvas;
-        gl.useProgram(program.program);
+        const { program, uniforms } = this.programs.renderToCanvas;
+        gl.useProgram(program);
 
-        gl.uniform1f(program.uniforms.uOcclusionStrength, this.occlusionStrength);
+        gl.uniform1f(uniforms.uOcclusionStrength, this.occlusionStrength);
 
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this.colorEnabled ? this.geometryBuffer.colorTexture : this.noColor);
-        gl.uniform1i(program.uniforms.uColor, 0);
+        gl.uniform1i(uniforms.uColor, 0);
 
         gl.activeTexture(gl.TEXTURE1);
         gl.bindTexture(gl.TEXTURE_2D, this.occlusionEnabled ? this.ssaoBuffer.texture : this.noOcclusion);
-        gl.uniform1i(program.uniforms.uAmbient, 1);
+        gl.uniform1i(uniforms.uAmbient, 1);
 
         gl.activeTexture(gl.TEXTURE2);
         gl.bindTexture(gl.TEXTURE_2D, this.geometryBuffer.normalTexture);
-        gl.uniform1i(program.uniforms.uNormal, 2);
+        gl.uniform1i(uniforms.uNormal, 2);
 
         gl.bindVertexArray(this.clipQuad.vao);
         gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
     }
 
-    renderNode(node, matrix, program) {
+    renderNode(node, matrix, uniforms) {
         const gl = this.gl;
 
         matrix = mat4.clone(matrix);
@@ -153,15 +153,15 @@ export class Renderer {
 
         if (node.mesh) {
             gl.bindVertexArray(node.mesh.vao);
-            gl.uniformMatrix4fv(program.uniforms.uViewModel, false, matrix);
+            gl.uniformMatrix4fv(uniforms.uViewModel, false, matrix);
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, node.texture);
-            gl.uniform1i(program.uniforms.uTexture, 0);
+            gl.uniform1i(uniforms.uTexture, 0);
             gl.drawElements(gl.TRIANGLES, node.mesh.indices, gl.UNSIGNED_SHORT, 0);
         }
 
         for (const child of node.children) {
-            this.renderNode(child, matrix, program);
+            this.renderNode(child, matrix, uniforms);
         }
     }
 

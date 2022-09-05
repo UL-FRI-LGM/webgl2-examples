@@ -52,14 +52,14 @@ class App extends Application {
         gl.clear(gl.COLOR_BUFFER_BIT);
 
         // Use the shader we compiled in the start method.
-        const program = this.programs.test;
-        gl.useProgram(program.program);
+        const { program, attributes, uniforms } = this.programs.test;
+        gl.useProgram(program);
 
         // Bind the one buffer we have created.
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
 
         // Tell WebGL that the attribute data comes from a buffer.
-        gl.enableVertexAttribArray(program.attributes.aPosition);
+        gl.enableVertexAttribArray(attributes.aPosition);
 
         // Connect the buffer and the attribute and specify how to extract
         // the data from the buffer.
@@ -70,7 +70,7 @@ class App extends Application {
             // The attribute at the given location is two floats.
             // Do not normalize (even though this parameter is
             // ignored when using floats).
-            program.attributes.aPosition,
+            attributes.aPosition,
             2, gl.FLOAT, false,
 
             // We have 6 floats per vertex (2 for position and 4 for color),
@@ -84,9 +84,9 @@ class App extends Application {
 
         // For color data we do not have to bind a different buffer, the data
         // is already available in the single buffer we already have bound.
-        gl.enableVertexAttribArray(program.attributes.aColor);
+        gl.enableVertexAttribArray(attributes.aColor);
         gl.vertexAttribPointer(
-            program.attributes.aColor,
+            attributes.aColor,
             4, gl.FLOAT, false,
 
             // The stride is the same, each vertex is 24 bytes in size.
@@ -98,7 +98,7 @@ class App extends Application {
         );
 
         // Set the uniform.
-        gl.uniform2f(program.uniforms.uOffset, this.offsetX, this.offsetY);
+        gl.uniform2f(uniforms.uOffset, this.offsetX, this.offsetY);
 
         // Draw!
         gl.drawArrays(gl.TRIANGLES, 0, 3);

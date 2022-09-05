@@ -119,12 +119,12 @@ class App extends Application {
         gl.bindVertexArray(this.vao);
 
         // Use a simple coloring shader.
-        const program = this.programs.simple;
-        gl.useProgram(program.program);
+        const { program, uniforms } = this.programs.simple;
+        gl.useProgram(program);
 
         // Set the corresponding uniform. The second argument tells WebGL
         // whether to transpose the matrix before uploading it to the GPU.
-        gl.uniformMatrix4fv(program.uniforms.uModelViewProjection,
+        gl.uniformMatrix4fv(uniforms.uModelViewProjection,
             false, this.mvpMatrix);
 
         // Call drawElements when drawing indexed geometry. The number of

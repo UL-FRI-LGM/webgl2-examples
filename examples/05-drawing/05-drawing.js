@@ -83,8 +83,8 @@ class App extends Application {
         gl.clear(gl.COLOR_BUFFER_BIT);
 
         // Select the correct program to use for rendering.
-        const program = this.programs.test;
-        gl.useProgram(program.program);
+        const { program, attributes, uniforms } = this.programs.test;
+        gl.useProgram(program);
 
         // Bind the buffer first, because vertexAttribPointer
         // associates an attribute with the bound buffer.
@@ -92,7 +92,7 @@ class App extends Application {
 
         // Tell WebGL that the data comes from a buffer.
         // Back in the day this was an OpenGL extension, now it is mandatory.
-        gl.enableVertexAttribArray(program.attributes.aPosition);
+        gl.enableVertexAttribArray(attributes.aPosition);
 
         // Connect the buffer and the attribute and specify how to extract
         // the data from the buffer.
@@ -100,7 +100,7 @@ class App extends Application {
         // per vertex in the buffer. The data is tightly packed,
         // so let WebGL compute the stride and offset.
         gl.vertexAttribPointer(
-            program.attributes.aPosition, // attribute location
+            attributes.aPosition, // attribute location
             2, // number of components per attribute
             gl.FLOAT, // the type of each component
             false, // should integers be normalized when cast to a float
@@ -110,14 +110,14 @@ class App extends Application {
 
         // Repeat for color data.
         gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBuffer);
-        gl.enableVertexAttribArray(program.attributes.aColor);
-        gl.vertexAttribPointer(program.attributes.aColor, 4, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(attributes.aColor);
+        gl.vertexAttribPointer(attributes.aColor, 4, gl.FLOAT, false, 0, 0);
 
         // Set all uniforms. Uniform values are program state, so they do not
         // need to be set again when switching to a different program and
         // then switching back.
         // The uniform uOffset is of type vec2 so we pass in two floats (2f).
-        gl.uniform2f(program.uniforms.uOffset, this.offsetX, this.offsetY);
+        gl.uniform2f(uniforms.uOffset, this.offsetX, this.offsetY);
 
         // Draw! The primitive type is chosen by the user from
         // a list of options (see above). We are drawing 3 vertices

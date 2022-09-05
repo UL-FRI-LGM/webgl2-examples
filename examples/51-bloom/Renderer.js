@@ -55,18 +55,18 @@ export class Renderer {
 
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        const program = this.programs.renderGeometryBuffer;
-        gl.useProgram(program.program);
+        const { program, uniforms } = this.programs.renderGeometryBuffer;
+        gl.useProgram(program);
 
         const matrix = mat4.create();
         const viewMatrix = camera.getGlobalTransform();
         mat4.invert(viewMatrix, viewMatrix);
         mat4.mul(matrix, camera.projection, viewMatrix);
 
-        gl.uniform1f(program.uniforms.uEmissionStrength, this.emissionStrength);
+        gl.uniform1f(uniforms.uEmissionStrength, this.emissionStrength);
 
         for (const node of scene.nodes) {
-            this.renderNode(node, matrix, program);
+            this.renderNode(node, matrix, uniforms);
         }
     }
 
@@ -84,15 +84,15 @@ export class Renderer {
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.bloomBuffer.framebuffer);
         gl.viewport(0, 0, size.width, size.height);
 
-        const program = this.programs.renderBloom;
-        gl.useProgram(program.program);
+        const { program, uniforms } = this.programs.renderBloom;
+        gl.useProgram(program);
 
-        gl.uniform1f(program.uniforms.uBloomThreshold, this.bloomThreshold);
-        gl.uniform1f(program.uniforms.uBloomStepWidth, this.bloomStepWidth);
+        gl.uniform1f(uniforms.uBloomThreshold, this.bloomThreshold);
+        gl.uniform1f(uniforms.uBloomStepWidth, this.bloomStepWidth);
 
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this.geometryBuffer.colorTexture);
-        gl.uniform1i(program.uniforms.uColor, 0);
+        gl.uniform1i(uniforms.uColor, 0);
 
         gl.generateMipmap(gl.TEXTURE_2D);
 
@@ -114,14 +114,14 @@ export class Renderer {
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.blurBuffer.writeFramebuffer);
         gl.viewport(0, 0, size.width, size.height);
 
-        const program = this.programs.renderBlur;
-        gl.useProgram(program.program);
+        const { program, uniforms } = this.programs.renderBlur;
+        gl.useProgram(program);
 
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this.bloomBuffer.texture);
-        gl.uniform1i(program.uniforms.uColor, 0);
+        gl.uniform1i(uniforms.uColor, 0);
 
-        gl.uniform2f(program.uniforms.uDirection, 1 / size.width, 0);
+        gl.uniform2f(uniforms.uDirection, 1 / size.width, 0);
 
         gl.bindVertexArray(this.clipQuad.vao);
         gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
@@ -130,9 +130,9 @@ export class Renderer {
 
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this.blurBuffer.writeTexture);
-        gl.uniform1i(program.uniforms.uColor, 0);
+        gl.uniform1i(uniforms.uColor, 0);
 
-        gl.uniform2f(program.uniforms.uDirection, 0, 1 / size.height);
+        gl.uniform2f(uniforms.uDirection, 0, 1 / size.height);
 
         gl.bindVertexArray(this.clipQuad.vao);
         gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
@@ -142,9 +142,9 @@ export class Renderer {
 
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, this.blurBuffer.readTexture);
-            gl.uniform1i(program.uniforms.uColor, 0);
+            gl.uniform1i(uniforms.uColor, 0);
 
-            gl.uniform2f(program.uniforms.uDirection, 1 / size.width, 0);
+            gl.uniform2f(uniforms.uDirection, 1 / size.width, 0);
 
             gl.bindVertexArray(this.clipQuad.vao);
             gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
@@ -153,9 +153,9 @@ export class Renderer {
 
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, this.blurBuffer.writeTexture);
-            gl.uniform1i(program.uniforms.uColor, 0);
+            gl.uniform1i(uniforms.uColor, 0);
 
-            gl.uniform2f(program.uniforms.uDirection, 0, 1 / size.height);
+            gl.uniform2f(uniforms.uDirection, 0, 1 / size.height);
 
             gl.bindVertexArray(this.clipQuad.vao);
             gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
@@ -176,24 +176,24 @@ export class Renderer {
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         gl.viewport(0, 0, size.width, size.height);
 
-        const program = this.programs.renderToCanvas;
-        gl.useProgram(program.program);
+        const { program, uniforms } = this.programs.renderToCanvas;
+        gl.useProgram(program);
 
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this.geometryBuffer.colorTexture);
-        gl.uniform1i(program.uniforms.uColor, 0);
+        gl.uniform1i(uniforms.uColor, 0);
 
         gl.activeTexture(gl.TEXTURE1);
         gl.bindTexture(gl.TEXTURE_2D, this.blurBuffer.readTexture);
-        gl.uniform1i(program.uniforms.uBloom, 1);
+        gl.uniform1i(uniforms.uBloom, 1);
 
-        gl.uniform1f(program.uniforms.uExposure, this.exposure);
+        gl.uniform1f(uniforms.uExposure, this.exposure);
 
         gl.bindVertexArray(this.clipQuad.vao);
         gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
     }
 
-    renderNode(node, matrix, program) {
+    renderNode(node, matrix, uniforms) {
         const gl = this.gl;
 
         matrix = mat4.clone(matrix);
@@ -201,21 +201,21 @@ export class Renderer {
 
         if (node.mesh) {
             gl.bindVertexArray(node.mesh.vao);
-            gl.uniformMatrix4fv(program.uniforms.uProjectionViewModel, false, matrix);
+            gl.uniformMatrix4fv(uniforms.uProjectionViewModel, false, matrix);
 
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, node.diffuseTexture);
-            gl.uniform1i(program.uniforms.uDiffuse, 0);
+            gl.uniform1i(uniforms.uDiffuse, 0);
 
             gl.activeTexture(gl.TEXTURE1);
             gl.bindTexture(gl.TEXTURE_2D, node.emissionTexture);
-            gl.uniform1i(program.uniforms.uEmission, 1);
+            gl.uniform1i(uniforms.uEmission, 1);
 
             gl.drawElements(gl.TRIANGLES, node.mesh.indices, gl.UNSIGNED_SHORT, 0);
         }
 
         for (const child of node.children) {
-            this.renderNode(child, matrix, program);
+            this.renderNode(child, matrix, uniforms);
         }
     }
 

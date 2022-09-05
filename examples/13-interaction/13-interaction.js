@@ -226,15 +226,15 @@ class App extends Application {
 
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        const program = this.programs.simple;
-        gl.useProgram(program.program);
+        const { program, uniforms } = this.programs.simple;
+        gl.useProgram(program);
 
         gl.activeTexture(gl.TEXTURE0);
-        gl.uniform1i(program.uniforms.uTexture, 0);
+        gl.uniform1i(uniforms.uTexture, 0);
 
         let mvpMatrix = mat4.create();
         const mvpStack = [];
-        const mvpLocation = program.uniforms.uModelViewProjection;
+        const mvpLocation = uniforms.uModelViewProjection;
         const viewMatrix = this.camera.getGlobalTransform();
         mat4.invert(viewMatrix, viewMatrix);
         mat4.mul(mvpMatrix, this.camera.projection, viewMatrix);
