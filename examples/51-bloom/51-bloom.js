@@ -83,10 +83,7 @@ class App extends Application {
         this.aspect = w / h;
         this.camera.aspect = this.aspect;
         this.camera.updateProjection();
-
-        this.renderer.createGeometryBuffer();
-        this.renderer.createBloomBuffer();
-        this.renderer.createBlurBuffer();
+        this.renderer.resize(w, h);
     }
 
     pointerdownHandler(e) {
@@ -125,7 +122,10 @@ await app.init();
 document.querySelector('.loader-container').remove();
 
 const gui = new GUI();
-gui.add(app.renderer, 'emissionStrength', 0, 5);
+gui.add(app.renderer, 'emissionStrength', 0, 10);
+gui.add(app.renderer, 'bloomIntensity', 0, 2);
 gui.add(app.renderer, 'bloomThreshold', 0, 5);
-gui.add(app.renderer, 'bloomStepWidth', 0, 1);
+gui.add(app.renderer, 'bloomKnee', 0, 1);
 gui.add(app.renderer, 'exposure', 0, 5);
+gui.add(app.renderer, 'brightness', 0, 5);
+gui.add(app.renderer, 'gamma', 0.5, 3);

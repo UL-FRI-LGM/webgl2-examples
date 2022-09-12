@@ -20,30 +20,34 @@ export class Renderer {
 
         this.programs = WebGL.buildPrograms(gl, shaders);
 
-        this.emissionStrength = 5;
-        this.bloomThreshold = 1;
-        this.bloomStepWidth = 1;
+        this.emissionStrength = 10;
         this.exposure = 1;
-        this.bloomResolutionDivider = 4;
+        this.brightness = 1;
+        this.gamma = 2.2;
+
+        this.bloomThreshold = 1.5;
+        this.bloomKnee = 0.9;
+        this.bloomIntensity = 0.7;
+        this.bloomBuffers = [];
 
         this.createGeometryBuffer();
-        this.createBloomBuffer();
-        this.createBlurBuffer();
         this.createClipQuad();
     }
 
     render(scene, camera) {
         this.renderGeometry(scene, camera);
+        this.renderBright();
         this.renderBloom();
-        this.renderBlur();
         this.renderToCanvas();
+    }
+
+    resize(width, height) {
+        this.createGeometryBuffer();
+        this.createBloomBuffers();
     }
 
     renderGeometry(scene, camera) {
         const gl = this.gl;
-
-        gl.enable(gl.DEPTH_TEST);
-        gl.enable(gl.CULL_FACE);
 
         const size = {
             width: gl.drawingBufferWidth,
@@ -64,109 +68,102 @@ export class Renderer {
         mat4.mul(matrix, camera.projection, viewMatrix);
 
         gl.uniform1f(uniforms.uEmissionStrength, this.emissionStrength);
+        gl.uniform1f(uniforms.uExposure, this.exposure);
 
         for (const node of scene.nodes) {
             this.renderNode(node, matrix, uniforms);
         }
     }
 
-    renderBloom() {
+    renderBright() {
         const gl = this.gl;
 
-        gl.disable(gl.DEPTH_TEST);
-        gl.disable(gl.CULL_FACE);
-
-        const size = {
-            width: Math.floor(gl.drawingBufferWidth / this.bloomResolutionDivider),
-            height: Math.floor(gl.drawingBufferHeight / this.bloomResolutionDivider),
-        };
-
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.bloomBuffer.framebuffer);
+        const { framebuffer, size } = this.bloomBuffers[0];
+        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
         gl.viewport(0, 0, size.width, size.height);
 
-        const { program, uniforms } = this.programs.renderBloom;
+        const { program, uniforms } = this.programs.renderBright;
         gl.useProgram(program);
-
-        gl.uniform1f(uniforms.uBloomThreshold, this.bloomThreshold);
-        gl.uniform1f(uniforms.uBloomStepWidth, this.bloomStepWidth);
 
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this.geometryBuffer.colorTexture);
         gl.uniform1i(uniforms.uColor, 0);
 
-        gl.generateMipmap(gl.TEXTURE_2D);
+        gl.uniform1f(uniforms.uBloomThreshold, this.bloomThreshold);
+        gl.uniform1f(uniforms.uBloomKnee, this.bloomKnee);
 
         gl.bindVertexArray(this.clipQuad.vao);
         gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
     }
 
-    renderBlur() {
+    renderBloom() {
         const gl = this.gl;
 
-        gl.disable(gl.DEPTH_TEST);
-        gl.disable(gl.CULL_FACE);
+        const levels = this.bloomBuffers.length;
 
-        const size = {
-            width: Math.floor(gl.drawingBufferWidth / this.bloomResolutionDivider),
-            height: Math.floor(gl.drawingBufferHeight / this.bloomResolutionDivider),
-        };
+        for (let i = 1; i < levels; i++) {
+            const { framebuffer, size } = this.bloomBuffers[i];
 
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.blurBuffer.writeFramebuffer);
-        gl.viewport(0, 0, size.width, size.height);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+            gl.viewport(0, 0, size.width, size.height);
 
-        const { program, uniforms } = this.programs.renderBlur;
-        gl.useProgram(program);
-
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, this.bloomBuffer.texture);
-        gl.uniform1i(uniforms.uColor, 0);
-
-        gl.uniform2f(uniforms.uDirection, 1 / size.width, 0);
-
-        gl.bindVertexArray(this.clipQuad.vao);
-        gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
-
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.blurBuffer.readFramebuffer);
-
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, this.blurBuffer.writeTexture);
-        gl.uniform1i(uniforms.uColor, 0);
-
-        gl.uniform2f(uniforms.uDirection, 0, 1 / size.height);
-
-        gl.bindVertexArray(this.clipQuad.vao);
-        gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
-
-        for (let i = 0; i < 2; i++) {
-            gl.bindFramebuffer(gl.FRAMEBUFFER, this.blurBuffer.writeFramebuffer);
+            const { program, uniforms } = this.programs.downsampleAndBlur;
+            gl.useProgram(program);
 
             gl.activeTexture(gl.TEXTURE0);
-            gl.bindTexture(gl.TEXTURE_2D, this.blurBuffer.readTexture);
+            gl.bindTexture(gl.TEXTURE_2D, this.bloomBuffers[i - 1].texture);
             gl.uniform1i(uniforms.uColor, 0);
-
-            gl.uniform2f(uniforms.uDirection, 1 / size.width, 0);
-
-            gl.bindVertexArray(this.clipQuad.vao);
-            gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
-
-            gl.bindFramebuffer(gl.FRAMEBUFFER, this.blurBuffer.readFramebuffer);
-
-            gl.activeTexture(gl.TEXTURE0);
-            gl.bindTexture(gl.TEXTURE_2D, this.blurBuffer.writeTexture);
-            gl.uniform1i(uniforms.uColor, 0);
-
-            gl.uniform2f(uniforms.uDirection, 0, 1 / size.height);
 
             gl.bindVertexArray(this.clipQuad.vao);
             gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
         }
+
+        gl.enable(gl.BLEND);
+        gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE, gl.ONE, gl.ZERO);
+
+        for (let i = levels - 2; i >= 0; i--) {
+            const { framebuffer, size } = this.bloomBuffers[i];
+
+            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+            gl.viewport(0, 0, size.width, size.height);
+
+            const { program, uniforms } = this.programs.upsampleAndCombine;
+            gl.useProgram(program);
+
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, this.bloomBuffers[i + 1].texture);
+            gl.uniform1i(uniforms.uColor, 0);
+
+            gl.uniform1f(uniforms.uBloomIntensity, this.bloomIntensity);
+
+            gl.bindVertexArray(this.clipQuad.vao);
+            gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+        }
+
+        gl.blendFuncSeparate(gl.ONE, gl.ONE, gl.ONE, gl.ZERO);
+
+        const { framebuffer, size } = this.bloomBuffers[0];
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+        gl.viewport(0, 0, size.width, size.height);
+
+        const { program, uniforms } = this.programs.upsampleAndCombine;
+        gl.useProgram(program);
+
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, this.geometryBuffer.colorTexture);
+        gl.uniform1i(uniforms.uColor, 0);
+
+        gl.uniform1f(uniforms.uBloomIntensity, 1);
+
+        gl.bindVertexArray(this.clipQuad.vao);
+        gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+
+        gl.disable(gl.BLEND);
     }
 
     renderToCanvas() {
         const gl = this.gl;
-
-        gl.disable(gl.DEPTH_TEST);
-        gl.disable(gl.CULL_FACE);
 
         const size = {
             width: gl.drawingBufferWidth,
@@ -180,14 +177,11 @@ export class Renderer {
         gl.useProgram(program);
 
         gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, this.geometryBuffer.colorTexture);
+        gl.bindTexture(gl.TEXTURE_2D, this.bloomBuffers[0].texture);
         gl.uniform1i(uniforms.uColor, 0);
 
-        gl.activeTexture(gl.TEXTURE1);
-        gl.bindTexture(gl.TEXTURE_2D, this.blurBuffer.readTexture);
-        gl.uniform1i(uniforms.uBloom, 1);
-
-        gl.uniform1f(uniforms.uExposure, this.exposure);
+        gl.uniform1f(uniforms.uBrightness, this.brightness);
+        gl.uniform1f(uniforms.uGamma, this.gamma);
 
         gl.bindVertexArray(this.clipQuad.vao);
         gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
@@ -255,7 +249,7 @@ export class Renderer {
         };
 
         const sampling = {
-            min: gl.LINEAR_MIPMAP_LINEAR,
+            min: gl.LINEAR,
             mag: gl.LINEAR,
             wrapS: gl.CLAMP_TO_EDGE,
             wrapT: gl.CLAMP_TO_EDGE,
@@ -289,18 +283,13 @@ export class Renderer {
         };
     }
 
-    createBloomBuffer() {
+    createBloomBuffers() {
         const gl = this.gl;
 
-        if (this.bloomBuffer) {
-            gl.deleteFramebuffer(this.bloomBuffer.framebuffer);
-            gl.deleteTexture(this.bloomBuffer.texture);
+        for (const buffer of this.bloomBuffers) {
+            gl.deleteFramebuffer(buffer.framebuffer);
+            gl.deleteTexture(buffer.texture);
         }
-
-        const size = {
-            width: Math.floor(gl.drawingBufferWidth / this.bloomResolutionDivider),
-            height: Math.floor(gl.drawingBufferHeight / this.bloomResolutionDivider),
-        };
 
         const sampling = {
             min: gl.LINEAR,
@@ -315,76 +304,37 @@ export class Renderer {
             type: gl.FLOAT,
         };
 
-        const texture = WebGL.createTexture(gl, {
-            ...size,
-            ...sampling,
-            ...format,
-        });
-
-        const framebuffer = gl.createFramebuffer();
-        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
-
-        this.bloomBuffer = {
-            texture,
-            framebuffer,
-        };
-    }
-
-    createBlurBuffer() {
-        const gl = this.gl;
-
-        if (this.blurBuffer) {
-            gl.deleteFramebuffer(this.blurBuffer.readFramebuffer);
-            gl.deleteFramebuffer(this.blurBuffer.writeFramebuffer);
-            gl.deleteTexture(this.blurBuffer.readTexture);
-            gl.deleteTexture(this.blurBuffer.writeTexture);
+        function numberOfLevels(width, height) {
+            return Math.ceil(Math.log2(Math.max(width, height)));
         }
 
-        const size = {
-            width: Math.floor(gl.drawingBufferWidth / this.bloomResolutionDivider),
-            height: Math.floor(gl.drawingBufferHeight / this.bloomResolutionDivider),
-        };
+        function sizeAtLevel(level, baseWidth, baseHeight) {
+            return {
+                width: Math.max(1, Math.floor(baseWidth / (2 ** level))),
+                height: Math.max(1, Math.floor(baseHeight / (2 ** level))),
+            };
+        }
 
-        const sampling = {
-            min: gl.LINEAR,
-            mag: gl.LINEAR,
-            wrapS: gl.CLAMP_TO_EDGE,
-            wrapT: gl.CLAMP_TO_EDGE,
-        };
+        const levels = numberOfLevels(gl.drawingBufferWidth, gl.drawingBufferHeight);
+        this.bloomBuffers = new Array(levels).fill(0).map((_, level) => {
+            const size = sizeAtLevel(level, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
-        const format = {
-            format: gl.RGBA,
-            iformat: gl.RGBA16F,
-            type: gl.FLOAT,
-        };
+            const texture = WebGL.createTexture(gl, {
+                ...size,
+                ...sampling,
+                ...format,
+            });
 
-        const readTexture = WebGL.createTexture(gl, {
-            ...size,
-            ...sampling,
-            ...format,
+            const framebuffer = gl.createFramebuffer();
+            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+
+            return {
+                texture,
+                framebuffer,
+                size,
+            };
         });
-
-        const readFramebuffer = gl.createFramebuffer();
-        gl.bindFramebuffer(gl.FRAMEBUFFER, readFramebuffer);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, readTexture, 0);
-
-        const writeTexture = WebGL.createTexture(gl, {
-            ...size,
-            ...sampling,
-            ...format,
-        });
-
-        const writeFramebuffer = gl.createFramebuffer();
-        gl.bindFramebuffer(gl.FRAMEBUFFER, writeFramebuffer);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, writeTexture, 0);
-
-        this.blurBuffer = {
-            readTexture,
-            readFramebuffer,
-            writeTexture,
-            writeFramebuffer,
-        };
     }
 
     createModel(model) {
