@@ -1,5 +1,5 @@
-# ES6/WebGL 2.0 Examples
-A collection of ES6/WebGL 2.0 examples for undergraduate computer graphics courses.
+This is a collection of JavaScript/WebGL 2.0 examples for undergraduate computer
+graphics courses.
 
 # Building and running
 The examples do not need to be built, but some of them require a server
