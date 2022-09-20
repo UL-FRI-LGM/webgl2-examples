@@ -21,8 +21,8 @@ export class Renderer {
         this.programs = WebGL.buildPrograms(gl, shaders);
 
         this.emissionStrength = 10;
-        this.exposure = 1;
-        this.brightness = 1;
+        this.preExposure = 1;
+        this.postExposure = 1;
         this.gamma = 2.2;
 
         this.bloomThreshold = 1.5;
@@ -68,7 +68,7 @@ export class Renderer {
         mat4.mul(matrix, camera.projection, viewMatrix);
 
         gl.uniform1f(uniforms.uEmissionStrength, this.emissionStrength);
-        gl.uniform1f(uniforms.uExposure, this.exposure);
+        gl.uniform1f(uniforms.uExposure, this.preExposure);
 
         for (const node of scene.nodes) {
             this.renderNode(node, matrix, uniforms);
@@ -180,7 +180,7 @@ export class Renderer {
         gl.bindTexture(gl.TEXTURE_2D, this.bloomBuffers[0].texture);
         gl.uniform1i(uniforms.uColor, 0);
 
-        gl.uniform1f(uniforms.uBrightness, this.brightness);
+        gl.uniform1f(uniforms.uExposure, this.postExposure);
         gl.uniform1f(uniforms.uGamma, this.gamma);
 
         gl.bindVertexArray(this.clipQuad.vao);

@@ -126,6 +126,6 @@ gui.add(app.renderer, 'emissionStrength', 0, 10);
 gui.add(app.renderer, 'bloomIntensity', 0, 2);
 gui.add(app.renderer, 'bloomThreshold', 0, 5);
 gui.add(app.renderer, 'bloomKnee', 0, 1);
-gui.add(app.renderer, 'exposure', 0, 5);
-gui.add(app.renderer, 'brightness', 0, 5);
+gui.add(app.renderer, 'preExposure', 0, 5);
+gui.add(app.renderer, 'postExposure', 0, 5);
 gui.add(app.renderer, 'gamma', 0.5, 3);

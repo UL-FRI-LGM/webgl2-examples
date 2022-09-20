@@ -157,7 +157,7 @@ precision mediump float;
 precision mediump sampler2D;
 
 uniform sampler2D uColor;
-uniform float uBrightness;
+uniform float uExposure;
 uniform float uGamma;
 
 in vec2 vPosition;
@@ -165,7 +165,7 @@ in vec2 vPosition;
 out vec4 oColor;
 
 void main() {
-    vec4 color = texture(uColor, vPosition) * uBrightness;
+    vec4 color = texture(uColor, vPosition) * uExposure;
     oColor = vec4(pow(color.rgb, vec3(1.0 / uGamma)), 1);
 }
 `;
