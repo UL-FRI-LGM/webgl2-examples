@@ -8,7 +8,7 @@ import { shaders } from './shaders.js';
 
 class App extends Application {
 
-    start() {
+    async start() {
         const gl = this.gl;
 
         this.programs = WebGL.buildPrograms(gl, shaders);
@@ -81,21 +81,27 @@ class App extends Application {
 
         mat4.fromTranslation(this.viewMatrix, [ 0, 0, 5 ]);
 
-        this.startTime = performance.now();
+        // Load the image. This will block start() until the promises resolve.
+        // Note that createImageBitmap also accepts <img>, <image>, <video>,
+        // <canvas>, etc., so you can create a texture from such sources.
+        const response = await fetch('../../common/images/crate-diffuse.png');
+        const blob = await response.blob();
+        const imageBitmap = await createImageBitmap(blob);
 
         // Create a texture object.
         this.texture = gl.createTexture();
 
-        // Bind the texture to the correct target. This texture is
-        // going to be used as a 2D texture, not as a cube map,
-        // 3D texture or a texture array.
+        // Bind the texture to the correct target. There are also other texture
+        // types, such as cube maps, 3D textures, and texture arrays.
+        // This texture is going to be used as a 2D texture.
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
-        // Upload some data to the GPU. This is just a red pixel which we
-        // are going to use before the image data is fetched by the browser.
+        // Upload the image to the GPU texture memory pointed to by the
+        // texture object. Note that raw data (ArrayBuffer) can also be
+        // uploaded, but that function has a slightly different prototype.
         gl.texImage2D(
-            // Use the TEXTURE_2D target. Cube maps have different targets
-            // for different faces of the cube.
+
+            // Use the TEXTURE_2D target.
             gl.TEXTURE_2D,
 
             // Upload to the level 0 mipmap (most detailed).
@@ -105,24 +111,17 @@ class App extends Application {
             // adequate for most needs.
             gl.RGBA,
 
-            // Width and height of the texture. This one is only 1x1.
-            1, 1,
-
-            // Border width. Must be 0 by the specification. It was used
-            // in earlier versions of OpenGL, but now it is obsolete.
-            0,
-
-            // The "high-level" format of the texture. Note that the combination
-            // of RGBA for both the high-level format and the internal format
-            // is always accepted by the WebGL, but other may not be.
+            // The "high-level" format of the texture.
             gl.RGBA,
 
             // The type of the data in the main memory.
             gl.UNSIGNED_BYTE,
 
-            // The data in the main memory (red color - before the actual data is
-            // loaded from the URI).
-            new Uint8Array([255, 0, 0, 255])
+            // Note that the (internal format, format, type) combination
+            // has to be supported by WebGL.
+
+            // The ImageBitmap. This can also be <video>, <canvas>, etc.
+            imageBitmap
         );
 
         // We have to set the filtering for the image and optionally
@@ -145,35 +144,10 @@ class App extends Application {
         // A bool will hold the current filtering mode of the texture
         // so we can change it with a press of a button.
         this.isLinearFilter = false;
-
-        // We will also create a request for an image.
-        const image = new Image();
-
-        // Upload the image to the GPU when it is loaded.
-        image.addEventListener('load', () => {
-            // We are inside an event handler. Things may have changed,
-            // so we have to be sure the correct texture is bound.
-            gl.bindTexture(gl.TEXTURE_2D, this.texture);
-
-            gl.texImage2D(
-                gl.TEXTURE_2D,    // target
-                0,                // mipmap level
-                gl.RGBA,          // internal format
-                gl.RGBA,          // format
-                gl.UNSIGNED_BYTE, // type
-
-                // In WebGL we can upload the image element directly.
-                // We can also use <image>, <video> and <canvas> elements.
-                image
-            );
-        });
-
-        // Set the image's source URL to send the request.
-        image.src = '../../common/images/crate-diffuse.png';
     }
 
     update() {
-        const time = performance.now() - this.startTime;
+        const time = performance.now();
         mat4.identity(this.modelMatrix);
         mat4.rotateX(this.modelMatrix, this.modelMatrix, time * 0.0007);
         mat4.rotateY(this.modelMatrix, this.modelMatrix, time * 0.0006);
