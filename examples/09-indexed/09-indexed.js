@@ -1,3 +1,4 @@
+import { GUI } from '../../lib/dat.gui.module.js';
 import { mat4 } from '../../lib/gl-matrix-module.js';
 
 import { Application } from '../../common/engine/Application.js';
@@ -92,19 +93,28 @@ class App extends Application {
 
         // Initialize the camera to be translated 5 units back.
         mat4.fromTranslation(this.viewMatrix, [ 0, 0, 5 ]);
+
+        // A switch to enable or disable rotation.
+        this.isRotationEnabled = true;
+
+        // A switch for perspective-correct interpolation.
+        // This is just to show the effect of incorrect interpolation.
+        this.isPerspectiveCorrect = true;
     }
 
     update() {
-        // Recalculate the model matrix with new rotation values.
-        // We are going to use the running time to
-        // calculate the rotation of the cube.
-        const time = performance.now();
-        mat4.identity(this.modelMatrix);
-        mat4.rotateX(this.modelMatrix, this.modelMatrix, time * 0.0007);
-        mat4.rotateY(this.modelMatrix, this.modelMatrix, time * 0.0006);
+        if (this.isRotationEnabled) {
+            // Recalculate the model matrix with new rotation values.
+            // We are going to use the running time to
+            // calculate the rotation of the cube.
+            const time = performance.now();
+            mat4.identity(this.modelMatrix);
+            mat4.rotateX(this.modelMatrix, this.modelMatrix, time * 0.0007);
+            mat4.rotateY(this.modelMatrix, this.modelMatrix, time * 0.0006);
 
-        // We made changes to the MVP matrix, so we have to update it.
-        this.updateModelViewProjection();
+            // We made changes to the MVP matrix, so we have to update it.
+            this.updateModelViewProjection();
+        }
     }
 
     render() {
@@ -120,7 +130,10 @@ class App extends Application {
         const { program, uniforms } = this.programs.simple;
         gl.useProgram(program);
 
-        // Set the corresponding uniform. The second argument tells WebGL
+        // Set the perspective correctness flag.
+        gl.uniform1i(uniforms.uPerspectiveCorrect, this.isPerspectiveCorrect);
+
+        // Set the transformation uniform. The second argument tells WebGL
         // whether to transpose the matrix before uploading it to the GPU.
         gl.uniformMatrix4fv(uniforms.uModelViewProjection,
             false, this.mvpMatrix);
@@ -137,7 +150,7 @@ class App extends Application {
         const w = this.canvas.clientWidth;
         const h = this.canvas.clientHeight;
         const aspect = w / h;
-        const fovy = Math.PI / 2;
+        const fovy = Math.PI / 3;
         const near = 0.1;
         const far = 100;
 
@@ -168,3 +181,9 @@ const canvas = document.querySelector('canvas');
 const app = new App(canvas);
 await app.init();
 document.querySelector('.loader-container').remove();
+
+const gui = new GUI();
+gui.add(app, 'isPerspectiveCorrect')
+   .name('Perspective-correct');
+gui.add(app, 'isRotationEnabled')
+   .name('Enable rotation');

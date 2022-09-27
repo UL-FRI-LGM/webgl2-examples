@@ -81,6 +81,8 @@ class App extends Application {
 
         mat4.fromTranslation(this.viewMatrix, [ 0, 0, 5 ]);
 
+        this.isRotationEnabled = true;
+
         // Load the image. This will block start() until the promises resolve.
         // Note that createImageBitmap also accepts <img>, <image>, <video>,
         // <canvas>, etc., so you can create a texture from such sources.
@@ -144,15 +146,25 @@ class App extends Application {
         // A bool will hold the current filtering mode of the texture
         // so we can change it with a press of a button.
         this.isLinearFilter = false;
+
+        // A switch for perspective-correct texture mapping.
+        // This is just to show the effect of incorrect texture mapping.
+        this.isPerspectiveCorrect = true;
+
+        // The texture coordinates are scaled in the shader.
+        // This is just to demonstrate undersampling issues.
+        this.textureScale = 1;
     }
 
     update() {
-        const time = performance.now();
-        mat4.identity(this.modelMatrix);
-        mat4.rotateX(this.modelMatrix, this.modelMatrix, time * 0.0007);
-        mat4.rotateY(this.modelMatrix, this.modelMatrix, time * 0.0006);
+        if (this.isRotationEnabled) {
+            const time = performance.now();
+            mat4.identity(this.modelMatrix);
+            mat4.rotateX(this.modelMatrix, this.modelMatrix, time * 0.0007);
+            mat4.rotateY(this.modelMatrix, this.modelMatrix, time * 0.0006);
 
-        this.updateModelViewProjection();
+            this.updateModelViewProjection();
+        }
     }
 
     render() {
@@ -165,6 +177,8 @@ class App extends Application {
         const { program, uniforms } = this.programs.simple;
         gl.useProgram(program);
 
+        gl.uniform1i(uniforms.uPerspectiveCorrect, this.isPerspectiveCorrect);
+        gl.uniform1f(uniforms.uTextureScale, this.textureScale);
         gl.uniformMatrix4fv(uniforms.uModelViewProjection,
             false, this.mvpMatrix);
 
@@ -185,7 +199,7 @@ class App extends Application {
         const w = this.canvas.clientWidth;
         const h = this.canvas.clientHeight;
         const aspect = w / h;
-        const fovy = Math.PI / 2;
+        const fovy = Math.PI / 3;
         const near = 0.1;
         const far = 100;
 
@@ -221,3 +235,9 @@ const gui = new GUI();
 gui.add(app, 'isLinearFilter')
    .name('Linear filtering')
    .onChange(e => app.changeFilter());
+gui.add(app, 'isPerspectiveCorrect')
+   .name('Perspective-correct');
+gui.add(app, 'textureScale')
+   .name('Texture scale');
+gui.add(app, 'isRotationEnabled')
+   .name('Enable rotation');
