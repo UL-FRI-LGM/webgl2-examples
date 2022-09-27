@@ -5,8 +5,10 @@ class Application {
 
         this.canvas = canvas;
         this._initGL(glOptions);
-        this.start();
+    }
 
+    async init() {
+        await this.start();
         requestAnimationFrame(this._update);
     }
 
@@ -81,4 +83,5 @@ class Application {
 
 const canvas = document.querySelector('canvas');
 const app = new Application(canvas);
+await app.init();
 document.querySelector('.loader-container').remove();
