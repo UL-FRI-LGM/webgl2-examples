@@ -17,6 +17,19 @@ export class Renderer {
         gl.clearColor(1, 1, 1, 1);
         gl.enable(gl.DEPTH_TEST);
         gl.enable(gl.CULL_FACE);
+
+        this.defaultTexture = WebGL.createTexture(gl, {
+            width: 1,
+            height: 1,
+            data: new Uint8Array([255, 255, 255, 255]),
+        });
+
+        this.defaultSampler = WebGL.createSampler(gl, {
+            min: gl.NEAREST,
+            mag: gl.NEAREST,
+            wrapS: gl.CLAMP_TO_EDGE,
+            wrapT: gl.CLAMP_TO_EDGE,
+        });
     }
 
     prepareBufferView(bufferView) {
@@ -114,7 +127,11 @@ export class Renderer {
         // this is an application-scoped convention, matching the shader
         const attributeNameToIndexMap = {
             POSITION   : 0,
-            TEXCOORD_0 : 1,
+            NORMAL     : 1,
+            TANGENT    : 2,
+            TEXCOORD_0 : 3,
+            TEXCOORD_1 : 4,
+            COLOR_0    : 5,
         };
 
         for (const name in primitive.attributes) {
@@ -181,15 +198,14 @@ export class Renderer {
 
         const program = this.programs.simple;
         gl.useProgram(program.program);
-        gl.uniform1i(program.uniforms.uTexture, 0);
 
         const mvpMatrix = this.getViewProjectionMatrix(camera);
         for (const node of scene.nodes) {
-            this.renderNode(node, mvpMatrix);
+            this.renderNode(node, mvpMatrix, program.uniforms);
         }
     }
 
-    renderNode(node, mvpMatrix) {
+    renderNode(node, mvpMatrix, uniforms) {
         const gl = this.gl;
 
         mvpMatrix = mat4.clone(mvpMatrix);
@@ -199,26 +215,35 @@ export class Renderer {
             const program = this.programs.simple;
             gl.uniformMatrix4fv(program.uniforms.uMvpMatrix, false, mvpMatrix);
             for (const primitive of node.mesh.primitives) {
-                this.renderPrimitive(primitive);
+                this.renderPrimitive(primitive, uniforms);
             }
         }
 
         for (const child of node.children) {
-            this.renderNode(child, mvpMatrix);
+            this.renderNode(child, mvpMatrix, uniforms);
         }
     }
 
-    renderPrimitive(primitive) {
+    renderPrimitive(primitive, uniforms) {
         const gl = this.gl;
 
         const vao = this.glObjects.get(primitive);
-        const material = primitive.material;
-        const texture = material.baseColorTexture;
-        const glTexture = this.glObjects.get(texture.image);
-        const glSampler = this.glObjects.get(texture.sampler);
-
         gl.bindVertexArray(vao);
+
+        const material = primitive.material;
+        gl.uniform4fv(uniforms.uBaseColorFactor, material.baseColorFactor);
+
         gl.activeTexture(gl.TEXTURE0);
+        gl.uniform1i(uniforms.uBaseColorTexture, 0);
+
+        const texture = material.baseColorTexture;
+        const glTexture = texture
+                        ? this.glObjects.get(texture.image)
+                        : this.defaultTexture;
+        const glSampler = texture
+                        ? this.glObjects.get(texture.sampler)
+                        : this.defaultSampler;
+
         gl.bindTexture(gl.TEXTURE_2D, glTexture);
         gl.bindSampler(0, glSampler);
 
