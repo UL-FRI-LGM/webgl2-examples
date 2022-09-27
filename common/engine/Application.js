@@ -35,11 +35,13 @@ export class Application {
         const canvas = this.canvas;
         const gl = this.gl;
 
-        if (canvas.width !== canvas.clientWidth ||
-            canvas.height !== canvas.clientHeight)
-        {
-            canvas.width = canvas.clientWidth;
-            canvas.height = canvas.clientHeight;
+        const pixelRatio = window.devicePixelRatio;
+        const width = pixelRatio * canvas.clientWidth;
+        const height = pixelRatio * canvas.clientHeight;
+
+        if (canvas.width !== width || canvas.height !== height) {
+            canvas.width = width;
+            canvas.height = height;
 
             gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 

@@ -40,9 +40,13 @@ class Application {
         const canvas = this.canvas;
         const gl = this.gl;
 
-        if (canvas.width !== canvas.clientWidth ||
-            canvas.height !== canvas.clientHeight)
-        {
+        // A CSS pixel is not the same as a physical pixel.
+        // Compute the size in physical pixels.
+        const pixelRatio = window.devicePixelRatio;
+        const width = pixelRatio * canvas.clientWidth;
+        const height = pixelRatio * canvas.clientHeight;
+
+        if (canvas.width !== width || canvas.height !== height) {
             canvas.width = canvas.clientWidth;
             canvas.height = canvas.clientHeight;
 
