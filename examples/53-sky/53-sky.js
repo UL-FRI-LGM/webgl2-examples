@@ -12,10 +12,6 @@ class App extends Application {
         const gl = this.gl;
 
         this.renderer = new Renderer(gl);
-
-        this.time = performance.now();
-        this.startTime = this.time;
-
         this.camera = new Camera();
 
         this.canvas.addEventListener('click', e => this.canvas.requestPointerLock());

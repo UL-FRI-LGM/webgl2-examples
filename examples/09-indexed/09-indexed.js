@@ -92,15 +92,13 @@ class App extends Application {
 
         // Initialize the camera to be translated 5 units back.
         mat4.fromTranslation(this.viewMatrix, [ 0, 0, 5 ]);
-
-        // We are going to use the running time to
-        // calculate the rotation of the cube.
-        this.startTime = performance.now();
     }
 
     update() {
         // Recalculate the model matrix with new rotation values.
-        const time = performance.now() - this.startTime;
+        // We are going to use the running time to
+        // calculate the rotation of the cube.
+        const time = performance.now();
         mat4.identity(this.modelMatrix);
         mat4.rotateX(this.modelMatrix, this.modelMatrix, time * 0.0007);
         mat4.rotateY(this.modelMatrix, this.modelMatrix, time * 0.0006);
