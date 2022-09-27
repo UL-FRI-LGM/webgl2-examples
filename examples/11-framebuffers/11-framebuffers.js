@@ -33,8 +33,8 @@ class App extends Application {
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
             -1, -1,    0, 0,
              1, -1,    1, 0,
-             1,  1,    1, 1,
             -1,  1,    0, 1,
+             1,  1,    1, 1,
         ]), gl.STATIC_DRAW);
         gl.enableVertexAttribArray(0);
         gl.enableVertexAttribArray(1);
@@ -134,7 +134,7 @@ class App extends Application {
         // Draw it with a white background.
         gl.clearColor(1, 1, 1, 1);
         gl.clear(gl.COLOR_BUFFER_BIT);
-        gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     }
 
 }

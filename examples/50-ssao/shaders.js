@@ -41,13 +41,18 @@ void main() {
 
 const ssaoVertex = `#version 300 es
 
-layout (location = 0) in vec2 aPosition;
+const vec2 vertices[] = vec2[](
+    vec2(-1, -1),
+    vec2( 3, -1),
+    vec2(-1,  3)
+);
 
 out vec2 vPosition;
 
 void main() {
-    vPosition = aPosition * 0.5 + 0.5;
-    gl_Position = vec4(aPosition, 0, 1);
+    vec2 position = vertices[gl_VertexID];
+    vPosition = position * 0.5 + 0.5;
+    gl_Position = vec4(position, 0, 1);
 }
 `;
 
@@ -99,13 +104,18 @@ void main() {
 
 const renderToCanvasVertex = `#version 300 es
 
-layout (location = 0) in vec2 aPosition;
+const vec2 vertices[] = vec2[](
+    vec2(-1, -1),
+    vec2( 3, -1),
+    vec2(-1,  3)
+);
 
 out vec2 vPosition;
 
 void main() {
-    vPosition = aPosition * 0.5 + 0.5;
-    gl_Position = vec4(aPosition, 0, 1);
+    vec2 position = vertices[gl_VertexID];
+    vPosition = position * 0.5 + 0.5;
+    gl_Position = vec4(position, 0, 1);
 }
 `;
 

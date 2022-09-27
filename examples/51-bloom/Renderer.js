@@ -31,7 +31,6 @@ export class Renderer {
         this.bloomBuffers = [];
 
         this.createGeometryBuffer();
-        this.createClipQuad();
     }
 
     render(scene, camera) {
@@ -92,8 +91,7 @@ export class Renderer {
         gl.uniform1f(uniforms.uBloomThreshold, this.bloomThreshold);
         gl.uniform1f(uniforms.uBloomKnee, this.bloomKnee);
 
-        gl.bindVertexArray(this.clipQuad.vao);
-        gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
 
     renderBloom() {
@@ -114,8 +112,7 @@ export class Renderer {
             gl.bindTexture(gl.TEXTURE_2D, this.bloomBuffers[i - 1].texture);
             gl.uniform1i(uniforms.uColor, 0);
 
-            gl.bindVertexArray(this.clipQuad.vao);
-            gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+            gl.drawArrays(gl.TRIANGLES, 0, 3);
         }
 
         gl.enable(gl.BLEND);
@@ -136,8 +133,7 @@ export class Renderer {
 
             gl.uniform1f(uniforms.uBloomIntensity, this.bloomIntensity);
 
-            gl.bindVertexArray(this.clipQuad.vao);
-            gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+            gl.drawArrays(gl.TRIANGLES, 0, 3);
         }
 
         gl.blendFuncSeparate(gl.ONE, gl.ONE, gl.ONE, gl.ZERO);
@@ -156,8 +152,7 @@ export class Renderer {
 
         gl.uniform1f(uniforms.uBloomIntensity, 1);
 
-        gl.bindVertexArray(this.clipQuad.vao);
-        gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
 
         gl.disable(gl.BLEND);
     }
@@ -183,8 +178,7 @@ export class Renderer {
         gl.uniform1f(uniforms.uExposure, this.postExposure);
         gl.uniform1f(uniforms.uGamma, this.gamma);
 
-        gl.bindVertexArray(this.clipQuad.vao);
-        gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
 
     renderNode(node, matrix, uniforms) {
@@ -211,27 +205,6 @@ export class Renderer {
         for (const child of node.children) {
             this.renderNode(child, matrix, uniforms);
         }
-    }
-
-    createClipQuad() {
-        const gl = this.gl;
-
-        if (this.clipQuad) {
-            gl.deleteVertexArray(this.clipQuad.vao);
-            gl.deleteBuffer(this.clipQuad.buffer);
-        }
-
-        const vao = gl.createVertexArray();
-        gl.bindVertexArray(vao);
-
-        const buffer = WebGL.createClipQuad(gl);
-        gl.enableVertexAttribArray(0);
-        gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
-
-        this.clipQuad = {
-            vao,
-            buffer,
-        };
     }
 
     createGeometryBuffer() {

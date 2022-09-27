@@ -50,7 +50,6 @@ export class Renderer {
         this.createGeometryBuffer();
         this.createSSAOBuffer();
         this.createSSAOSamples();
-        this.createClipQuad();
     }
 
     render(scene, camera) {
@@ -112,8 +111,7 @@ export class Renderer {
         gl.bindTexture(gl.TEXTURE_2D, this.geometryBuffer.normalTexture);
         gl.uniform1i(uniforms.uNormal, 2);
 
-        gl.bindVertexArray(this.clipQuad.vao);
-        gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
 
     renderToCanvas() {
@@ -141,8 +139,7 @@ export class Renderer {
         gl.bindTexture(gl.TEXTURE_2D, this.geometryBuffer.normalTexture);
         gl.uniform1i(uniforms.uNormal, 2);
 
-        gl.bindVertexArray(this.clipQuad.vao);
-        gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
 
     renderNode(node, matrix, uniforms) {
@@ -163,27 +160,6 @@ export class Renderer {
         for (const child of node.children) {
             this.renderNode(child, matrix, uniforms);
         }
-    }
-
-    createClipQuad() {
-        const gl = this.gl;
-
-        if (this.clipQuad) {
-            gl.deleteVertexArray(this.clipQuad.vao);
-            gl.deleteBuffer(this.clipQuad.buffer);
-        }
-
-        const vao = gl.createVertexArray();
-        gl.bindVertexArray(vao);
-
-        const buffer = WebGL.createClipQuad(gl);
-        gl.enableVertexAttribArray(0);
-        gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
-
-        this.clipQuad = {
-            vao,
-            buffer,
-        };
     }
 
     createGeometryBuffer() {

@@ -121,27 +121,6 @@ export class Renderer {
         }
     }
 
-    createClipQuad() {
-        const gl = this.gl;
-
-        if (this.clipQuad) {
-            gl.deleteVertexArray(this.clipQuad.vao);
-            gl.deleteBuffer(this.clipQuad.buffer);
-        }
-
-        const vao = gl.createVertexArray();
-        gl.bindVertexArray(vao);
-
-        const buffer = WebGL.createClipQuad(gl);
-        gl.enableVertexAttribArray(0);
-        gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
-
-        this.clipQuad = {
-            vao,
-            buffer,
-        };
-    }
-
     createShadowBuffer() {
         const gl = this.gl;
 

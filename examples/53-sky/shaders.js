@@ -1,11 +1,17 @@
 const nishitaVertex = `#version 300 es
-layout (location = 0) in vec2 aPosition;
+
+const vec2 vertices[] = vec2[](
+    vec2(-1, -1),
+    vec2( 3, -1),
+    vec2(-1,  3)
+);
 
 out vec2 vPosition;
 
 void main() {
-    vPosition = aPosition * 0.5 + 0.5;
-    gl_Position = vec4(aPosition, 0, 1);
+    vec2 position = vertices[gl_VertexID];
+    vPosition = position * 0.5 + 0.5;
+    gl_Position = vec4(position, 0, 1);
 }
 `;
 
@@ -197,7 +203,12 @@ void main() {
 `;
 
 const skyboxVertex = `#version 300 es
-layout (location = 0) in vec2 aPosition;
+
+const vec2 vertices[] = vec2[](
+    vec2(-1, -1),
+    vec2( 3, -1),
+    vec2(-1,  3)
+);
 
 uniform mat4 uUnprojectMatrix;
 
@@ -209,10 +220,11 @@ vec3 unproject(vec3 devicePosition) {
 }
 
 void main() {
-    vec3 near = unproject(vec3(aPosition, -1));
-    vec3 far = unproject(vec3(aPosition, 1));
+    vec2 position = vertices[gl_VertexID];
+    vec3 near = unproject(vec3(position, -1));
+    vec3 far = unproject(vec3(position, 1));
     vDirection = far - near;
-    gl_Position = vec4(aPosition, 0, 1);
+    gl_Position = vec4(position, 0, 1);
 }
 `;
 

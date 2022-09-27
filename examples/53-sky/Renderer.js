@@ -33,9 +33,7 @@ export class Renderer {
         });
 
         this.programs = WebGL.buildPrograms(gl, shaders);
-        this.clipQuad = this.createClipQuad();
 
-        this.createClipQuad();
         this.createSkyBuffer();
     }
 
@@ -116,8 +114,7 @@ export class Renderer {
         gl.uniform1ui(uniforms.uPrimaryRaySamples, this.primaryRaySamples);
         gl.uniform1ui(uniforms.uSecondaryRaySamples, this.secondaryRaySamples);
 
-        gl.bindVertexArray(this.clipQuad.vao);
-        gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
 
     renderSkybox(camera) {
@@ -146,29 +143,7 @@ export class Renderer {
         gl.bindTexture(gl.TEXTURE_2D, this.sky.texture);
         gl.uniform1i(uniforms.uSkybox, 0);
 
-        gl.bindVertexArray(this.clipQuad.vao);
-        gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
-    }
-
-    createClipQuad() {
-        const gl = this.gl;
-
-        if (this.clipQuad) {
-            gl.deleteVertexArray(this.clipQuad.vao);
-            gl.deleteBuffer(this.clipQuad.buffer);
-        }
-
-        const vao = gl.createVertexArray();
-        gl.bindVertexArray(vao);
-
-        const buffer = WebGL.createClipQuad(gl);
-        gl.enableVertexAttribArray(0);
-        gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
-
-        this.clipQuad = {
-            vao,
-            buffer,
-        };
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
 
 }
