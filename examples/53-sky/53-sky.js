@@ -2,26 +2,31 @@ import { GUI } from '../../lib/dat.gui.module.js';
 import { mat4 } from '../../lib/gl-matrix-module.js';
 
 import { Application } from '../../common/engine/Application.js';
+import { Node } from '../../common/engine/Node.js';
+import { FirstPersonController } from '../../common/engine/FirstPersonController.js';
 
 import { Renderer } from './Renderer.js';
-import { Camera } from './Camera.js';
 
 class App extends Application {
 
     async start() {
         const gl = this.gl;
 
-        this.renderer = new Renderer(gl);
-        this.camera = new Camera();
+        this.time = performance.now();
+        this.startTime = this.time;
 
-        this.canvas.addEventListener('click', e => this.canvas.requestPointerLock());
-        document.addEventListener('pointerlockchange', e => {
-            if (document.pointerLockElement === this.canvas) {
-                this.camera.enable();
-            } else {
-                this.camera.disable();
-            }
-        });
+        this.renderer = new Renderer(gl);
+        this.camera = new Node();
+        this.camera.projection = mat4.create();
+        this.cameraController = new FirstPersonController(this.camera, this.canvas);
+    }
+
+    update() {
+        this.time = performance.now();
+        const dt = (this.time - this.startTime) * 0.001;
+        this.startTime = this.time;
+
+        this.cameraController.update(dt);
     }
 
     render() {
@@ -29,8 +34,14 @@ class App extends Application {
     }
 
     resize() {
-        this.camera.aspect = this.canvas.clientWidth / this.canvas.clientHeight;
-        this.camera.updateProjection();
+        const w = this.canvas.clientWidth;
+        const h = this.canvas.clientHeight;
+        const aspect = w / h;
+        const fovy = Math.PI / 3;
+        const near = 0.1;
+        const far = 100;
+
+        mat4.perspective(this.camera.projection, fovy, aspect, near, far);
     }
 
 }

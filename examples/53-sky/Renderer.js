@@ -123,8 +123,7 @@ export class Renderer {
         const { program, uniforms } = this.programs.skybox;
         gl.useProgram(program);
 
-        camera.updateMatrix();
-        const viewMatrix = camera.getGlobalTransform();
+        const viewMatrix = camera.globalMatrix;
         const unprojectMatrix = mat4.clone(camera.projection);
         mat4.invert(unprojectMatrix, unprojectMatrix);
         mat4.multiply(unprojectMatrix, viewMatrix, unprojectMatrix);

@@ -1,4 +1,4 @@
-import { Node } from './Node.js';
+import { Node } from '../../common/engine/Node.js';
 
 export class Scene {
 
@@ -26,12 +26,5 @@ export class Scene {
         if (after) {
             after(node);
         }
-    }
-
-    clone() {
-        return new Scene({
-            ...this,
-            nodes: this.nodes.map(node => node.clone()),
-        });
     }
 }

@@ -14,60 +14,49 @@ export class Renderer {
         gl.enable(gl.CULL_FACE);
 
         this.programs = WebGL.buildPrograms(gl, shaders);
-        this.currentProgram = this.programs.perVertex;
-        this.perFragment = false;
     }
 
-    render(scene, camera, light) {
+    render(scene, camera) {
         const gl = this.gl;
 
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        const { program, uniforms } = this.currentProgram;
+        const { program, uniforms } = this.programs.simple;
         gl.useProgram(program);
 
         const viewMatrix = camera.globalMatrix;
         mat4.invert(viewMatrix, viewMatrix);
-        gl.uniformMatrix4fv(uniforms.uViewMatrix, false, viewMatrix);
-        gl.uniformMatrix4fv(uniforms.uProjectionMatrix, false, camera.projection);
-        gl.uniform3fv(uniforms.uCameraPosition,
-            mat4.getTranslation(vec3.create(), camera.globalMatrix));
 
-        gl.uniform3fv(uniforms.uLight.color,
-            vec3.scale(vec3.create(), light.color, light.intensity / 255));
-        gl.uniform3fv(uniforms.uLight.position,
-            mat4.getTranslation(vec3.create(), light.globalMatrix));
-        gl.uniform3fv(uniforms.uLight.attenuation, light.attenuation);
+        const mvpMatrix = mat4.create();
+        mat4.mul(mvpMatrix, mvpMatrix, camera.projection);
+        mat4.mul(mvpMatrix, mvpMatrix, viewMatrix);
+        mat4.mul(mvpMatrix, mvpMatrix, scene.globalMatrix);
 
-        this.renderNode(scene, scene.globalMatrix);
+        this.renderNode(scene, mvpMatrix);
     }
 
-    renderNode(node, modelMatrix) {
+    renderNode(node, mvpMatrix) {
         const gl = this.gl;
 
-        modelMatrix = mat4.clone(modelMatrix);
-        mat4.mul(modelMatrix, modelMatrix, node.localMatrix);
+        mvpMatrix = mat4.clone(mvpMatrix);
+        mat4.mul(mvpMatrix, mvpMatrix, node.localMatrix);
 
-        const { uniforms } = this.currentProgram;
+        const { uniforms } = this.programs.simple;
 
-        if (node.model && node.material) {
+        if (node.model && node.texture) {
             gl.bindVertexArray(node.model.vao);
 
-            gl.uniformMatrix4fv(uniforms.uModelMatrix, false, modelMatrix);
+            gl.uniformMatrix4fv(uniforms.uModelViewProjection, false, mvpMatrix);
 
             gl.activeTexture(gl.TEXTURE0);
             gl.uniform1i(uniforms.uTexture, 0);
-            gl.bindTexture(gl.TEXTURE_2D, node.material.texture);
-
-            gl.uniform1f(uniforms.uMaterial.diffuse, node.material.diffuse);
-            gl.uniform1f(uniforms.uMaterial.specular, node.material.specular);
-            gl.uniform1f(uniforms.uMaterial.shininess, node.material.shininess);
+            gl.bindTexture(gl.TEXTURE_2D, node.texture);
 
             gl.drawElements(gl.TRIANGLES, node.model.indices, gl.UNSIGNED_SHORT, 0);
         }
 
         for (const child of node.children) {
-            this.renderNode(child, modelMatrix);
+            this.renderNode(child, mvpMatrix);
         }
     }
 

@@ -23,19 +23,19 @@ export class Renderer {
         const { program, uniforms } = this.programs.instanced;
         gl.useProgram(program);
 
-        const viewMatrix = camera.getGlobalTransform();
+        const viewMatrix = camera.globalMatrix;
         mat4.invert(viewMatrix, viewMatrix);
         gl.uniformMatrix4fv(uniforms.uViewMatrix, false, viewMatrix);
         gl.uniformMatrix4fv(uniforms.uProjectionMatrix, false, camera.projection);
 
-        this.renderNode(scene, scene.getGlobalTransform());
+        this.renderNode(scene, scene.globalMatrix);
     }
 
     renderNode(node, modelMatrix) {
         const gl = this.gl;
 
         modelMatrix = mat4.clone(modelMatrix);
-        mat4.mul(modelMatrix, modelMatrix, node.matrix);
+        mat4.mul(modelMatrix, modelMatrix, node.localMatrix);
 
         const { uniforms } = this.programs.instanced;
 

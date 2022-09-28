@@ -180,12 +180,7 @@ export class Renderer {
     }
 
     getViewProjectionMatrix(camera) {
-        const vpMatrix = mat4.clone(camera.matrix);
-        let parent = camera.parent;
-        while (parent) {
-            mat4.mul(vpMatrix, parent.matrix, vpMatrix);
-            parent = parent.parent;
-        }
+        const vpMatrix = camera.globalMatrix;
         mat4.invert(vpMatrix, vpMatrix);
         mat4.mul(vpMatrix, camera.camera.matrix, vpMatrix);
         return vpMatrix;
@@ -196,36 +191,39 @@ export class Renderer {
 
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        const program = this.programs.simple;
-        gl.useProgram(program.program);
+        const { program, uniforms } = this.programs.simple;
+        gl.useProgram(program);
 
         const mvpMatrix = this.getViewProjectionMatrix(camera);
         for (const node of scene.nodes) {
-            this.renderNode(node, mvpMatrix, program.uniforms);
+            this.renderNode(node, mvpMatrix);
         }
     }
 
-    renderNode(node, mvpMatrix, uniforms) {
+    renderNode(node, mvpMatrix) {
         const gl = this.gl;
 
+        const { program, uniforms } = this.programs.simple;
+
         mvpMatrix = mat4.clone(mvpMatrix);
-        mat4.mul(mvpMatrix, mvpMatrix, node.matrix);
+        mat4.mul(mvpMatrix, mvpMatrix, node.localMatrix);
 
         if (node.mesh) {
-            const program = this.programs.simple;
-            gl.uniformMatrix4fv(program.uniforms.uMvpMatrix, false, mvpMatrix);
+            gl.uniformMatrix4fv(uniforms.uModelViewProjection, false, mvpMatrix);
             for (const primitive of node.mesh.primitives) {
-                this.renderPrimitive(primitive, uniforms);
+                this.renderPrimitive(primitive);
             }
         }
 
         for (const child of node.children) {
-            this.renderNode(child, mvpMatrix, uniforms);
+            this.renderNode(child, mvpMatrix);
         }
     }
 
-    renderPrimitive(primitive, uniforms) {
+    renderPrimitive(primitive) {
         const gl = this.gl;
+
+        const { program, uniforms } = this.programs.simple;
 
         const vao = this.glObjects.get(primitive);
         gl.bindVertexArray(vao);

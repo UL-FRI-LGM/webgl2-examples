@@ -1,11 +1,11 @@
 import { GUI } from '../../lib/dat.gui.module.js';
-import { mat4 } from '../../lib/gl-matrix-module.js';
+import { quat, mat4 } from '../../lib/gl-matrix-module.js';
 
 import { Application } from '../../common/engine/Application.js';
+import { Node } from '../../common/engine/Node.js';
+import { FirstPersonController } from '../../common/engine/FirstPersonController.js';
 
 import { Renderer } from './Renderer.js';
-import { Node } from './Node.js';
-import { Camera } from './Camera.js';
 import { Material } from './Material.js';
 
 class App extends Application {
@@ -19,14 +19,17 @@ class App extends Application {
         this.startTime = this.time;
 
         this.root = new Node();
-        this.camera = new Camera();
+        this.camera = new Node();
         this.funky = new Node();
         this.skybox = new Node();
         this.root.addChild(this.camera);
         this.root.addChild(this.funky);
 
+        this.cameraController = new FirstPersonController(this.camera, this.canvas);
+        this.cameraController.pitch = -Math.PI / 6;
+
+        this.camera.projection = mat4.create();
         this.camera.translation = [0, 2, 5];
-        this.camera.rotation = [-0.6, 0, 0];
 
         const [cube, funky, texture, envmap] = await Promise.all([
             this.renderer.loadModel('../../common/models/cube.json'),
@@ -50,15 +53,6 @@ class App extends Application {
         this.funky.material = new Material();
         this.funky.material.texture = texture;
         this.funky.material.envmap = envmap;
-
-        this.canvas.addEventListener('click', e => this.canvas.requestPointerLock());
-        document.addEventListener('pointerlockchange', e => {
-            if (document.pointerLockElement === this.canvas) {
-                this.camera.enable();
-            } else {
-                this.camera.disable();
-            }
-        });
     }
 
     update() {
@@ -66,7 +60,7 @@ class App extends Application {
         const dt = (this.time - this.startTime) * 0.001;
         this.startTime = this.time;
 
-        this.camera.update(dt);
+        this.cameraController.update(dt);
     }
 
     render() {

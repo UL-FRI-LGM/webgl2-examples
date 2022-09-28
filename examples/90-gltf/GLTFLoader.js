@@ -7,8 +7,9 @@ import { Primitive } from './Primitive.js';
 import { Mesh } from './Mesh.js';
 import { PerspectiveCamera } from './PerspectiveCamera.js';
 import { OrthographicCamera } from './OrthographicCamera.js';
-import { Node } from './Node.js';
 import { Scene } from './Scene.js';
+
+import { Node } from '../../common/engine/Node.js';
 
 // This class loads all GLTF resources and instantiates
 // the corresponding classes. Keep in mind that it loads

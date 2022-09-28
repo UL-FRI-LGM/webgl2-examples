@@ -107,6 +107,8 @@ class App extends Application {
         // Traverse the scene. Before any modification, the MVP matrix has to
         // be pushed onto the stack and then restored once the node is done
         // rendering itself and its children.
+        // This is usually done with recursion, but we made the stack explitit
+        // for demonstration purposes.
         this.root.traverse(
             node => {
                 mvpStack.push(mat4.clone(mvpMatrix));

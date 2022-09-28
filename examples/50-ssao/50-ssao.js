@@ -2,9 +2,8 @@ import { GUI } from '../../lib/dat.gui.module.js';
 import { vec3, quat } from '../../lib/gl-matrix-module.js';
 
 import { Application } from '../../common/engine/Application.js';
+import { Node } from '../../common/engine/Node.js';
 
-import { Scene } from './Scene.js';
-import { Node } from './Node.js';
 import { Camera } from './Camera.js';
 import { Renderer } from './Renderer.js';
 
@@ -12,7 +11,6 @@ class App extends Application {
 
     start() {
         this.renderer = new Renderer(this.gl);
-        this.aspect = 1;
 
         this.pointerdownHandler = this.pointerdownHandler.bind(this);
         this.pointerupHandler = this.pointerupHandler.bind(this);
@@ -20,16 +18,14 @@ class App extends Application {
 
         this.canvas.addEventListener('pointerdown', this.pointerdownHandler);
 
-        this.scene = new Scene();
-        this.camera = new Camera();
+        this.scene = new Node();
+        this.camera = new Node();
+        this.camera.projection = mat4.create();
         this.camera.translation = [0, 0, 10];
-        this.camera.aspect = this.aspect;
-        this.camera.updateMatrix();
-        this.camera.updateProjection();
-        this.scene.addNode(this.camera);
+        this.scene.addChild(this.camera);
 
         this.cubeRoot = new Node();
-        this.scene.addNode(this.cubeRoot);
+        this.scene.addChild(this.cubeRoot);
 
         this.load();
     }
@@ -61,12 +57,13 @@ class App extends Application {
             const cube = new Node();
             cube.texture = cubeTexture;
             cube.mesh = cubeModel;
-            vec3.random(cube.translation, Math.random() * 5);
-            quat.random(cube.rotation);
+
             const scale = 0.1 + Math.random();
+            cube.translation = vec3.random(vec3.create(), Math.random() * 5);
+            cube.rotation = quat.random(quat.create());
             cube.scale = [scale, scale, scale];
-            cube.updateMatrix();
-            this.cubeRoot.addNode(cube);
+
+            this.cubeRoot.addChild(cube);
         }
     }
 
@@ -77,9 +74,12 @@ class App extends Application {
     resize() {
         const w = this.canvas.clientWidth;
         const h = this.canvas.clientHeight;
-        this.aspect = w / h;
-        this.camera.aspect = this.aspect;
-        this.camera.updateProjection();
+        const aspect = w / h;
+        const fovy = Math.PI / 3;
+        const near = 0.1;
+        const far = 100;
+
+        mat4.perspective(this.camera.projection, fovy, aspect, near, far);
 
         this.renderer.createGeometryBuffer();
         this.renderer.createSSAOBuffer();
@@ -108,9 +108,7 @@ class App extends Application {
         const q = quat.create();
         quat.rotateX(q, q, dy * pointerSensitivity);
         quat.rotateY(q, q, dx * pointerSensitivity);
-        const r = this.cubeRoot.rotation;
-        quat.mul(r, q, r);
-        this.cubeRoot.updateMatrix();
+        this.cubeRoot.rotation = quat.mul(quat.create(), q, this.cubeRoot.rotation);
     }
 
 }

@@ -24,14 +24,14 @@ export class Renderer {
         const { program, uniforms } = this.programs.envmap;
         gl.useProgram(program);
 
-        const viewMatrix = camera.getGlobalTransform();
+        const viewMatrix = camera.globalMatrix;
         mat4.invert(viewMatrix, viewMatrix);
         gl.uniformMatrix4fv(uniforms.uViewMatrix, false, viewMatrix);
         gl.uniformMatrix4fv(uniforms.uProjectionMatrix, false, camera.projection);
         gl.uniform3fv(uniforms.uCameraPosition,
-            mat4.getTranslation(vec3.create(), camera.getGlobalTransform()));
+            mat4.getTranslation(vec3.create(), camera.globalMatrix));
 
-        this.renderNode(scene, scene.getGlobalTransform());
+        this.renderNode(scene, scene.globalMatrix);
         this.renderSkybox(skybox, camera);
     }
 
@@ -39,7 +39,7 @@ export class Renderer {
         const gl = this.gl;
 
         modelMatrix = mat4.clone(modelMatrix);
-        mat4.mul(modelMatrix, modelMatrix, node.matrix);
+        mat4.mul(modelMatrix, modelMatrix, node.localMatrix);
 
         const { uniforms } = this.programs.envmap;
 
@@ -75,7 +75,7 @@ export class Renderer {
         const { program, uniforms } = this.programs.skybox;
         gl.useProgram(program);
 
-        const viewMatrix = camera.getGlobalTransform();
+        const viewMatrix = camera.globalMatrix;
         mat4.invert(viewMatrix, viewMatrix);
         gl.uniformMatrix4fv(uniforms.uViewMatrix, false, viewMatrix);
         gl.uniformMatrix4fv(uniforms.uProjectionMatrix, false, camera.projection);

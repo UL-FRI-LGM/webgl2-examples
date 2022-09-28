@@ -72,12 +72,12 @@ export class Renderer {
         gl.useProgram(program);
 
         const matrix = mat4.create();
-        const viewMatrix = camera.getGlobalTransform();
+        const viewMatrix = camera.globalMatrix;
         mat4.invert(viewMatrix, viewMatrix);
         mat4.copy(matrix, viewMatrix);
         gl.uniformMatrix4fv(uniforms.uProjection, false, camera.projection);
 
-        for (const node of scene.nodes) {
+        for (const node of scene.children) {
             this.renderNode(node, matrix, uniforms);
         }
     }
@@ -146,7 +146,7 @@ export class Renderer {
         const gl = this.gl;
 
         matrix = mat4.clone(matrix);
-        mat4.mul(matrix, matrix, node.matrix);
+        mat4.mul(matrix, matrix, node.localMatrix);
 
         if (node.mesh) {
             gl.bindVertexArray(node.mesh.vao);

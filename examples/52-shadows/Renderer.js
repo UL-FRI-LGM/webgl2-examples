@@ -46,13 +46,13 @@ export class Renderer {
         gl.useProgram(program);
 
         const lightMatrix = mat4.create();
-        const lightTransformMatrix = shadowCamera.getGlobalTransform();
+        const lightTransformMatrix = shadowCamera.globalMatrix;
         mat4.invert(lightTransformMatrix, lightTransformMatrix);
         mat4.mul(lightMatrix, shadowCamera.projection, lightTransformMatrix);
         gl.uniformMatrix4fv(uniforms.uLightMatrix, false, lightMatrix);
 
         const modelMatrix = mat4.create();
-        for (const node of scene.nodes) {
+        for (const node of scene.children) {
             this.renderNode(node, modelMatrix, uniforms);
         }
     }
@@ -78,13 +78,13 @@ export class Renderer {
         gl.useProgram(program);
 
         const cameraMatrix = mat4.create();
-        const cameraTransformMatrix = camera.getGlobalTransform();
+        const cameraTransformMatrix = camera.globalMatrix;
         mat4.invert(cameraTransformMatrix, cameraTransformMatrix);
         mat4.mul(cameraMatrix, camera.projection, cameraTransformMatrix);
         gl.uniformMatrix4fv(uniforms.uCameraMatrix, false, cameraMatrix);
 
         const lightMatrix = mat4.create();
-        const lightTransformMatrix = shadowCamera.getGlobalTransform();
+        const lightTransformMatrix = shadowCamera.globalMatrix;
         mat4.invert(lightTransformMatrix, lightTransformMatrix);
         mat4.mul(lightMatrix, shadowCamera.projection, lightTransformMatrix);
         gl.uniformMatrix4fv(uniforms.uLightMatrix, false, lightMatrix);
@@ -94,7 +94,7 @@ export class Renderer {
         gl.uniform1i(uniforms.uDepth, 1);
 
         const modelMatrix = mat4.create();
-        for (const node of scene.nodes) {
+        for (const node of scene.children) {
             this.renderNode(node, modelMatrix, uniforms);
         }
     }
@@ -103,7 +103,7 @@ export class Renderer {
         const gl = this.gl;
 
         modelMatrix = mat4.clone(modelMatrix);
-        mat4.mul(modelMatrix, modelMatrix, node.matrix);
+        mat4.mul(modelMatrix, modelMatrix, node.localMatrix);
 
         if (node.mesh) {
             gl.bindVertexArray(node.mesh.vao);

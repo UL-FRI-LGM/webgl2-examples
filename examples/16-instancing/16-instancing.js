@@ -1,10 +1,10 @@
 import { mat3, mat4 } from '../../lib/gl-matrix-module.js';
 
 import { Application } from '../../common/engine/Application.js';
+import { Node } from '../../common/engine/Node.js';
+import { FirstPersonController } from '../../common/engine/FirstPersonController.js';
 
 import { Renderer } from './Renderer.js';
-import { Node } from './Node.js';
-import { Camera } from './Camera.js';
 
 function createGrassTextureAtlas() {
     const canvas = document.createElement('canvas');
@@ -109,16 +109,18 @@ class App extends Application {
         const gl = this.gl;
 
         this.renderer = new Renderer(gl);
-        gl.clearColor(0.92, 0.98, 1, 1);
 
         this.time = performance.now();
         this.startTime = this.time;
 
         this.root = new Node();
-        this.camera = new Camera();
+        this.camera = new Node();
         this.root.addChild(this.camera);
 
+        this.camera.projection = mat4.create();
         this.camera.translation = [0, 2, 0];
+
+        this.cameraController = new FirstPersonController(this.camera, this.canvas);
 
         const grassTextureAtlas = createGrassTextureAtlas();
         const grassModel = await fetch('../../common/models/grass.json')
@@ -135,15 +137,6 @@ class App extends Application {
         this.grass.model = this.renderer.createModel(grassModel, grassPatch);
         this.grass.instanceCount = grassPatch.instanceCount;
         this.root.addChild(this.grass);
-
-        this.canvas.addEventListener('click', e => this.canvas.requestPointerLock());
-        document.addEventListener('pointerlockchange', e => {
-            if (document.pointerLockElement === this.canvas) {
-                this.camera.enable();
-            } else {
-                this.camera.disable();
-            }
-        });
     }
 
     update() {
@@ -151,7 +144,7 @@ class App extends Application {
         const dt = (this.time - this.startTime) * 0.001;
         this.startTime = this.time;
 
-        this.camera.update(dt);
+        this.cameraController.update(dt);
     }
 
     render() {

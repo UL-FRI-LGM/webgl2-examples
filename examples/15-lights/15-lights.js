@@ -2,11 +2,10 @@ import { GUI } from '../../lib/dat.gui.module.js';
 import { mat4 } from '../../lib/gl-matrix-module.js';
 
 import { Application } from '../../common/engine/Application.js';
+import { Node } from '../../common/engine/Node.js';
+import { FirstPersonController } from '../../common/engine/FirstPersonController.js';
 
 import { Renderer } from './Renderer.js';
-import { Node } from './Node.js';
-import { Camera } from './Camera.js';
-import { Light } from './Light.js';
 import { Material } from './Material.js';
 
 class App extends Application {
@@ -20,15 +19,23 @@ class App extends Application {
         this.startTime = this.time;
 
         this.root = new Node();
-        this.camera = new Camera();
-        this.light = new Light();
+        this.camera = new Node();
+        this.light = new Node();
         this.funky = new Node();
         this.root.addChild(this.camera);
         this.root.addChild(this.light);
         this.root.addChild(this.funky);
 
+        this.light.position = [0, 0, 0];
+        this.light.color = [255, 255, 255];
+        this.light.intensity = 1;
+        this.light.attenuation = [0.001, 0, 0.3];
+
+        this.camera.projection = mat4.create();
         this.camera.translation = [0, 2, 5];
-        this.camera.rotation = [-0.6, 0, 0];
+
+        this.cameraController = new FirstPersonController(this.camera, this.canvas);
+        this.cameraController.pitch = -Math.PI / 6;
 
         const [model, texture, envmap] = await Promise.all([
             this.renderer.loadModel('../../common/models/funky.json'),
@@ -42,15 +49,6 @@ class App extends Application {
         this.funky.model = model;
         this.funky.material = new Material();
         this.funky.material.texture = texture;
-
-        this.canvas.addEventListener('click', e => this.canvas.requestPointerLock());
-        document.addEventListener('pointerlockchange', e => {
-            if (document.pointerLockElement === this.canvas) {
-                this.camera.enable();
-            } else {
-                this.camera.disable();
-            }
-        });
     }
 
     update() {
@@ -58,7 +56,9 @@ class App extends Application {
         const dt = (this.time - this.startTime) * 0.001;
         this.startTime = this.time;
 
-        this.camera.update(dt);
+        this.cameraController.update(dt);
+
+        this.light.translation = this.light.position;
     }
 
     render() {
@@ -96,9 +96,9 @@ light.add(app.light, 'intensity', 0, 5);
 light.addColor(app.light, 'color');
 const lightPosition = light.addFolder('Position');
 lightPosition.open();
-lightPosition.add(app.light.matrix, 12, -10, 10).name('x');
-lightPosition.add(app.light.matrix, 13, -10, 10).name('y');
-lightPosition.add(app.light.matrix, 14, -10, 10).name('z');
+lightPosition.add(app.light.position, 0, -10, 10).name('x');
+lightPosition.add(app.light.position, 1, -10, 10).name('y');
+lightPosition.add(app.light.position, 2, -10, 10).name('z');
 const lightAttenuation = light.addFolder('Attenuation');
 lightAttenuation.open();
 lightAttenuation.add(app.light.attenuation, 0, 0, 5).name('constant');
