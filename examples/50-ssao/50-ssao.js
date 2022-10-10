@@ -1,10 +1,9 @@
 import { GUI } from '../../lib/dat.gui.module.js';
-import { vec3, quat } from '../../lib/gl-matrix-module.js';
+import { mat4, vec3, quat } from '../../lib/gl-matrix-module.js';
 
 import { Application } from '../../common/engine/Application.js';
 import { Node } from '../../common/engine/Node.js';
 
-import { Camera } from './Camera.js';
 import { Renderer } from './Renderer.js';
 
 class App extends Application {

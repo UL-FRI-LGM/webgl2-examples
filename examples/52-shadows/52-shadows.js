@@ -1,9 +1,8 @@
-import { vec3, quat } from '../../lib/gl-matrix-module.js';
+import { mat4, vec3, quat } from '../../lib/gl-matrix-module.js';
 
 import { Application } from '../../common/engine/Application.js';
 import { Node } from '../../common/engine/Node.js';
 
-import { Camera } from './Camera.js';
 import { Renderer } from './Renderer.js';
 
 class App extends Application {
@@ -19,7 +18,8 @@ class App extends Application {
         this.canvas.addEventListener('pointerdown', this.pointerdownHandler);
 
         this.scene = new Node();
-        this.camera = new Camera();
+        this.camera = new Node();
+        this.camera.projection = mat4.create();
         this.camera.translation = [0, 0, 10];
         this.camera.aspect = this.aspect;
         this.scene.addChild(this.camera);
@@ -28,7 +28,9 @@ class App extends Application {
         this.scene.addChild(this.cubeRoot);
 
         this.shadowCameraRoot = new Node();
-        this.shadowCamera = new Camera();
+        this.shadowCamera = new Node();
+        this.shadowCamera.projection = mat4.create();
+        mat4.perspective(this.shadowCamera.projection, 0.5, 1, 15, 50);
         this.shadowCamera.translation = [0, 0, 20];
         this.shadowCamera.aspect = 0.3;
         this.shadowCamera.near = 15;

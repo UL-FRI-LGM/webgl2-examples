@@ -1,10 +1,9 @@
 import { GUI } from '../../lib/dat.gui.module.js';
-import { vec3, quat } from '../../lib/gl-matrix-module.js';
+import { vec3, mat4, quat } from '../../lib/gl-matrix-module.js';
 
 import { Application } from '../../common/engine/Application.js';
 import { Node } from '../../common/engine/Node.js';
 
-import { Camera } from './Camera.js';
 import { Renderer } from './Renderer.js';
 
 class App extends Application {
@@ -19,7 +18,7 @@ class App extends Application {
         this.canvas.addEventListener('pointerdown', this.pointerdownHandler);
 
         this.scene = new Node();
-        this.camera = new Camera();
+        this.camera = new Node();
         this.camera.projection = mat4.create();
         this.camera.translation = [0, 0, 10];
         this.camera.aspect = this.aspect;
