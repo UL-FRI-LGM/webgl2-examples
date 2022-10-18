@@ -26,7 +26,7 @@ class App extends Application {
         gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
 
         // Move the whole setup to the initialization step.
-        // A vertex attribute object (VAO) is going to store attribute
+        // A vertex array object (VAO) is going to store attribute
         // format data as well as references to buffer objects.
         this.vao = gl.createVertexArray();
 
