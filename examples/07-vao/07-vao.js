@@ -48,8 +48,6 @@ class App extends Application {
 
         this.offsetX = 0;
         this.offsetY = 0;
-        this.scaleX = 0.5;
-        this.scaleY = 0.5;
     }
 
     render() {
@@ -58,21 +56,18 @@ class App extends Application {
         // Clear the screen.
         gl.clear(gl.COLOR_BUFFER_BIT);
 
+        // Use the shader we compiled in the start method.
+        const { program, attributes, uniforms } = this.programs.test;
+        gl.useProgram(program);
+
         // Bind the correct VAO. All buffer-attribute connections
         // are already set up.
         gl.bindVertexArray(this.vao);
 
-        // Draw the first triangle with the first program.
-        let program = this.programs.first;
-        gl.useProgram(program.program);
-        gl.uniform2f(program.uniforms.uOffset, 0.4 + this.offsetX, 0 + this.offsetY);
-        gl.drawArrays(gl.TRIANGLES, 0, 3);
+        // Set the uniform.
+        gl.uniform2f(uniforms.uOffset, this.offsetX, this.offsetY);
 
-        // Draw the second triangle with the second program.
-        program = this.programs.second;
-        gl.useProgram(program.program);
-        gl.uniform2f(program.uniforms.uOffset, -0.4 + this.offsetX, 0 + this.offsetY);
-        gl.uniform2f(program.uniforms.uScale, this.scaleX, this.scaleY);
+        // Draw!
         gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
 
@@ -86,5 +81,3 @@ document.querySelector('.loader-container').remove();
 const gui = new GUI();
 gui.add(app, 'offsetX', -1, 1);
 gui.add(app, 'offsetY', -1, 1);
-gui.add(app, 'scaleX', -1, 1);
-gui.add(app, 'scaleY', -1, 1);
