@@ -10,8 +10,6 @@ class App extends Application {
     start() {
         const gl = this.gl;
 
-        this.resolution = 64;
-
         this.programs = WebGL.buildPrograms(gl, shaders);
 
         // Create a triangle mesh. It contains only positions.
@@ -41,11 +39,12 @@ class App extends Application {
         gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 16, 0);
         gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 16, 8);
 
-        // Create a 32x32 texture for the framebuffer.
+        // Create a texture for the framebuffer.
         // Note that if the data passed to gl.texImage2D is null,
         // the memory is allocated, but no data transfer takes place.
         // Rendering into mipmapped textures is not supported, so we have to
         // explicitly set the filter.
+        this.resolution = 64;
         this.texture = WebGL.createTexture(gl, {
             width  : this.resolution,
             height : this.resolution,
