@@ -36,11 +36,11 @@ void main() {
 
     vec3 N = normalize(mat3(uModelMatrix) * aNormal);
     vec3 L = normalize(uLight.position - surfacePosition);
-    vec3 E = normalize(uCameraPosition - surfacePosition);
+    vec3 V = normalize(uCameraPosition - surfacePosition);
     vec3 R = normalize(reflect(-L, N));
 
     float lambert = max(0.0, dot(L, N)) * uMaterial.diffuse;
-    float phong = pow(max(0.0, dot(E, R)), uMaterial.shininess) * uMaterial.specular;
+    float phong = pow(max(0.0, dot(V, R)), uMaterial.shininess) * uMaterial.specular;
 
     vDiffuseLight = lambert * attenuation * uLight.color;
     vSpecularLight = phong * attenuation * uLight.color;
@@ -127,11 +127,11 @@ void main() {
 
     vec3 N = normalize(vNormal);
     vec3 L = normalize(uLight.position - surfacePosition);
-    vec3 E = normalize(uCameraPosition - surfacePosition);
+    vec3 V = normalize(uCameraPosition - surfacePosition);
     vec3 R = normalize(reflect(-L, N));
 
     float lambert = max(0.0, dot(L, N)) * uMaterial.diffuse;
-    float phong = pow(max(0.0, dot(E, R)), uMaterial.shininess) * uMaterial.specular;
+    float phong = pow(max(0.0, dot(V, R)), uMaterial.shininess) * uMaterial.specular;
 
     vec3 diffuseLight = lambert * attenuation * uLight.color;
     vec3 specularLight = phong * attenuation * uLight.color;
