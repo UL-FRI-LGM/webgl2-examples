@@ -20,7 +20,6 @@ export class GLTFLoader {
     constructor() {
         this.gltf = null;
         this.gltfUrl = null;
-        this.dirname = null;
 
         this.cache = new Map();
     }
