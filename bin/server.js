@@ -31,7 +31,7 @@ const server = http.createServer(async (req, res) => {
 
     // get an appropriate Content-Type
     const extname = path.extname(filePath).substring(1);
-    const contentType = extnameToContentType[extname.toLowerCase()] || 'application/octet-stream';
+    const contentType = extnameToContentType[extname.toLowerCase()] ?? 'application/octet-stream';
 
     try {
         // if the file can be read, respond with 200 and data
@@ -49,7 +49,7 @@ const server = http.createServer(async (req, res) => {
 });
 
 // read the port from the environment variable PORT, defaulting to 3000
-const port = process.env.PORT || 3000;
+const port = process.env.PORT ?? 3000;
 server.listen(port, e => {
     console.log(`Listening on port ${port}`);
 });

@@ -26,10 +26,10 @@ export class Node {
         this.transformationMatrixNeedsUpdate = false;
         this.transformationComponentsNeedUpdate = false;
 
-        this.camera = options.camera || null;
-        this.mesh = options.mesh || null;
+        this.camera = options.camera ?? null;
+        this.mesh = options.mesh ?? null;
 
-        this.children = [...(options.children || [])];
+        this.children = [...(options.children ?? [])];
         for (const child of this.children) {
             child.parent = this;
         }

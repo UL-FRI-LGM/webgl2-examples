@@ -3,7 +3,7 @@ import { Node } from '../../common/engine/Node.js';
 export class Scene {
 
     constructor(options = {}) {
-        this.nodes = [...(options.nodes || [])];
+        this.nodes = [...(options.nodes ?? [])];
     }
 
     addNode(node) {
