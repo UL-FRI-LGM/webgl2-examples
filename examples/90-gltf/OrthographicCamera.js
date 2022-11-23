@@ -14,11 +14,11 @@ export class OrthographicCamera extends Camera {
         this.near = options.near ?? -1;
         this.far = options.far ?? 1;
 
-        this.updateMatrix();
+        this.updateProjectionMatrix();
     }
 
-    updateMatrix() {
-        mat4.ortho(this.matrix,
+    updateProjectionMatrix() {
+        mat4.ortho(this.projectionMatrix,
             this.left, this.right,
             this.bottom, this.top,
             this.near, this.far);

@@ -38,7 +38,7 @@ class App extends Application {
 
         if (this.camera) {
             this.camera.camera.aspect = aspectRatio;
-            this.camera.camera.updateMatrix();
+            this.camera.camera.updateProjectionMatrix();
         }
     }
 

@@ -4,7 +4,7 @@ export class Node {
 
     constructor() {
         // Every node has its own local transformation.
-        this.matrix = mat4.create();
+        this.localMatrix = mat4.create();
 
         // For scene tree purposes, we need to know the children
         // and the parent of a node.
@@ -12,18 +12,18 @@ export class Node {
         this.parent = null;
     }
 
-    getGlobalTransform() {
+    getGlobalMatrix() {
         if (!this.parent) {
             // If the node does not have a parent, it is the root node.
             // Return its local transformation.
-            return mat4.clone(this.matrix);
+            return mat4.clone(this.localMatrix);
         } else {
             // If the node has a parent, we have to take the parent's
             // global transformation into account. This recursion
             // essentially multiplies all local transformations up
             // to the root node.
-            const matrix = this.parent.getGlobalTransform();
-            return mat4.mul(matrix, matrix, this.matrix);
+            const globalMatrix = this.parent.getGlobalMatrix();
+            return mat4.mul(globalMatrix, globalMatrix, this.localMatrix);
         }
     }
 

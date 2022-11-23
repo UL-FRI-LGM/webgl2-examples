@@ -35,7 +35,7 @@ export class Physics {
 
     getTransformedAABB(node) {
         // Transform all vertices of the AABB from local to global space.
-        const transform = node.getGlobalTransform();
+        const transform = node.getGlobalMatrix();
         const { min, max } = node.aabb;
         const vertices = [
             [min[0], min[1], min[2]],

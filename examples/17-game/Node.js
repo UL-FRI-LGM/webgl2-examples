@@ -7,7 +7,7 @@ export class Node {
     constructor(options) {
         Utils.init(this, Node.defaults, options);
 
-        this.matrix = mat4.create();
+        this.localMatrix = mat4.create();
         this.updateMatrix();
 
         this.children = [];
@@ -15,7 +15,7 @@ export class Node {
     }
 
     updateMatrix() {
-        const m = this.matrix;
+        const m = this.localMatrix;
         const degrees = this.rotation.map(x => x * 180 / Math.PI);
         const q = quat.fromEuler(quat.create(), ...degrees);
         const v = vec3.clone(this.translation);
@@ -23,12 +23,12 @@ export class Node {
         mat4.fromRotationTranslationScale(m, q, v, s);
     }
 
-    getGlobalTransform() {
+    getGlobalMatrix() {
         if (!this.parent) {
-            return mat4.clone(this.matrix);
+            return mat4.clone(this.localMatrix);
         } else {
-            const matrix = this.parent.getGlobalTransform();
-            return mat4.mul(matrix, matrix, this.matrix);
+            const globalMatrix = this.parent.getGlobalMatrix();
+            return mat4.mul(globalMatrix, globalMatrix, this.localMatrix);
         }
     }
 

@@ -67,15 +67,15 @@ class App extends Application {
     }
 
     update() {
-        const t1 = this.cube1.matrix;
+        const t1 = this.cube1.localMatrix;
         mat4.fromTranslation(t1, [-2, 0, -5]);
         mat4.rotateX(t1, t1, this.leftRotation);
 
-        const t2 = this.cube2.matrix;
+        const t2 = this.cube2.localMatrix;
         mat4.fromTranslation(t2, [2, 0, -5]);
         mat4.rotateX(t2, t2, this.rightRotation);
 
-        const t3 = this.cube3.matrix;
+        const t3 = this.cube3.localMatrix;
         mat4.fromTranslation(t3, [-1, 0, -3]);
         mat4.rotateY(t3, t3, 1);
     }
@@ -100,7 +100,7 @@ class App extends Application {
         const mvpLocation = program.uniforms.uModelViewProjection;
         // We can premultiply the view and projection matrices, so that we
         // do not have to do it for every node during scene traversal.
-        const viewMatrix = this.camera.getGlobalTransform();
+        const viewMatrix = this.camera.getGlobalMatrix();
         mat4.invert(viewMatrix, viewMatrix);
         mat4.mul(mvpMatrix, this.camera.projection, viewMatrix);
 
@@ -112,7 +112,7 @@ class App extends Application {
         this.root.traverse(
             node => {
                 mvpStack.push(mat4.clone(mvpMatrix));
-                mat4.mul(mvpMatrix, mvpMatrix, node.matrix);
+                mat4.mul(mvpMatrix, mvpMatrix, node.localMatrix);
                 if (node.model) {
                     gl.bindVertexArray(node.model.vao);
                     gl.uniformMatrix4fv(mvpLocation, false, mvpMatrix);
