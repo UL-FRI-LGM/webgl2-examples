@@ -25,20 +25,19 @@ export class GLTFLoader {
     }
 
     fetchJson(url) {
-        return fetch(url).then(response => response.json());
+        return fetch(url)
+            .then(response => response.json());
     }
 
     fetchBuffer(url) {
-        return fetch(url).then(response => response.arrayBuffer());
+        return fetch(url)
+            .then(response => response.arrayBuffer());
     }
 
     fetchImage(url) {
-        return new Promise((resolve, reject) => {
-            const image = new Image();
-            image.addEventListener('load', e => resolve(image));
-            image.addEventListener('error', reject);
-            image.src = url;
-        });
+        return fetch(url)
+            .then(response => response.blob())
+            .then(blob => createImageBitmap(blob));
     }
 
     findByNameOrIndex(set, nameOrIndex) {
