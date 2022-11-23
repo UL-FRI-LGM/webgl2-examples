@@ -70,7 +70,8 @@ export class GLTFLoader {
             return image;
         } else {
             const bufferView = await this.loadBufferView(gltfSpec.bufferView);
-            const blob = new Blob([bufferView], { type: gltfSpec.mimeType });
+            const dataView = new DataView(bufferView.buffer, bufferView.byteOffset, bufferView.byteLength);
+            const blob = new Blob([dataView], { type: gltfSpec.mimeType });
             const url = URL.createObjectURL(blob);
             const image = await this.fetchImage(url);
             URL.revokeObjectURL(url);
