@@ -1,6 +1,6 @@
 {
     "asset" : {
-        "generator" : "Khronos glTF Blender I/O v1.7.33",
+        "generator" : "Khronos glTF Blender I/O v3.3.32",
         "version" : "2.0"
     },
     "scene" : 0,
@@ -8,32 +8,20 @@
         {
             "name" : "Scene",
             "nodes" : [
-                1,
-                2
+                0,
+                1
             ]
         }
     ],
     "nodes" : [
         {
             "camera" : 0,
-            "name" : "Camera_Orientation",
-            "rotation" : [
-                -0.7071067690849304,
-                0,
-                0,
-                0.7071067690849304
-            ]
-        },
-        {
-            "children" : [
-                0
-            ],
             "name" : "Camera",
             "rotation" : [
-                0.5217990279197693,
-                0.11515836417675018,
-                -0.07134459167718887,
-                0.8422436118125916
+                -0.2265884429216385,
+                0.13187751173973083,
+                0.030981004238128662,
+                0.9645237922668457
             ],
             "translation" : [
                 6.616647243499756,
