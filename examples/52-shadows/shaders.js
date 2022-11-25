@@ -57,7 +57,7 @@ void main() {
     float shadowFactor = texture(uDepth, lightSpacePosition.xyz);
 
     vec3 lightSpaceNormal = normalize(mat3(uLightMatrix) * vNormal);
-    float lambertFactor = max(0.0, lightSpaceNormal.z);
+    float lambertFactor = max(0.0, -lightSpaceNormal.z);
 
     float shading = mix(0.2, 1.0, lambertFactor * shadowFactor);
     oColor = texture(uTexture, vTexCoord) * vec4(vec3(shading), 1);

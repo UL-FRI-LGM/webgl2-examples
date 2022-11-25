@@ -86,7 +86,7 @@ void main() {
     vec3 randomVector = texture(uOcclusionSamples, vec2(randomOffset, 0)).xyz;
     vec3 tangent = normalize(randomVector - normal * dot(randomVector, normal));
     vec3 bitangent = cross(normal, tangent);
-    mat3 TBN = mat3(tangent, bitangent, -normal);
+    mat3 TBN = mat3(tangent, bitangent, normal);
 
     float occlusion = 0.0;
     for (int i = 0; i < uOcclusionSampleCount; i++) {
