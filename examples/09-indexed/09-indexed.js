@@ -96,10 +96,6 @@ class App extends Application {
 
         // A switch to enable or disable rotation.
         this.isRotationEnabled = true;
-
-        // A switch for perspective-correct interpolation.
-        // This is just to show the effect of incorrect interpolation.
-        this.isPerspectiveCorrect = true;
     }
 
     update() {
@@ -129,9 +125,6 @@ class App extends Application {
         // Use a simple coloring shader.
         const { program, uniforms } = this.programs.simple;
         gl.useProgram(program);
-
-        // Set the perspective correctness flag.
-        gl.uniform1i(uniforms.uPerspectiveCorrect, this.isPerspectiveCorrect);
 
         // Set the transformation uniform. The second argument tells WebGL
         // whether to transpose the matrix before uploading it to the GPU.
@@ -183,7 +176,5 @@ await app.init();
 document.querySelector('.loader-container').remove();
 
 const gui = new GUI();
-gui.add(app, 'isPerspectiveCorrect')
-   .name('Perspective-correct');
 gui.add(app, 'isRotationEnabled')
    .name('Enable rotation');

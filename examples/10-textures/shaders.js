@@ -3,17 +3,12 @@ layout (location = 0) in vec4 aPosition;
 layout (location = 1) in vec2 aTexCoord;
 
 uniform mat4 uModelViewProjection;
-uniform bool uPerspectiveCorrect;
 
 out vec2 vTexCoord;
 
 void main() {
     vTexCoord = aTexCoord;
     gl_Position = uModelViewProjection * aPosition;
-
-    if (!uPerspectiveCorrect) {
-        gl_Position /= gl_Position.w;
-    }
 }
 `;
 

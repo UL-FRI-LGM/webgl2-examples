@@ -147,10 +147,6 @@ class App extends Application {
         // so we can change it with a press of a button.
         this.isLinearFilter = false;
 
-        // A switch for perspective-correct texture mapping.
-        // This is just to show the effect of incorrect texture mapping.
-        this.isPerspectiveCorrect = true;
-
         // The texture coordinates are scaled in the shader.
         // This is just to demonstrate undersampling issues.
         this.textureScale = 1;
@@ -177,7 +173,6 @@ class App extends Application {
         const { program, uniforms } = this.programs.simple;
         gl.useProgram(program);
 
-        gl.uniform1i(uniforms.uPerspectiveCorrect, this.isPerspectiveCorrect);
         gl.uniform1f(uniforms.uTextureScale, this.textureScale);
         gl.uniformMatrix4fv(uniforms.uModelViewProjection,
             false, this.mvpMatrix);
@@ -235,8 +230,6 @@ const gui = new GUI();
 gui.add(app, 'isLinearFilter')
    .name('Linear filtering')
    .onChange(e => app.changeFilter());
-gui.add(app, 'isPerspectiveCorrect')
-   .name('Perspective-correct');
 gui.add(app, 'textureScale')
    .name('Texture scale');
 gui.add(app, 'isRotationEnabled')
