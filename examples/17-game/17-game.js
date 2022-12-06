@@ -64,10 +64,9 @@ class App extends Application {
         const w = this.canvas.clientWidth;
         const h = this.canvas.clientHeight;
         this.aspect = w / h;
-        if (this.camera) {
-            this.camera.aspect = this.aspect;
-            this.camera.updateProjection();
-        }
+
+        this.camera.aspect = this.aspect;
+        this.camera.updateProjection();
     }
 
 }

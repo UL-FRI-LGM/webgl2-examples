@@ -26,9 +26,7 @@ class App extends Application {
     }
 
     render() {
-        if (this.renderer) {
-            this.renderer.render(this.scene, this.camera);
-        }
+        this.renderer.render(this.scene, this.camera);
     }
 
     resize() {
@@ -36,10 +34,8 @@ class App extends Application {
         const h = this.canvas.clientHeight;
         const aspectRatio = w / h;
 
-        if (this.camera) {
-            this.camera.camera.aspect = aspectRatio;
-            this.camera.camera.updateProjectionMatrix();
-        }
+        this.camera.camera.aspect = aspectRatio;
+        this.camera.camera.updateProjectionMatrix();
     }
 
 }
