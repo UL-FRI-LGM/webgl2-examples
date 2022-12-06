@@ -22,7 +22,6 @@ class App extends Application {
 
         this.renderer = new Renderer(this.gl);
         this.renderer.prepareScene(this.scene);
-        this.resize();
     }
 
     render() {
@@ -30,9 +29,7 @@ class App extends Application {
     }
 
     resize(width, height) {
-        const aspectRatio = width / height;
-
-        this.camera.camera.aspect = aspectRatio;
+        this.camera.camera.aspect = width / height;
         this.camera.camera.updateProjectionMatrix();
     }
 

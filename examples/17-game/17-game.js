@@ -12,7 +12,6 @@ class App extends Application {
         const gl = this.gl;
 
         this.renderer = new Renderer(gl);
-        this.aspect = 1;
 
         await this.load('scene.json');
 
@@ -55,8 +54,7 @@ class App extends Application {
     }
 
     resize(width, height) {
-        const aspect = width / height;
-        this.camera.aspect = this.aspect;
+        this.camera.aspect = width / height;
         this.camera.updateProjection();
     }
 
