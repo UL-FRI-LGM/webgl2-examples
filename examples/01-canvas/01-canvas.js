@@ -2,44 +2,46 @@ class Application {
 
     constructor(canvas, glOptions) {
         this._update = this._update.bind(this);
+        this._render = this._render.bind(this);
 
-        this.canvas = canvas;
-        this._initGL(glOptions);
+        // We can pass in options, such as disabling the depth buffer,
+        // disabling antialiasing, preserving the drawing buffer, etc.
+        this.gl = canvas.getContext('webgl2', glOptions);
     }
 
     async init() {
         await this.start();
-        requestAnimationFrame(this._update);
-    }
 
-    _initGL(glOptions) {
-        // Try to create a WebGL 2.0 context.
-        // We need both a try-catch and a null check.
-        this.gl = null;
-        try {
-            // We can pass in options, such as disabling the depth buffer,
-            // disabling antialiasing, preserving the drawing buffer, etc.
-            this.gl = this.canvas.getContext('webgl2', glOptions);
-        } catch (error) {
-        }
+        this._time = performance.now() / 1000;
 
-        if (!this.gl) {
-            console.log('Cannot create WebGL 2.0 context');
-        }
+        // The update loop should run as fast as possible.
+        setInterval(this._update, 0);
+
+        // The render loop should be synchronized with the screen.
+        requestAnimationFrame(this._render);
     }
 
     _update() {
+        const time = performance.now() / 1000;
+        const dt = time - this._time;
+        this._time = time;
+
+        this.update(time, dt);
+    }
+
+    _render() {
+        // Check for resize on render, because elements do not
+        // trigger a resize event. Windows do, but it might
+        // not change the size of the canvas.
         this._resize();
-        this.update();
         this.render();
-        requestAnimationFrame(this._update);
+
+        // Request next render frame.
+        requestAnimationFrame(this._render);
     }
 
     _resize() {
-        // Check for resize on RAF, because elements do not
-        // trigger a resize event. Windows do, but it might
-        // not change the size of the canvas.
-        const canvas = this.canvas;
+        const canvas = this.gl.canvas;
         const gl = this.gl;
 
         // A CSS pixel is not the same as a physical pixel.
@@ -55,7 +57,7 @@ class Application {
             // Change the drawing region to reflect the canvas size.
             gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
-            this.resize();
+            this.resize(width, height);
         }
     }
 
@@ -68,7 +70,7 @@ class Application {
     }
 
     render() {
-        // render code (gl API calls)
+        // render code (WebGL API calls)
 
         const gl = this.gl;
         gl.clearColor(0.3, 0.4, 0.9, 1.0);

@@ -98,15 +98,14 @@ class App extends Application {
         this.isRotationEnabled = true;
     }
 
-    update() {
+    update(time, dt) {
         if (this.isRotationEnabled) {
             // Recalculate the model matrix with new rotation values.
             // We are going to use the running time to
             // calculate the rotation of the cube.
-            const time = performance.now();
             mat4.identity(this.modelMatrix);
-            mat4.rotateX(this.modelMatrix, this.modelMatrix, time * 0.0007);
-            mat4.rotateY(this.modelMatrix, this.modelMatrix, time * 0.0006);
+            mat4.rotateX(this.modelMatrix, this.modelMatrix, time * 0.7);
+            mat4.rotateY(this.modelMatrix, this.modelMatrix, time * 0.6);
 
             // We made changes to the MVP matrix, so we have to update it.
             this.updateModelViewProjection();
@@ -137,12 +136,10 @@ class App extends Application {
         gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0);
     }
 
-    resize() {
+    resize(width, height) {
         // When the canvas resizes, recalculate the projection matrix with
         // the new aspect ratio.
-        const w = this.canvas.clientWidth;
-        const h = this.canvas.clientHeight;
-        const aspect = w / h;
+        const aspect = width / height;
         const fovy = Math.PI / 3;
         const near = 0.1;
         const far = 100;

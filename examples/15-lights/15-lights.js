@@ -15,9 +15,6 @@ class App extends Application {
 
         this.renderer = new Renderer(gl);
 
-        this.time = performance.now();
-        this.startTime = this.time;
-
         this.root = new Node();
         this.camera = new Node();
         this.light = new Node();
@@ -34,7 +31,7 @@ class App extends Application {
         this.camera.projection = mat4.create();
         this.camera.translation = [0, 2, 5];
 
-        this.cameraController = new FirstPersonController(this.camera, this.canvas);
+        this.cameraController = new FirstPersonController(this.camera, this.gl.canvas);
         this.cameraController.pitch = -Math.PI / 6;
 
         const [model, texture, envmap] = await Promise.all([
@@ -51,13 +48,8 @@ class App extends Application {
         this.funky.material.texture = texture;
     }
 
-    update() {
-        this.time = performance.now();
-        const dt = (this.time - this.startTime) * 0.001;
-        this.startTime = this.time;
-
+    update(time, dt) {
         this.cameraController.update(dt);
-
         this.light.translation = this.light.position;
     }
 
@@ -65,10 +57,8 @@ class App extends Application {
         this.renderer.render(this.root, this.camera, this.light);
     }
 
-    resize() {
-        const w = this.canvas.clientWidth;
-        const h = this.canvas.clientHeight;
-        const aspect = w / h;
+    resize(width, height) {
+        const aspect = width / height;
         const fovy = Math.PI / 3;
         const near = 0.1;
         const far = 100;

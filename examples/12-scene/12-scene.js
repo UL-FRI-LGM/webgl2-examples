@@ -126,10 +126,8 @@ class App extends Application {
         );
     }
 
-    resize() {
-        const w = this.canvas.clientWidth;
-        const h = this.canvas.clientHeight;
-        const aspect = w / h;
+    resize(width, height) {
+        const aspect = width / height;
         const fovy = Math.PI / 2;
         const near = 0.1;
         const far = 100;

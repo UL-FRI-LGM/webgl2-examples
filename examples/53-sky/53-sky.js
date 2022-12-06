@@ -12,20 +12,13 @@ class App extends Application {
     async start() {
         const gl = this.gl;
 
-        this.time = performance.now();
-        this.startTime = this.time;
-
         this.renderer = new Renderer(gl);
         this.camera = new Node();
         this.camera.projection = mat4.create();
-        this.cameraController = new FirstPersonController(this.camera, this.canvas);
+        this.cameraController = new FirstPersonController(this.camera, this.gl.canvas);
     }
 
-    update() {
-        this.time = performance.now();
-        const dt = (this.time - this.startTime) * 0.001;
-        this.startTime = this.time;
-
+    update(time, dt) {
         this.cameraController.update(dt);
     }
 
@@ -33,10 +26,8 @@ class App extends Application {
         this.renderer.render(this.camera);
     }
 
-    resize() {
-        const w = this.canvas.clientWidth;
-        const h = this.canvas.clientHeight;
-        const aspect = w / h;
+    resize(width, height) {
+        const aspect = width / height;
         const fovy = Math.PI / 3;
         const near = 0.1;
         const far = 100;

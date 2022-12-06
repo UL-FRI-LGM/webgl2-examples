@@ -152,12 +152,11 @@ class App extends Application {
         this.textureScale = 1;
     }
 
-    update() {
+    update(time, dt) {
         if (this.isRotationEnabled) {
-            const time = performance.now();
             mat4.identity(this.modelMatrix);
-            mat4.rotateX(this.modelMatrix, this.modelMatrix, time * 0.0007);
-            mat4.rotateY(this.modelMatrix, this.modelMatrix, time * 0.0006);
+            mat4.rotateX(this.modelMatrix, this.modelMatrix, time * 0.7);
+            mat4.rotateY(this.modelMatrix, this.modelMatrix, time * 0.6);
 
             this.updateModelViewProjection();
         }
@@ -190,10 +189,8 @@ class App extends Application {
         gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0);
     }
 
-    resize() {
-        const w = this.canvas.clientWidth;
-        const h = this.canvas.clientHeight;
-        const aspect = w / h;
+    resize(width, height) {
+        const aspect = width / height;
         const fovy = Math.PI / 3;
         const near = 0.1;
         const far = 100;

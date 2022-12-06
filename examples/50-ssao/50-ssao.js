@@ -15,7 +15,7 @@ class App extends Application {
         this.pointerupHandler = this.pointerupHandler.bind(this);
         this.pointermoveHandler = this.pointermoveHandler.bind(this);
 
-        this.canvas.addEventListener('pointerdown', this.pointerdownHandler);
+        this.gl.canvas.addEventListener('pointerdown', this.pointerdownHandler);
 
         this.scene = new Node();
         this.camera = new Node();
@@ -70,10 +70,8 @@ class App extends Application {
         this.renderer.render(this.scene, this.camera);
     }
 
-    resize() {
-        const w = this.canvas.clientWidth;
-        const h = this.canvas.clientHeight;
-        const aspect = w / h;
+    resize(width, height) {
+        const aspect = width / height;
         const fovy = Math.PI / 3;
         const near = 0.1;
         const far = 100;
@@ -86,13 +84,13 @@ class App extends Application {
 
     pointerdownHandler(e) {
         this.pointerStart = [e.clientX, e.clientY];
-        this.canvas.removeEventListener('pointerdown', this.pointerdownHandler);
+        this.gl.canvas.removeEventListener('pointerdown', this.pointerdownHandler);
         window.addEventListener('pointerup', this.pointerupHandler);
         window.addEventListener('pointermove', this.pointermoveHandler);
     }
 
     pointerupHandler() {
-        this.canvas.addEventListener('pointerdown', this.pointerdownHandler);
+        this.gl.canvas.addEventListener('pointerdown', this.pointerdownHandler);
         window.removeEventListener('pointerup', this.pointerupHandler);
         window.removeEventListener('pointermove', this.pointermoveHandler);
     }

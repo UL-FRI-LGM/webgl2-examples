@@ -16,9 +16,6 @@ class App extends Application {
 
         this.renderer = new Renderer(gl);
 
-        this.time = performance.now();
-        this.startTime = this.time;
-
         this.root = new Node();
 
         this.camera = new Node();
@@ -26,7 +23,7 @@ class App extends Application {
         this.camera.projection = mat4.create();
         this.root.addChild(this.camera);
 
-        this.controller = new FirstPersonController(this.camera, this.canvas);
+        this.controller = new FirstPersonController(this.camera, this.gl.canvas);
 
         this.floor = new Node();
         this.floor.scale = [10, 1, 10];
@@ -45,11 +42,7 @@ class App extends Application {
         this.floor.texture = texture;
     }
 
-    update() {
-        this.time = performance.now();
-        const dt = (this.time - this.startTime) * 0.001;
-        this.startTime = this.time;
-
+    update(time, dt) {
         this.controller.update(dt);
     }
 
@@ -57,10 +50,8 @@ class App extends Application {
         this.renderer.render(this.root, this.camera);
     }
 
-    resize() {
-        const w = this.canvas.clientWidth;
-        const h = this.canvas.clientHeight;
-        const aspect = w / h;
+    resize(width, height) {
+        const aspect = width / height;
         const fovy = Math.PI / 2;
         const near = 0.1;
         const far = 100;

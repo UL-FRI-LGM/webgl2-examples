@@ -110,9 +110,6 @@ class App extends Application {
 
         this.renderer = new Renderer(gl);
 
-        this.time = performance.now();
-        this.startTime = this.time;
-
         this.root = new Node();
         this.camera = new Node();
         this.root.addChild(this.camera);
@@ -120,7 +117,7 @@ class App extends Application {
         this.camera.projection = mat4.create();
         this.camera.translation = [0, 2, 0];
 
-        this.cameraController = new FirstPersonController(this.camera, this.canvas);
+        this.cameraController = new FirstPersonController(this.camera, this.gl.canvas);
 
         const grassTextureAtlas = createGrassTextureAtlas();
         const grassModel = await fetch('../../common/models/grass.json')
@@ -139,11 +136,7 @@ class App extends Application {
         this.root.addChild(this.grass);
     }
 
-    update() {
-        this.time = performance.now();
-        const dt = (this.time - this.startTime) * 0.001;
-        this.startTime = this.time;
-
+    update(time, dt) {
         this.cameraController.update(dt);
     }
 
@@ -151,10 +144,8 @@ class App extends Application {
         this.renderer.render(this.root, this.camera);
     }
 
-    resize() {
-        const w = this.canvas.clientWidth;
-        const h = this.canvas.clientHeight;
-        const aspect = w / h;
+    resize(width, height) {
+        const aspect = width / height;
         const fovy = Math.PI / 3;
         const near = 0.1;
         const far = 100;

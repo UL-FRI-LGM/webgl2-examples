@@ -2,37 +2,36 @@ export class Application {
 
     constructor(canvas, glOptions) {
         this._update = this._update.bind(this);
+        this._render = this._render.bind(this);
 
-        this.canvas = canvas;
-        this._initGL(glOptions);
+        this.gl = canvas.getContext('webgl2', glOptions);
     }
 
     async init() {
         await this.start();
-        requestAnimationFrame(this._update);
-    }
 
-    _initGL(glOptions) {
-        this.gl = null;
-        try {
-            this.gl = this.canvas.getContext('webgl2', glOptions);
-        } catch (error) {
-        }
+        this._time = performance.now() / 1000;
 
-        if (!this.gl) {
-            console.log('Cannot create WebGL 2.0 context');
-        }
+        setInterval(this._update, 0);
+        requestAnimationFrame(this._render);
     }
 
     _update() {
+        const time = performance.now() / 1000;
+        const dt = time - this._time;
+        this._time = time;
+
+        this.update(time, dt);
+    }
+
+    _render() {
         this._resize();
-        this.update();
         this.render();
-        requestAnimationFrame(this._update);
+        requestAnimationFrame(this._render);
     }
 
     _resize() {
-        const canvas = this.canvas;
+        const canvas = this.gl.canvas;
         const gl = this.gl;
 
         const pixelRatio = window.devicePixelRatio;
@@ -45,7 +44,7 @@ export class Application {
 
             gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
-            this.resize();
+            this.resize(width, height);
         }
     }
 

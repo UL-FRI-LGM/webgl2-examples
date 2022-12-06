@@ -15,9 +15,6 @@ class App extends Application {
 
         this.renderer = new Renderer(gl);
 
-        this.time = performance.now();
-        this.startTime = this.time;
-
         this.root = new Node();
         this.camera = new Node();
         this.funky = new Node();
@@ -25,7 +22,7 @@ class App extends Application {
         this.root.addChild(this.camera);
         this.root.addChild(this.funky);
 
-        this.cameraController = new FirstPersonController(this.camera, this.canvas);
+        this.cameraController = new FirstPersonController(this.camera, this.gl.canvas);
         this.cameraController.pitch = -Math.PI / 6;
 
         this.camera.projection = mat4.create();
@@ -55,11 +52,7 @@ class App extends Application {
         this.funky.material.envmap = envmap;
     }
 
-    update() {
-        this.time = performance.now();
-        const dt = (this.time - this.startTime) * 0.001;
-        this.startTime = this.time;
-
+    update(time, dt) {
         this.cameraController.update(dt);
     }
 
@@ -67,10 +60,8 @@ class App extends Application {
         this.renderer.render(this.root, this.camera, this.skybox);
     }
 
-    resize() {
-        const w = this.canvas.clientWidth;
-        const h = this.canvas.clientHeight;
-        const aspect = w / h;
+    resize(width, height) {
+        const aspect = width / height;
         const fovy = Math.PI / 3;
         const near = 0.1;
         const far = 100;

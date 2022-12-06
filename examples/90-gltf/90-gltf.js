@@ -29,10 +29,8 @@ class App extends Application {
         this.renderer.render(this.scene, this.camera);
     }
 
-    resize() {
-        const w = this.canvas.clientWidth;
-        const h = this.canvas.clientHeight;
-        const aspectRatio = w / h;
+    resize(width, height) {
+        const aspectRatio = width / height;
 
         this.camera.camera.aspect = aspectRatio;
         this.camera.camera.updateProjectionMatrix();

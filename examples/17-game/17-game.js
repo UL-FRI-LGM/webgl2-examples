@@ -12,15 +12,13 @@ class App extends Application {
         const gl = this.gl;
 
         this.renderer = new Renderer(gl);
-        this.time = performance.now();
-        this.startTime = this.time;
         this.aspect = 1;
 
         await this.load('scene.json');
 
-        this.canvas.addEventListener('click', e => this.canvas.requestPointerLock());
+        this.gl.canvas.addEventListener('click', e => this.gl.canvas.requestPointerLock());
         document.addEventListener('pointerlockchange', e => {
-            if (document.pointerLockElement === this.canvas) {
+            if (document.pointerLockElement === this.gl.canvas) {
                 this.camera.enable();
             } else {
                 this.camera.disable();
@@ -47,11 +45,7 @@ class App extends Application {
         this.renderer.prepare(this.scene);
     }
 
-    update() {
-        const t = this.time = performance.now();
-        const dt = (this.time - this.startTime) * 0.001;
-        this.startTime = this.time;
-
+    update(time, dt) {
         this.camera.update(dt);
         this.physics.update(dt);
     }
@@ -60,11 +54,8 @@ class App extends Application {
         this.renderer.render(this.scene, this.camera);
     }
 
-    resize() {
-        const w = this.canvas.clientWidth;
-        const h = this.canvas.clientHeight;
-        this.aspect = w / h;
-
+    resize(width, height) {
+        const aspect = width / height;
         this.camera.aspect = this.aspect;
         this.camera.updateProjection();
     }
