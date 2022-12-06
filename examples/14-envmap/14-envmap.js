@@ -3,7 +3,7 @@ import { quat, mat4 } from '../../lib/gl-matrix-module.js';
 
 import { Application } from '../../common/engine/Application.js';
 import { Node } from '../../common/engine/Node.js';
-import { FirstPersonController } from '../../common/engine/FirstPersonController.js';
+import { OrbitController } from '../../common/engine/OrbitController.js';
 
 import { Renderer } from './Renderer.js';
 import { Material } from './Material.js';
@@ -17,20 +17,17 @@ class App extends Application {
 
         this.root = new Node();
         this.camera = new Node();
-        this.funky = new Node();
+        this.model = new Node();
         this.skybox = new Node();
         this.root.addChild(this.camera);
-        this.root.addChild(this.funky);
+        this.root.addChild(this.model);
 
-        this.cameraController = new FirstPersonController(this.camera, this.gl.canvas);
-        this.cameraController.pitch = -Math.PI / 6;
-
+        this.cameraController = new OrbitController(this.camera, this.gl.canvas);
         this.camera.projection = mat4.create();
-        this.camera.translation = [0, 2, 5];
 
-        const [cube, funky, texture, envmap] = await Promise.all([
+        const [cube, model, texture, envmap] = await Promise.all([
             this.renderer.loadModel('../../common/models/cube.json'),
-            this.renderer.loadModel('../../common/models/funky.json'),
+            this.renderer.loadModel('../../common/models/bunny.json'),
             this.renderer.loadTexture('../../common/images/grayscale.png', {
                 mip: true,
                 min: gl.NEAREST_MIPMAP_NEAREST,
@@ -46,10 +43,10 @@ class App extends Application {
         this.skybox.material = new Material();
         this.skybox.material.envmap = envmap;
 
-        this.funky.model = funky;
-        this.funky.material = new Material();
-        this.funky.material.texture = texture;
-        this.funky.material.envmap = envmap;
+        this.model.model = model;
+        this.model.material = new Material();
+        this.model.material.texture = texture;
+        this.model.material.envmap = envmap;
     }
 
     update(time, dt) {
@@ -77,7 +74,7 @@ await app.init();
 document.querySelector('.loader-container').remove();
 
 const gui = new GUI();
-gui.add(app.funky.material, 'effect', 0, 1);
-gui.add(app.funky.material, 'reflectance', 0, 1);
-gui.add(app.funky.material, 'transmittance', 0, 1);
-gui.add(app.funky.material, 'ior', 0, 1);
+gui.add(app.model.material, 'effect', 0, 1);
+gui.add(app.model.material, 'reflectance', 0, 1);
+gui.add(app.model.material, 'transmittance', 0, 1);
+gui.add(app.model.material, 'ior', 0, 1);

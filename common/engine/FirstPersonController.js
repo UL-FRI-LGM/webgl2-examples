@@ -96,22 +96,14 @@ export class FirstPersonController {
     pointermoveHandler(e) {
         const dx = e.movementX;
         const dy = e.movementY;
+
         this.pitch -= dy * this.pointerSensitivity;
         this.yaw   -= dx * this.pointerSensitivity;
 
-        const pi = Math.PI;
-        const twopi = pi * 2;
-        const halfpi = pi / 2;
+        const twopi = Math.PI * 2;
+        const halfpi = Math.PI / 2;
 
-        // Limit pitch so that the camera does not invert on itself.
-        if (this.pitch > halfpi) {
-            this.pitch = halfpi;
-        }
-        if (this.pitch < -halfpi) {
-            this.pitch = -halfpi;
-        }
-
-        // Constrain yaw to the range [0, pi * 2]
+        this.pitch = Math.min(Math.max(this.pitch, -halfpi), halfpi);
         this.yaw = ((this.yaw % twopi) + twopi) % twopi;
     }
 

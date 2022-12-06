@@ -3,7 +3,7 @@ import { mat4 } from '../../lib/gl-matrix-module.js';
 
 import { Application } from '../../common/engine/Application.js';
 import { Node } from '../../common/engine/Node.js';
-import { FirstPersonController } from '../../common/engine/FirstPersonController.js';
+import { OrbitController } from '../../common/engine/OrbitController.js';
 
 import { Renderer } from './Renderer.js';
 import { Material } from './Material.js';
@@ -18,12 +18,12 @@ class App extends Application {
         this.root = new Node();
         this.camera = new Node();
         this.light = new Node();
-        this.funky = new Node();
+        this.model = new Node();
         this.root.addChild(this.camera);
         this.root.addChild(this.light);
-        this.root.addChild(this.funky);
+        this.root.addChild(this.model);
 
-        this.light.position = [0, 0, 0];
+        this.light.position = [0, 2, 1];
         this.light.color = [255, 255, 255];
         this.light.intensity = 1;
         this.light.attenuation = [0.001, 0, 0.3];
@@ -31,21 +31,20 @@ class App extends Application {
         this.camera.projection = mat4.create();
         this.camera.translation = [0, 2, 5];
 
-        this.cameraController = new FirstPersonController(this.camera, this.gl.canvas);
-        this.cameraController.pitch = -Math.PI / 6;
+        this.cameraController = new OrbitController(this.camera, this.gl.canvas);
 
         const [model, texture, envmap] = await Promise.all([
-            this.renderer.loadModel('../../common/models/funky.json'),
-            this.renderer.loadTexture('../../common/images/grayscale.png', {
+            this.renderer.loadModel('../../common/models/bunny.json'),
+            this.renderer.loadTexture('../../common/images/grass.png', {
                 mip: true,
                 min: gl.NEAREST_MIPMAP_NEAREST,
                 mag: gl.NEAREST,
             }),
         ]);
 
-        this.funky.model = model;
-        this.funky.material = new Material();
-        this.funky.material.texture = texture;
+        this.model.model = model;
+        this.model.material = new Material();
+        this.model.material.texture = texture;
     }
 
     update(time, dt) {
@@ -97,6 +96,6 @@ lightAttenuation.add(app.light.attenuation, 2, 0, 1).name('quadratic');
 
 const material = gui.addFolder('Material');
 material.open();
-material.add(app.funky.material, 'diffuse', 0, 1);
-material.add(app.funky.material, 'specular', 0, 1);
-material.add(app.funky.material, 'shininess', 1, 200);
+material.add(app.model.material, 'diffuse', 0, 1);
+material.add(app.model.material, 'specular', 0, 1);
+material.add(app.model.material, 'shininess', 1, 200);

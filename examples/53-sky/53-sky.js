@@ -3,7 +3,7 @@ import { mat4 } from '../../lib/gl-matrix-module.js';
 
 import { Application } from '../../common/engine/Application.js';
 import { Node } from '../../common/engine/Node.js';
-import { FirstPersonController } from '../../common/engine/FirstPersonController.js';
+import { OrbitController } from '../../common/engine/OrbitController.js';
 
 import { Renderer } from './Renderer.js';
 
@@ -15,7 +15,7 @@ class App extends Application {
         this.renderer = new Renderer(gl);
         this.camera = new Node();
         this.camera.projection = mat4.create();
-        this.cameraController = new FirstPersonController(this.camera, this.gl.canvas);
+        this.cameraController = new OrbitController(this.camera, this.gl.canvas);
     }
 
     update(time, dt) {

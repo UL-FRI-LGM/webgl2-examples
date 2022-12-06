@@ -14,8 +14,10 @@ export class Renderer {
         gl.enable(gl.CULL_FACE);
 
         this.programs = WebGL.buildPrograms(gl, shaders);
-        this.currentProgram = this.programs.perVertex;
-        this.perFragment = false;
+        this.perFragment = true;
+        this.currentProgram = this.perFragment
+            ? this.programs.perFragment
+            : this.programs.perVertex;
     }
 
     render(scene, camera, light) {

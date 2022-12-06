@@ -3,6 +3,7 @@ import { mat4, vec3, quat } from '../../lib/gl-matrix-module.js';
 
 import { Application } from '../../common/engine/Application.js';
 import { Node } from '../../common/engine/Node.js';
+import { OrbitController } from '../../common/engine/OrbitController.js';
 
 import { Renderer } from './Renderer.js';
 
@@ -11,17 +12,13 @@ class App extends Application {
     start() {
         this.renderer = new Renderer(this.gl);
 
-        this.pointerdownHandler = this.pointerdownHandler.bind(this);
-        this.pointerupHandler = this.pointerupHandler.bind(this);
-        this.pointermoveHandler = this.pointermoveHandler.bind(this);
-
-        this.gl.canvas.addEventListener('pointerdown', this.pointerdownHandler);
-
         this.scene = new Node();
         this.camera = new Node();
         this.camera.projection = mat4.create();
-        this.camera.translation = [0, 0, 10];
         this.scene.addChild(this.camera);
+
+        this.cameraController = new OrbitController(this.camera, this.gl.canvas);
+        this.cameraController.distance = 10;
 
         this.cubeRoot = new Node();
         this.scene.addChild(this.cubeRoot);
@@ -66,6 +63,10 @@ class App extends Application {
         }
     }
 
+    update() {
+        this.cameraController.update();
+    }
+
     render() {
         this.renderer.render(this.scene, this.camera);
     }
@@ -80,32 +81,6 @@ class App extends Application {
 
         this.renderer.createGeometryBuffer();
         this.renderer.createSSAOBuffer();
-    }
-
-    pointerdownHandler(e) {
-        this.pointerStart = [e.clientX, e.clientY];
-        this.gl.canvas.removeEventListener('pointerdown', this.pointerdownHandler);
-        window.addEventListener('pointerup', this.pointerupHandler);
-        window.addEventListener('pointermove', this.pointermoveHandler);
-    }
-
-    pointerupHandler() {
-        this.gl.canvas.addEventListener('pointerdown', this.pointerdownHandler);
-        window.removeEventListener('pointerup', this.pointerupHandler);
-        window.removeEventListener('pointermove', this.pointermoveHandler);
-    }
-
-    pointermoveHandler(e) {
-        const [x0, y0] = this.pointerStart;
-        const [x1, y1] = [e.clientX, e.clientY];
-        const [dx, dy] = [x1 - x0, y1 - y0];
-        this.pointerStart = [x1, y1];
-
-        const pointerSensitivity = 0.003;
-        const q = quat.create();
-        quat.rotateX(q, q, dy * pointerSensitivity);
-        quat.rotateY(q, q, dx * pointerSensitivity);
-        this.cubeRoot.rotation = quat.mul(quat.create(), q, this.cubeRoot.rotation);
     }
 
 }
