@@ -14,7 +14,7 @@ class App extends Application {
 
         this.scene = new Node();
         this.camera = new Node();
-        this.camera.projection = mat4.create();
+        this.camera.projectionMatrix = mat4.create();
         this.scene.addChild(this.camera);
 
         this.cameraController = new OrbitController(this.camera, this.gl.canvas);
@@ -77,7 +77,7 @@ class App extends Application {
         const near = 0.1;
         const far = 100;
 
-        mat4.perspective(this.camera.projection, fovy, aspect, near, far);
+        mat4.perspective(this.camera.projectionMatrix, fovy, aspect, near, far);
 
         this.renderer.createGeometryBuffer();
         this.renderer.createSSAOBuffer();

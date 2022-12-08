@@ -23,7 +23,7 @@ class App extends Application {
         this.root.addChild(this.model);
 
         this.cameraController = new OrbitController(this.camera, this.gl.canvas);
-        this.camera.projection = mat4.create();
+        this.camera.projectionMatrix = mat4.create();
 
         const [cube, model, texture, envmap] = await Promise.all([
             this.renderer.loadModel('../../common/models/cube.json'),
@@ -63,7 +63,7 @@ class App extends Application {
         const near = 0.1;
         const far = 100;
 
-        mat4.perspective(this.camera.projection, fovy, aspect, near, far);
+        mat4.perspective(this.camera.projectionMatrix, fovy, aspect, near, far);
     }
 
 }

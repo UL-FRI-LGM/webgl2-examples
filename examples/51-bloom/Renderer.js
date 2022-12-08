@@ -64,7 +64,7 @@ export class Renderer {
         const matrix = mat4.create();
         const viewMatrix = camera.globalMatrix;
         mat4.invert(viewMatrix, viewMatrix);
-        mat4.mul(matrix, camera.projection, viewMatrix);
+        mat4.mul(matrix, camera.projectionMatrix, viewMatrix);
 
         gl.uniform1f(uniforms.uEmissionStrength, this.emissionStrength);
         gl.uniform1f(uniforms.uExposure, this.preExposure);

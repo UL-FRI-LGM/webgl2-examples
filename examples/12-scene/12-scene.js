@@ -31,7 +31,7 @@ class App extends Application {
         // The camera holds a projection transformation, and its global
         // transformation is used as the inverse view transformation.
         this.camera = new Node();
-        this.camera.projection = mat4.create();
+        this.camera.projectionMatrix = mat4.create();
         this.root.addChild(this.camera);
 
         // Create three cubes, two attached to the root node and one
@@ -85,24 +85,24 @@ class App extends Application {
 
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        const program = this.programs.simple;
-        gl.useProgram(program.program);
+        const { program, uniforms } = this.programs.simple;
+        gl.useProgram(program);
 
         // In this simple example, only one program is used and only one
         // texture uniform is present. We can set it to use the correct
         // texture mapping unit in advance.
         gl.activeTexture(gl.TEXTURE0);
-        gl.uniform1i(program.uniforms.uTexture, 0);
+        gl.uniform1i(uniforms.uTexture, 0);
 
         // Create a MVP matrix and a stack to hold the intermediate matrices.
         let mvpMatrix = mat4.create();
         const mvpStack = [];
-        const mvpLocation = program.uniforms.uModelViewProjection;
+
         // We can premultiply the view and projection matrices, so that we
         // do not have to do it for every node during scene traversal.
-        const viewMatrix = this.camera.getGlobalMatrix();
+        const viewMatrix = this.camera.globalMatrix;
         mat4.invert(viewMatrix, viewMatrix);
-        mat4.mul(mvpMatrix, this.camera.projection, viewMatrix);
+        mat4.mul(mvpMatrix, this.camera.projectionMatrix, viewMatrix);
 
         // Traverse the scene. Before any modification, the MVP matrix has to
         // be pushed onto the stack and then restored once the node is done
@@ -115,7 +115,7 @@ class App extends Application {
                 mat4.mul(mvpMatrix, mvpMatrix, node.localMatrix);
                 if (node.model) {
                     gl.bindVertexArray(node.model.vao);
-                    gl.uniformMatrix4fv(mvpLocation, false, mvpMatrix);
+                    gl.uniformMatrix4fv(uniforms.uModelViewProjection, false, mvpMatrix);
                     gl.bindTexture(gl.TEXTURE_2D, node.texture);
                     gl.drawElements(gl.TRIANGLES, node.model.indices, gl.UNSIGNED_SHORT, 0);
                 }
@@ -132,7 +132,7 @@ class App extends Application {
         const near = 0.1;
         const far = 100;
 
-        mat4.perspective(this.camera.projection, fovy, aspect, near, far);
+        mat4.perspective(this.camera.projectionMatrix, fovy, aspect, near, far);
     }
 
     createModel(model) {

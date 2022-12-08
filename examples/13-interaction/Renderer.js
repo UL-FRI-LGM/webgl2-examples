@@ -28,7 +28,7 @@ export class Renderer {
         mat4.invert(viewMatrix, viewMatrix);
 
         const mvpMatrix = mat4.create();
-        mat4.mul(mvpMatrix, mvpMatrix, camera.projection);
+        mat4.mul(mvpMatrix, mvpMatrix, camera.projectionMatrix);
         mat4.mul(mvpMatrix, mvpMatrix, viewMatrix);
         mat4.mul(mvpMatrix, mvpMatrix, scene.globalMatrix);
 

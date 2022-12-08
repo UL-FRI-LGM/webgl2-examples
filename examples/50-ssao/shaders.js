@@ -1,7 +1,7 @@
 const renderGeometryBufferVertex = `#version 300 es
 
-uniform mat4 uViewModel;
-uniform mat4 uProjection;
+uniform mat4 uViewModelMatrix;
+uniform mat4 uProjectionMatrix;
 
 layout (location = 0) in vec4 aPosition;
 layout (location = 1) in vec2 aTexCoord;
@@ -13,9 +13,9 @@ out vec3 vNormal;
 
 void main() {
     vTexCoord = aTexCoord;
-    vPosition = uViewModel * aPosition;
-    vNormal = mat3(uViewModel) * aNormal;
-    gl_Position = uProjection * vPosition;
+    vPosition = uViewModelMatrix * aPosition;
+    vNormal = mat3(uViewModelMatrix) * aNormal;
+    gl_Position = uProjectionMatrix * vPosition;
 }
 `;
 
@@ -61,7 +61,7 @@ precision mediump float;
 precision mediump sampler2D;
 precision mediump sampler2DShadow;
 
-uniform mat4 uProjection;
+uniform mat4 uProjectionMatrix;
 uniform float uDepthBias;
 uniform float uOcclusionRange;
 uniform float uOcclusionScale;
@@ -92,7 +92,7 @@ void main() {
     for (int i = 0; i < uOcclusionSampleCount; i++) {
         vec3 direction = texelFetch(uOcclusionSamples, ivec2(i, 0), 0).rgb;
         vec3 probe = position + TBN * direction * uOcclusionScale;
-        vec4 probeProjection = uProjection * vec4(probe, 1);
+        vec4 probeProjection = uProjectionMatrix * vec4(probe, 1);
         probeProjection /= probeProjection.w;
         float referenceDepth = texture(uPosition, probeProjection.xy * 0.5 + 0.5).z;
         float rangeCheck = smoothstep(0.0, 1.0, uOcclusionRange * uOcclusionScale / abs(position.z - referenceDepth));

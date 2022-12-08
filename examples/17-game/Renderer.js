@@ -42,7 +42,7 @@ export class Renderer {
         const viewMatrix = camera.getGlobalMatrix();
         mat4.invert(viewMatrix, viewMatrix);
         mat4.copy(matrix, viewMatrix);
-        gl.uniformMatrix4fv(uniforms.uProjection, false, camera.projection);
+        gl.uniformMatrix4fv(uniforms.uProjectionMatrix, false, camera.projectionMatrix);
 
         scene.traverse(
             node => {
@@ -50,7 +50,7 @@ export class Renderer {
                 mat4.mul(matrix, matrix, node.localMatrix);
                 if (node.gl.vao) {
                     gl.bindVertexArray(node.gl.vao);
-                    gl.uniformMatrix4fv(uniforms.uViewModel, false, matrix);
+                    gl.uniformMatrix4fv(uniforms.uViewModelMatrix, false, matrix);
                     gl.activeTexture(gl.TEXTURE0);
                     gl.bindTexture(gl.TEXTURE_2D, node.gl.texture);
                     gl.uniform1i(uniforms.uTexture, 0);

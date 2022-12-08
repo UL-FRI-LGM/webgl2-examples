@@ -20,7 +20,7 @@ class App extends Application {
 
         this.camera = new Node();
         this.camera.translation = [0, 1, 0];
-        this.camera.projection = mat4.create();
+        this.camera.projectionMatrix = mat4.create();
         this.root.addChild(this.camera);
 
         this.controller = new FirstPersonController(this.camera, this.gl.canvas);
@@ -56,7 +56,7 @@ class App extends Application {
         const near = 0.1;
         const far = 100;
 
-        mat4.perspective(this.camera.projection, fovy, aspect, near, far);
+        mat4.perspective(this.camera.projectionMatrix, fovy, aspect, near, far);
     }
 
 }

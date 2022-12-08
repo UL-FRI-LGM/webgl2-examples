@@ -12,7 +12,7 @@ export class Node {
         this.parent = null;
     }
 
-    getGlobalMatrix() {
+    get globalMatrix() {
         if (!this.parent) {
             // If the node does not have a parent, it is the root node.
             // Return its local transformation.
@@ -22,7 +22,7 @@ export class Node {
             // global transformation into account. This recursion
             // essentially multiplies all local transformations up
             // to the root node.
-            const globalMatrix = this.parent.getGlobalMatrix();
+            const globalMatrix = this.parent.globalMatrix;
             return mat4.mul(globalMatrix, globalMatrix, this.localMatrix);
         }
     }

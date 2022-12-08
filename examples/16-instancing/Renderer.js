@@ -26,7 +26,7 @@ export class Renderer {
         const viewMatrix = camera.globalMatrix;
         mat4.invert(viewMatrix, viewMatrix);
         gl.uniformMatrix4fv(uniforms.uViewMatrix, false, viewMatrix);
-        gl.uniformMatrix4fv(uniforms.uProjectionMatrix, false, camera.projection);
+        gl.uniformMatrix4fv(uniforms.uProjectionMatrix, false, camera.projectionMatrix);
 
         this.renderNode(scene, scene.globalMatrix);
     }

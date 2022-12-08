@@ -48,7 +48,7 @@ export class Renderer {
         const lightMatrix = mat4.create();
         const lightTransformMatrix = shadowCamera.globalMatrix;
         mat4.invert(lightTransformMatrix, lightTransformMatrix);
-        mat4.mul(lightMatrix, shadowCamera.projection, lightTransformMatrix);
+        mat4.mul(lightMatrix, shadowCamera.projectionMatrix, lightTransformMatrix);
         gl.uniformMatrix4fv(uniforms.uLightMatrix, false, lightMatrix);
 
         const modelMatrix = mat4.create();
@@ -80,13 +80,13 @@ export class Renderer {
         const cameraMatrix = mat4.create();
         const cameraTransformMatrix = camera.globalMatrix;
         mat4.invert(cameraTransformMatrix, cameraTransformMatrix);
-        mat4.mul(cameraMatrix, camera.projection, cameraTransformMatrix);
+        mat4.mul(cameraMatrix, camera.projectionMatrix, cameraTransformMatrix);
         gl.uniformMatrix4fv(uniforms.uCameraMatrix, false, cameraMatrix);
 
         const lightMatrix = mat4.create();
         const lightTransformMatrix = shadowCamera.globalMatrix;
         mat4.invert(lightTransformMatrix, lightTransformMatrix);
-        mat4.mul(lightMatrix, shadowCamera.projection, lightTransformMatrix);
+        mat4.mul(lightMatrix, shadowCamera.projectionMatrix, lightTransformMatrix);
         gl.uniformMatrix4fv(uniforms.uLightMatrix, false, lightMatrix);
 
         gl.activeTexture(gl.TEXTURE1);

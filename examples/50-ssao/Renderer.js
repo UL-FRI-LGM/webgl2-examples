@@ -75,7 +75,7 @@ export class Renderer {
         const viewMatrix = camera.globalMatrix;
         mat4.invert(viewMatrix, viewMatrix);
         mat4.copy(matrix, viewMatrix);
-        gl.uniformMatrix4fv(uniforms.uProjection, false, camera.projection);
+        gl.uniformMatrix4fv(uniforms.uProjectionMatrix, false, camera.projectionMatrix);
 
         for (const node of scene.children) {
             this.renderNode(node, matrix, uniforms);
@@ -93,7 +93,7 @@ export class Renderer {
         const { program, uniforms } = this.programs.ssao;
         gl.useProgram(program);
 
-        gl.uniformMatrix4fv(uniforms.uProjection, false, camera.projection);
+        gl.uniformMatrix4fv(uniforms.uProjectionMatrix, false, camera.projectionMatrix);
         gl.uniform1i(uniforms.uOcclusionSampleCount, this.occlusionSampleCount);
         gl.uniform1f(uniforms.uOcclusionScale, this.occlusionScale);
         gl.uniform1f(uniforms.uOcclusionRange, this.occlusionRange);
@@ -150,7 +150,7 @@ export class Renderer {
 
         if (node.mesh) {
             gl.bindVertexArray(node.mesh.vao);
-            gl.uniformMatrix4fv(uniforms.uViewModel, false, matrix);
+            gl.uniformMatrix4fv(uniforms.uViewModelMatrix, false, matrix);
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, node.texture);
             gl.uniform1i(uniforms.uTexture, 0);

@@ -9,7 +9,7 @@ export class Camera extends Node {
         super(options);
         Utils.init(this, this.constructor.defaults, options);
 
-        this.projection = mat4.create();
+        this.projectionMatrix = mat4.create();
         this.updateProjection();
 
         this.pointermoveHandler = this.pointermoveHandler.bind(this);
@@ -19,7 +19,7 @@ export class Camera extends Node {
     }
 
     updateProjection() {
-        mat4.perspective(this.projection, this.fov, this.aspect, this.near, this.far);
+        mat4.perspective(this.projectionMatrix, this.fov, this.aspect, this.near, this.far);
     }
 
     update(dt) {

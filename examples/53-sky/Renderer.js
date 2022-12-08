@@ -124,7 +124,7 @@ export class Renderer {
         gl.useProgram(program);
 
         const viewMatrix = camera.globalMatrix;
-        const unprojectMatrix = mat4.clone(camera.projection);
+        const unprojectMatrix = mat4.clone(camera.projectionMatrix);
         mat4.invert(unprojectMatrix, unprojectMatrix);
         mat4.multiply(unprojectMatrix, viewMatrix, unprojectMatrix);
 

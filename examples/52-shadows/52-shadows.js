@@ -13,7 +13,7 @@ class App extends Application {
 
         this.scene = new Node();
         this.camera = new Node();
-        this.camera.projection = mat4.create();
+        this.camera.projectionMatrix = mat4.create();
         this.scene.addChild(this.camera);
 
         this.cameraController = new OrbitController(this.camera, this.gl.canvas);
@@ -24,8 +24,8 @@ class App extends Application {
 
         this.shadowCameraRoot = new Node();
         this.shadowCamera = new Node();
-        this.shadowCamera.projection = mat4.create();
-        mat4.perspective(this.shadowCamera.projection, 0.5, 1, 15, 50);
+        this.shadowCamera.projectionMatrix = mat4.create();
+        mat4.perspective(this.shadowCamera.projectionMatrix, 0.5, 1, 15, 50);
         this.shadowCamera.translation = [0, 0, 20];
         this.shadowCamera.aspect = 0.3;
         this.shadowCamera.near = 15;
@@ -89,7 +89,7 @@ class App extends Application {
         const near = 0.1;
         const far = 100;
 
-        mat4.perspective(this.camera.projection, fovy, aspect, near, far);
+        mat4.perspective(this.camera.projectionMatrix, fovy, aspect, near, far);
 
         this.renderer.createShadowBuffer();
     }
