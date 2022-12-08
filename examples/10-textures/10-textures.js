@@ -77,7 +77,6 @@ class App extends Application {
         this.modelMatrix = mat4.create();
         this.viewMatrix = mat4.create();
         this.projectionMatrix = mat4.create();
-        this.mvpMatrix = mat4.create();
 
         mat4.fromTranslation(this.viewMatrix, [ 0, 0, 5 ]);
 
@@ -157,8 +156,6 @@ class App extends Application {
             mat4.identity(this.modelMatrix);
             mat4.rotateX(this.modelMatrix, this.modelMatrix, time * 0.7);
             mat4.rotateY(this.modelMatrix, this.modelMatrix, time * 0.6);
-
-            this.updateModelViewProjection();
         }
     }
 
@@ -173,8 +170,13 @@ class App extends Application {
         gl.useProgram(program);
 
         gl.uniform1f(uniforms.uTextureScale, this.textureScale);
-        gl.uniformMatrix4fv(uniforms.uModelViewProjection,
-            false, this.mvpMatrix);
+
+        const mvpMatrix = mat4.create();
+        mat4.copy(mvpMatrix, this.modelMatrix);
+        const viewMatrix = mat4.invert(mat4.create(), this.viewMatrix);
+        mat4.mul(mvpMatrix, viewMatrix, mvpMatrix);
+        mat4.mul(mvpMatrix, this.projectionMatrix, mvpMatrix);
+        gl.uniformMatrix4fv(uniforms.uModelViewProjection, false, mvpMatrix);
 
         // Set the texture unit 0 to be active.
         gl.activeTexture(gl.TEXTURE0);
@@ -196,14 +198,6 @@ class App extends Application {
         const far = 100;
 
         mat4.perspective(this.projectionMatrix, fovy, aspect, near, far);
-    }
-
-    updateModelViewProjection() {
-        const matrix = this.mvpMatrix;
-        mat4.copy(matrix, this.modelMatrix);
-        const view = mat4.invert(mat4.create(), this.viewMatrix);
-        mat4.mul(matrix, view, matrix);
-        mat4.mul(matrix, this.projectionMatrix, matrix);
     }
 
     changeFilter() {

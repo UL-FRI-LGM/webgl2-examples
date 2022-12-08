@@ -87,10 +87,6 @@ class App extends Application {
         this.viewMatrix = mat4.create();
         this.projectionMatrix = mat4.create();
 
-        // Create another matrix to hold the product of the above
-        // matrices. This is called the model-view-projection (MVP) matrix.
-        this.mvpMatrix = mat4.create();
-
         // Initialize the camera to be translated 5 units back.
         mat4.fromTranslation(this.viewMatrix, [ 0, 0, 5 ]);
 
@@ -106,9 +102,6 @@ class App extends Application {
             mat4.identity(this.modelMatrix);
             mat4.rotateX(this.modelMatrix, this.modelMatrix, time * 0.7);
             mat4.rotateY(this.modelMatrix, this.modelMatrix, time * 0.6);
-
-            // We made changes to the MVP matrix, so we have to update it.
-            this.updateModelViewProjection();
         }
     }
 
@@ -125,10 +118,28 @@ class App extends Application {
         const { program, uniforms } = this.programs.simple;
         gl.useProgram(program);
 
+        // Create the matrix that will hold the product of the projection,
+        // view, and model matrices (in that order from left to right).
+        // This is often called the model-view-projection (MVP) matrix.
+        const mvpMatrix = mat4.create();
+
+        // First, copy the model matrix to the MVP. This will be the first
+        // transformation of a vertex.
+        mat4.copy(mvpMatrix, this.modelMatrix);
+
+        // Then, multiply it from the left by the inverse of the view matrix.
+        // We use an inverse because moving the camera in one way is
+        // equivalent of moving the whole world the other way.
+        const view = mat4.invert(mat4.create(), this.viewMatrix);
+        mat4.mul(mvpMatrix, view, mvpMatrix);
+
+        // Finally, multiply the result from the left by the projection
+        // matrix. This will be the last transformation of a vertex.
+        mat4.mul(mvpMatrix, this.projectionMatrix, mvpMatrix);
+
         // Set the transformation uniform. The second argument tells WebGL
         // whether to transpose the matrix before uploading it to the GPU.
-        gl.uniformMatrix4fv(uniforms.uModelViewProjection,
-            false, this.mvpMatrix);
+        gl.uniformMatrix4fv(uniforms.uModelViewProjection, false, mvpMatrix);
 
         // Call drawElements when drawing indexed geometry. The number of
         // indices is 36, each index is a short (Uint16Array) and start
@@ -145,24 +156,6 @@ class App extends Application {
         const far = 100;
 
         mat4.perspective(this.projectionMatrix, fovy, aspect, near, far);
-    }
-
-    updateModelViewProjection() {
-        const matrix = this.mvpMatrix;
-
-        // First, copy the model matrix to the MVP. This will be the first
-        // transformation of a vertex.
-        mat4.copy(matrix, this.modelMatrix);
-
-        // Then, multiply it from the left by the inverse of the camera
-        // transformation matrix. We use an inverse because moving the camera
-        // in one way is equivalent of moving the whole world the other way.
-        const view = mat4.invert(mat4.create(), this.viewMatrix);
-        mat4.mul(matrix, view, matrix);
-
-        // Finally, multiply the result from the left by the projection
-        // matrix. This will be the last transformation of a vertex.
-        mat4.mul(matrix, this.projectionMatrix, matrix);
     }
 
 }
