@@ -48,20 +48,9 @@ export class Application {
         }
     }
 
-    start() {
-        // initialization code (including event handler binding)
-    }
-
-    update() {
-        // update code (input, animations, AI ...)
-    }
-
-    render() {
-        // render code (gl API calls)
-    }
-
-    resize() {
-        // resize code (e.g. update projection matrix)
-    }
+    start() {}
+    update() {}
+    render() {}
+    resize() {}
 
 }
