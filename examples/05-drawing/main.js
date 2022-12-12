@@ -15,13 +15,13 @@ class App extends Application {
         // most of them are not really useful.
         this.primitiveType = gl.TRIANGLES;
         this.primitiveTypes = {
-            Points        : gl.POINTS,
-            Lines         : gl.LINES,
-            LineStrip     : gl.LINE_STRIP,
-            LineLoop      : gl.LINE_LOOP,
-            Triangles     : gl.TRIANGLES,
-            TriangleStrip : gl.TRIANGLE_STRIP,
-            TriangleFan   : gl.TRIANGLE_FAN,
+            POINTS         : gl.POINTS,
+            LINES          : gl.LINES,
+            LINE_STRIP     : gl.LINE_STRIP,
+            LINE_LOOP      : gl.LINE_LOOP,
+            TRIANGLES      : gl.TRIANGLES,
+            TRIANGLE_STRIP : gl.TRIANGLE_STRIP,
+            TRIANGLE_FAN   : gl.TRIANGLE_FAN,
         };
 
         // The functionality from the previous example has been

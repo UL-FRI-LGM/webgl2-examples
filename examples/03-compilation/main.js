@@ -13,7 +13,7 @@ class App extends Application {
         const vertexShader = gl.createShader(gl.VERTEX_SHADER);
 
         // Append source string.
-        gl.shaderSource(vertexShader, shaders.test.vertex);
+        gl.shaderSource(vertexShader, shaders.orange.vertex);
 
         // Try to compile.
         gl.compileShader(vertexShader);
@@ -29,7 +29,7 @@ class App extends Application {
 
         // Repeat for fragment shader.
         const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-        gl.shaderSource(fragmentShader, shaders.test.fragment);
+        gl.shaderSource(fragmentShader, shaders.orange.fragment);
         gl.compileShader(fragmentShader);
 
         const fragmentStatus = gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS);
@@ -57,7 +57,18 @@ class App extends Application {
             throw new Error('Cannot link program\nInfo log:\n' + log);
         }
 
-        console.log('Compilation successful');
+        // Activate the program. This function call, although simple, can be
+        // very slow as the driver switches the pipeline and revalidates it.
+        gl.useProgram(program);
+    }
+
+    render() {
+        const gl = this.gl;
+
+        // Draw separate triangles, start with vertex 0, and process
+        // 3 vertices. This means that we will draw a single triangle.
+        // The built-in variable gl_VertexID will therefore range from 0 to 2.
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
 
 }

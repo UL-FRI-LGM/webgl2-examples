@@ -8,9 +8,6 @@ class App extends Application {
     start() {
         const gl = this.gl;
 
-        // The functionality from the previous example has been
-        // moved to the WebGL.js functions createShader and createProgram.
-
         // Compile the shaders and create the program.
         const vertexShader = WebGL.createShader(gl, shaders.test.vertex, gl.VERTEX_SHADER);
         const fragmentShader = WebGL.createShader(gl, shaders.test.fragment, gl.FRAGMENT_SHADER);

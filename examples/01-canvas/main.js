@@ -6,7 +6,7 @@ class App extends Application {
     start() {
         // Create a default color in the RGBA format.
         // The values range from 0 to 255.
-        this.color = [ 255, 178, 127, 255 ];
+        this.color = [ 255, 155, 55, 255 ];
     }
 
     render() {
