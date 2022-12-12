@@ -1,5 +1,4 @@
 import { GUI } from '../../lib/dat.gui.module.js';
-import { mat4 } from '../../lib/gl-matrix-module.js';
 
 import { Application } from '../../common/engine/Application.js';
 import { WebGL } from '../../common/engine/WebGL.js';
@@ -10,77 +9,6 @@ class App extends Application {
 
     async start() {
         const gl = this.gl;
-
-        this.programs = WebGL.buildPrograms(gl, shaders);
-
-        gl.clearColor(1, 1, 1, 1);
-        gl.enable(gl.DEPTH_TEST);
-        gl.enable(gl.CULL_FACE);
-
-        // Define the vertices' positions and texture coordinates.
-        //
-        //  11--13
-        //  |    |
-        //  |    |
-        //  1----3----5----7----9
-        //  |    |    |    |    |
-        //  |    |    |    |    |
-        //  0----2----4----6----8
-        //  |    |
-        //  |    |
-        //  10--12
-        //
-        const vertices = new Float32Array([
-            //  positions      texcoords        index
-            -1, -1, -1,  1,      0,  0,      //   0
-            -1,  1, -1,  1,      0,  1,      //   1
-            -1, -1,  1,  1,      1,  0,      //   2
-            -1,  1,  1,  1,      1,  1,      //   3
-             1, -1,  1,  1,      2,  0,      //   4
-             1,  1,  1,  1,      2,  1,      //   5
-             1, -1, -1,  1,      3,  0,      //   6
-             1,  1, -1,  1,      3,  1,      //   7
-            -1, -1, -1,  1,      4,  0,      //   8
-            -1,  1, -1,  1,      4,  1,      //   9
-             1, -1, -1,  1,      0, -1,      //  10
-             1,  1, -1,  1,      0,  2,      //  11
-             1, -1,  1,  1,      1, -1,      //  12
-             1,  1,  1,  1,      1,  2,      //  13
-        ]);
-
-        const indices = new Uint16Array([
-             0,  2,  1,      1,  2,  3,
-             2,  4,  3,      3,  4,  5,
-             4,  6,  5,      5,  6,  7,
-             6,  8,  7,      7,  8,  9,
-             1,  3, 11,     11,  3, 13,
-            10, 12,  0,      0, 12,  2,
-        ]);
-
-        this.vao = gl.createVertexArray();
-        gl.bindVertexArray(this.vao);
-
-        this.vertexBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
-
-        this.indexBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
-
-        gl.enableVertexAttribArray(0);
-        gl.enableVertexAttribArray(1);
-
-        gl.vertexAttribPointer(0, 4, gl.FLOAT, false, 24, 0);
-        gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 24, 16);
-
-        this.modelMatrix = mat4.create();
-        this.viewMatrix = mat4.create();
-        this.projectionMatrix = mat4.create();
-
-        mat4.fromTranslation(this.viewMatrix, [ 0, 0, 5 ]);
-
-        this.isRotationEnabled = true;
 
         // Load the image. This will block start() until the promises resolve.
         // Note that createImageBitmap also accepts <img>, <image>, <video>,
@@ -142,72 +70,82 @@ class App extends Application {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
 
-        // A bool will hold the current filtering mode of the texture
-        // so we can change it with a press of a button.
-        this.isLinearFilter = false;
+        // Create the vertex array object (VAO).
+        this.vao = gl.createVertexArray();
 
-        // The texture coordinates are scaled in the shader.
-        // This is just to demonstrate undersampling issues.
-        this.textureScale = 1;
-    }
+        // Bind the VAO. All subsequent buffer bindings and attribute
+        // configuration is going to be stored the the currently bound VAO.
+        gl.bindVertexArray(this.vao);
 
-    update(time, dt) {
-        if (this.isRotationEnabled) {
-            mat4.identity(this.modelMatrix);
-            mat4.rotateX(this.modelMatrix, this.modelMatrix, time * 0.7);
-            mat4.rotateY(this.modelMatrix, this.modelMatrix, time * 0.6);
-        }
+        // Create the vertex buffer.
+        WebGL.createBuffer(gl, {
+            data: new Float32Array([
+                 0.0,  0.5, /* vertex 0 position */ 0, 1, /* vertex 0 texture coordinates */
+                -0.5, -0.5, /* vertex 1 position */ 0, 0, /* vertex 1 texture coordinates */
+                 0.5, -0.5, /* vertex 2 position */ 1, 0, /* vertex 2 texture coordinates */
+            ])
+        });
+
+        // Configure the position attribute.
+        WebGL.configureAttribute(gl, {
+            location: 0,
+            count: 2,
+            type: gl.FLOAT,
+            stride: 16,
+            offset: 0,
+        });
+
+        // Configure the texture coordinates attribute.
+        WebGL.configureAttribute(gl, {
+            location: 3,
+            count: 2,
+            type: gl.FLOAT,
+            stride: 16,
+            offset: 8,
+        });
+
+        // Create the index buffer.
+        WebGL.createBuffer(gl, {
+            target: gl.ELEMENT_ARRAY_BUFFER,
+            data: new Uint16Array([
+                 0, 1, 2
+            ])
+        });
+
+        // Build the programs and extract the attribute and uniform locations.
+        this.programs = WebGL.buildPrograms(gl, shaders);
+
+        // These two values will be passed into
+        // the shader to offset the vertices.
+        this.offsetX = 0;
+        this.offsetY = 0;
     }
 
     render() {
         const gl = this.gl;
 
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-        gl.bindVertexArray(this.vao);
-
-        const { program, uniforms } = this.programs.simple;
+        // Select the correct program to use for rendering.
+        const { program, uniforms } = this.programs.textured;
         gl.useProgram(program);
 
-        gl.uniform1f(uniforms.uTextureScale, this.textureScale);
+        // Select the VAO for rendering.
+        gl.bindVertexArray(this.vao);
 
-        const mvpMatrix = mat4.create();
-        mat4.copy(mvpMatrix, this.modelMatrix);
-        const viewMatrix = mat4.invert(mat4.create(), this.viewMatrix);
-        mat4.mul(mvpMatrix, viewMatrix, mvpMatrix);
-        mat4.mul(mvpMatrix, this.projectionMatrix, mvpMatrix);
-        gl.uniformMatrix4fv(uniforms.uModelViewProjection, false, mvpMatrix);
+        // Set the uniform value.
+        gl.uniform2f(uniforms.uOffset, this.offsetX, this.offsetY);
 
-        // Set the texture unit 0 to be active.
+        // Activate texture unit 0.
         gl.activeTexture(gl.TEXTURE0);
 
-        // Bind the correct texture to texture unit 0.
+        // Bind the texture to texture unit 0.
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
         // Set the uniform uTexture to use the texture unit 0.
         // Note that the type of the uniform is 1i (1 integer).
         gl.uniform1i(uniforms.uTexture, 0);
 
-        gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0);
-    }
-
-    resize(width, height) {
-        const aspect = width / height;
-        const fovy = Math.PI / 3;
-        const near = 0.1;
-        const far = 100;
-
-        mat4.perspective(this.projectionMatrix, fovy, aspect, near, far);
-    }
-
-    changeFilter() {
-        const gl = this.gl;
-
-        gl.bindTexture(gl.TEXTURE_2D, this.texture);
-
-        const filter = this.isLinearFilter ? gl.LINEAR : gl.NEAREST;
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
+        // Draw the triangle.
+        gl.drawElements(gl.TRIANGLES, 3, gl.UNSIGNED_SHORT, 0);
     }
 
 }
@@ -218,10 +156,5 @@ await app.init();
 document.querySelector('.loader-container').remove();
 
 const gui = new GUI();
-gui.add(app, 'isLinearFilter')
-   .name('Linear filtering')
-   .onChange(e => app.changeFilter());
-gui.add(app, 'textureScale')
-   .name('Texture scale');
-gui.add(app, 'isRotationEnabled')
-   .name('Enable rotation');
+gui.add(app, 'offsetX', -1, 1);
+gui.add(app, 'offsetY', -1, 1);

@@ -1,32 +1,32 @@
 const vertex = `#version 300 es
-layout (location = 0) in vec4 aPosition;
-layout (location = 1) in vec2 aTexCoord;
+uniform vec2 uOffset;
 
-uniform mat4 uModelViewProjection;
+layout (location = 0) in vec2 aPosition;
+layout (location = 3) in vec2 aTexCoord;
 
 out vec2 vTexCoord;
 
 void main() {
     vTexCoord = aTexCoord;
-    gl_Position = uModelViewProjection * aPosition;
+    gl_Position = vec4(aPosition + uOffset, 0, 1);
 }
 `;
 
 const fragment = `#version 300 es
 precision mediump float;
+precision mediump sampler2D;
 
-uniform mediump sampler2D uTexture;
-uniform float uTextureScale;
+uniform sampler2D uTexture;
 
 in vec2 vTexCoord;
 
 out vec4 oColor;
 
 void main() {
-    oColor = texture(uTexture, vTexCoord * uTextureScale);
+    oColor = texture(uTexture, vTexCoord);
 }
 `;
 
 export const shaders = {
-    simple: { vertex, fragment }
+    textured: { vertex, fragment }
 };
