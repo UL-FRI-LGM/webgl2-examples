@@ -1,13 +1,10 @@
 const vertex = `#version 300 es
+
 uniform vec2 uOffset;
 
 in vec2 aPosition;
-in vec4 aColor;
-
-out vec4 vColor;
 
 void main() {
-    vColor = aColor;
     gl_Position = vec4(aPosition + uOffset, 0, 1);
 }
 `;
@@ -15,15 +12,15 @@ void main() {
 const fragment = `#version 300 es
 precision mediump float;
 
-in vec4 vColor;
+uniform vec4 uColor;
 
 out vec4 oColor;
 
 void main() {
-    oColor = vColor;
+    oColor = uColor;
 }
 `;
 
 export const shaders = {
-    test: { vertex, fragment }
+    orange: { vertex, fragment }
 };
