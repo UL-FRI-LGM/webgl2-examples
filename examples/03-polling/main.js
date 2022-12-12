@@ -9,8 +9,8 @@ class App extends Application {
         const gl = this.gl;
 
         // Compile the shaders and create the program.
-        const vertexShader = WebGL.createShader(gl, shaders.orange.vertex, gl.VERTEX_SHADER);
-        const fragmentShader = WebGL.createShader(gl, shaders.orange.fragment, gl.FRAGMENT_SHADER);
+        const vertexShader = WebGL.createShader(gl, shaders.test.vertex, gl.VERTEX_SHADER);
+        const fragmentShader = WebGL.createShader(gl, shaders.test.fragment, gl.FRAGMENT_SHADER);
         const { program } = WebGL.createProgram(gl, [ vertexShader, fragmentShader ]);
 
         // We are going to store attribute locations in a dictionary that

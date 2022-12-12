@@ -22,5 +22,5 @@ void main() {
 `;
 
 export const shaders = {
-    orange: { vertex, fragment }
+    test: { vertex, fragment }
 };

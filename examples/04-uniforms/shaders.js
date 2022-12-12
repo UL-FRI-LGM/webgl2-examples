@@ -2,10 +2,15 @@ const vertex = `#version 300 es
 
 uniform vec2 uOffset;
 
-in vec2 aPosition;
+const vec2 vertices[] = vec2[](
+    vec2( 0.0,  0.5),
+    vec2(-0.5, -0.5),
+    vec2( 0.5, -0.5)
+);
 
 void main() {
-    gl_Position = vec4(aPosition + uOffset, 0, 1);
+    vec2 position = vertices[gl_VertexID];
+    gl_Position = vec4(position + uOffset, 0, 1);
 }
 `;
 
@@ -22,5 +27,5 @@ void main() {
 `;
 
 export const shaders = {
-    orange: { vertex, fragment }
+    test: { vertex, fragment }
 };
