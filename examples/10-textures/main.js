@@ -80,9 +80,9 @@ class App extends Application {
         // Create the vertex buffer.
         WebGL.createBuffer(gl, {
             data: new Float32Array([
-                 0.0,  0.5, /* vertex 0 position */ 0, 1, /* vertex 0 texture coordinates */
-                -0.5, -0.5, /* vertex 1 position */ 0, 0, /* vertex 1 texture coordinates */
-                 0.5, -0.5, /* vertex 2 position */ 1, 0, /* vertex 2 texture coordinates */
+                 0.0,  0.5, /* vertex 0 position */ 0.5, 1, /* vertex 0 texture coordinates */
+                -0.5, -0.5, /* vertex 1 position */ 0, 0,   /* vertex 1 texture coordinates */
+                 0.5, -0.5, /* vertex 2 position */ 1, 0,   /* vertex 2 texture coordinates */
             ])
         });
 
