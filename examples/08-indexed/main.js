@@ -61,7 +61,7 @@ class App extends Application {
         const gl = this.gl;
 
         // Select the correct program to use for rendering.
-        const { program, attributes, uniforms } = this.programs.colors;
+        const { program, uniforms } = this.programs.colors;
         gl.useProgram(program);
 
         // Set the uniform value.

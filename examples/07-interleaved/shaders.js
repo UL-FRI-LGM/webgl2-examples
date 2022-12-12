@@ -25,5 +25,5 @@ void main() {
 `;
 
 export const shaders = {
-    colors: { vertex, fragment }
+    colored: { vertex, fragment }
 };
