@@ -10,38 +10,41 @@ class App extends Application {
     start() {
         const gl = this.gl;
 
-        // This time we are going to store all the data interleaved, so that
-        // all the attributes for each vertex are close in memory.
-        // This significantly improves cache usage.
+        // You can create buffers and connect them to the corresponding
+        // attribute locations before compiling the shaders. In this case,
+        // the attribute locations have to be known in advance.
 
-        // Create the vertex buffer. We use 2 floats for the position attribute
-        // and 4 floats for the color attribute per vertex. Each vertex
-        // therefore requires 24 bytes of data. The positions start at the
-        // offset of 0 bytes, and the colors start at the offset of 8 bytes.
+        // Create the buffer with vertex positions.
         WebGL.createBuffer(gl, {
             data: new Float32Array([
-                 0.0,  0.5, /* vertex 0 position */ 1, 0, 0, 1, /* vertex 0 color */
-                -0.5, -0.5, /* vertex 1 position */ 0, 1, 0, 1, /* vertex 1 color */
-                 0.5, -0.5, /* vertex 2 position */ 0, 0, 1, 1, /* vertex 2 color */
+                 0.0,  0.5,
+                -0.5, -0.5,
+                 0.5, -0.5,
             ])
         });
 
-        // Configure the position attribute with the correct stride and offset.
+        // Connect the position buffer to the attribute location 0.
         WebGL.configureAttribute(gl, {
             location: 0,
             count: 2,
             type: gl.FLOAT,
-            stride: 24,
-            offset: 0,
         });
 
-        // Configure the color attribute with the correct stride and offset.
+        // Create the buffer with vertex colors.
+        WebGL.createBuffer(gl, {
+            data: new Uint8Array([
+                255, 0, 0, 255,
+                0, 255, 0, 255,
+                0, 0, 255, 255,
+            ])
+        });
+
+        // Connect the color buffer to the attribute location 5.
         WebGL.configureAttribute(gl, {
             location: 5,
             count: 4,
-            type: gl.FLOAT,
-            stride: 24,
-            offset: 8,
+            type: gl.UNSIGNED_BYTE,
+            normalize: true,
         });
 
         // Build the programs and extract the attribute and uniform locations.

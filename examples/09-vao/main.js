@@ -10,14 +10,14 @@ class App extends Application {
     start() {
         const gl = this.gl;
 
-        // This time we are going to store all the data interleaved, so that
-        // all the attributes for each vertex are close in memory.
-        // This significantly improves cache usage.
+        // Create the vertex array object (VAO).
+        this.vao = gl.createVertexArray();
 
-        // Create the vertex buffer. We use 2 floats for the position attribute
-        // and 4 floats for the color attribute per vertex. Each vertex
-        // therefore requires 24 bytes of data. The positions start at the
-        // offset of 0 bytes, and the colors start at the offset of 8 bytes.
+        // Bind the VAO. All subsequent buffer bindings and attribute
+        // configuration is going to be stored the the currently bound VAO.
+        gl.bindVertexArray(this.vao);
+
+        // Create the vertex buffer.
         WebGL.createBuffer(gl, {
             data: new Float32Array([
                  0.0,  0.5, /* vertex 0 position */ 1, 0, 0, 1, /* vertex 0 color */
@@ -26,7 +26,7 @@ class App extends Application {
             ])
         });
 
-        // Configure the position attribute with the correct stride and offset.
+        // Configure the position attribute.
         WebGL.configureAttribute(gl, {
             location: 0,
             count: 2,
@@ -35,13 +35,21 @@ class App extends Application {
             offset: 0,
         });
 
-        // Configure the color attribute with the correct stride and offset.
+        // Configure the color attribute.
         WebGL.configureAttribute(gl, {
             location: 5,
             count: 4,
             type: gl.FLOAT,
             stride: 24,
             offset: 8,
+        });
+
+        // Create the index buffer.
+        WebGL.createBuffer(gl, {
+            target: gl.ELEMENT_ARRAY_BUFFER,
+            data: new Uint16Array([
+                 0, 1, 2
+            ])
         });
 
         // Build the programs and extract the attribute and uniform locations.
@@ -60,11 +68,14 @@ class App extends Application {
         const { program, attributes, uniforms } = this.programs.colors;
         gl.useProgram(program);
 
+        // Select the VAO for rendering.
+        gl.bindVertexArray(this.vao);
+
         // Set the uniform value.
         gl.uniform2f(uniforms.uOffset, this.offsetX, this.offsetY);
 
         // Draw the triangle.
-        gl.drawArrays(gl.TRIANGLES, 0, 3);
+        gl.drawElements(gl.TRIANGLES, 3, gl.UNSIGNED_SHORT, 0);
     }
 
 }
