@@ -155,9 +155,11 @@ static configureAttribute(gl, {
     location, count, type,
     normalize = false,
     stride = 0, offset = 0,
+    divisor = 0,
 }) {
     gl.enableVertexAttribArray(location);
     gl.vertexAttribPointer(location, count, type, normalize, stride, offset);
+    gl.vertexAttribDivisor(location, divisor);
 }
 
 static createSampler(gl, {
