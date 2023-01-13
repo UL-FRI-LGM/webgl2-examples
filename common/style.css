@@ -28,21 +28,6 @@ body, html {
     touch-action: none;
 }
 
-a.back {
-    display: block;
-    margin: 20px;
-    padding: 5px 10px;
-    background: #fff;
-    border: 1px solid #ccc;
-    cursor: pointer;
-    text-decoration: none;
-    color: #000;
-}
-
-a.back:hover {
-    background: #ddd;
-}
-
 .loader-container {
     display: flex;
     align-items: center;
