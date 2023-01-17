@@ -36,17 +36,17 @@ class App extends Application {
         this.load();
     }
 
-    loadImage(uri) {
-        return new Promise((resolve, reject) => {
-            const image = new Image();
-            image.addEventListener('load', e => resolve(image));
-            image.addEventListener('error', reject);
-            image.src = uri;
-        });
+    async loadImage(url) {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        const image = await createImageBitmap(blob);
+        return image;
     }
 
-    loadJson(uri) {
-        return fetch(uri).then(response => response.json());
+    async loadJson(url) {
+        const response = await fetch(url);
+        const json = await response.json();
+        return json;
     }
 
     async load() {
