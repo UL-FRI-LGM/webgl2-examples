@@ -1,51 +1,48 @@
 import { GUI } from '../../../lib/dat.gui.module.js';
-import { Application } from '../../../common/engine/Application.js';
-import { WebGL } from '../../../common/engine/WebGL.js';
+import * as WebGL from '../../../common/engine/WebGL.js';
+
+import { ResizeSystem } from '../../../common/engine/systems/ResizeSystem.js';
+import { UpdateSystem } from '../../../common/engine/systems/UpdateSystem.js';
 
 import { shaders } from './shaders.js';
 
-class App extends Application {
+const canvas = document.querySelector('canvas');
+const gl = canvas.getContext('webgl2');
 
-    start() {
-        const gl = this.gl;
+const programs = WebGL.buildPrograms(gl, shaders);
 
-        // Compile the shaders and create the program.
-        this.programs = WebGL.buildPrograms(gl, shaders);
+const settings = {
+    // The color of the triangle.
+    color: [ 255, 155, 55, 255 ],
 
-        // Create a default color in the RGBA format.
-        // The values range from 0 to 255.
-        this.color = [ 255, 155, 55, 255 ];
+    // These two values will be passed into
+    // the shader to offset the vertices.
+    offsetX: 0,
+    offsetY: 0,
+};
 
-        // Set the default offset.
-        this.offsetX = 0;
-        this.offsetY = 0;
-    }
+function render() {
+    const { program, uniforms } = programs.test;
 
-    render() {
-        const gl = this.gl;
+    // Activate the program.
+    gl.useProgram(program);
 
-        const { program, uniforms } = this.programs.test;
+    // Set the viewport transform.
+    gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
-        // Activate the program.
-        gl.useProgram(program);
+    // Set the uniform values.
+    gl.uniform2f(uniforms.uOffset, settings.offsetX, settings.offsetY);
+    gl.uniform4fv(uniforms.uColor, settings.color.map(c => c / 255));
 
-        // Set the uniform values.
-        gl.uniform2f(uniforms.uOffset, this.offsetX, this.offsetY);
-        gl.uniform4fv(uniforms.uColor, this.color.map(c => c / 255));
-
-        // If everything is connected correctly,
-        // the rendering code does not change.
-        gl.drawArrays(gl.TRIANGLES, 0, 3);
-    }
-
+    // If everything is connected correctly,
+    // the rendering code does not change.
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
 }
 
-const canvas = document.querySelector('canvas');
-const app = new App(canvas);
-await app.init();
-document.querySelector('.loader-container').remove();
+new ResizeSystem({ canvas }).start();
+new UpdateSystem({ render }).start();
 
 const gui = new GUI();
-gui.addColor(app, 'color');
-gui.add(app, 'offsetX', -1, 1);
-gui.add(app, 'offsetY', -1, 1);
+gui.addColor(settings, 'color');
+gui.add(settings, 'offsetX', -1, 1);
+gui.add(settings, 'offsetY', -1, 1);

@@ -1,61 +1,58 @@
 import { GUI } from '../../../lib/dat.gui.module.js';
 import { mat4 } from '../../../lib/gl-matrix-module.js';
 
-import { Application } from '../../../common/engine/Application.js';
+import { ResizeSystem } from '../../../common/engine/systems/ResizeSystem.js';
+import { UpdateSystem } from '../../../common/engine/systems/UpdateSystem.js';
+
 import { Node } from '../../../common/engine/Node.js';
 import { OrbitController } from '../../../common/engine/OrbitController.js';
 
 import { Renderer } from './Renderer.js';
 
-class App extends Application {
+const canvas = document.querySelector('canvas');
+const gl = canvas.getContext('webgl2');
 
-    async start() {
-        const gl = this.gl;
+const renderer = new Renderer(gl);
+const camera = new Node();
+camera.projectionMatrix = mat4.create();
+const cameraController = new OrbitController(camera, canvas);
 
-        this.renderer = new Renderer(gl);
-        this.camera = new Node();
-        this.camera.projectionMatrix = mat4.create();
-        this.cameraController = new OrbitController(this.camera, this.gl.canvas);
-    }
-
-    update(time, dt) {
-        this.cameraController.update(dt);
-    }
-
-    render() {
-        this.renderer.render(this.camera);
-    }
-
-    resize(width, height) {
-        const aspect = width / height;
-        const fovy = Math.PI / 3;
-        const near = 0.1;
-        const far = 100;
-
-        mat4.perspective(this.camera.projectionMatrix, fovy, aspect, near, far);
-    }
-
+function update(time, dt) {
+    cameraController.update(dt);
 }
 
-const canvas = document.querySelector('canvas');
-const app = new App(canvas);
-await app.init();
-document.querySelector('.loader-container').remove();
+function render() {
+    renderer.render(camera);
+}
+
+function resize({ displaySize: { width, height }}) {
+    const aspect = width / height;
+    const fovy = Math.PI / 3;
+    const near = 0.1;
+    const far = 100;
+
+    mat4.perspective(camera.projectionMatrix, fovy, aspect, near, far);
+}
+
+new ResizeSystem({ canvas, resize }).start();
+new UpdateSystem({ update, render }).start();
 
 const gui = new GUI();
 
 // geometry
-gui.add(app.renderer, 'planetRadius', 5000e3, 10000e3);
-gui.add(app.renderer, 'atmosphereRadius', 5000e3, 10000e3);
-gui.add(app.renderer, 'cameraAltitude', 1, 50e3);
-gui.add(app.renderer, 'sunHeight', 0, 1);
+gui.add(renderer, 'planetRadius', 5000e3, 10000e3);
+gui.add(renderer, 'atmosphereRadius', 5000e3, 10000e3);
+gui.add(renderer, 'cameraAltitude', 1, 50e3);
+gui.add(renderer, 'sunHeight', 0, 1);
 
 // physics
-gui.add(app.renderer, 'sunIntensity', 0, 50);
-gui.add(app.renderer, 'mieScatteringAnisotropy', -1, 1);
-gui.add(app.renderer, 'mieDensityScale', 0, 20000);
-gui.add(app.renderer, 'rayleighDensityScale', 0, 20000);
+gui.add(renderer, 'sunIntensity', 0, 50);
+gui.add(renderer, 'mieScatteringAnisotropy', -1, 1);
+gui.add(renderer, 'mieDensityScale', 0, 20000);
+gui.add(renderer, 'rayleighDensityScale', 0, 20000);
 
 // integration
-gui.add(app.renderer, 'primaryRaySamples', 1, 64).step(1);
-gui.add(app.renderer, 'secondaryRaySamples', 1, 64).step(1);
+gui.add(renderer, 'primaryRaySamples', 1, 64).step(1);
+gui.add(renderer, 'secondaryRaySamples', 1, 64).step(1);
+
+document.querySelector('.loader-container').remove();

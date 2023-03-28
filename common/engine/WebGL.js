@@ -1,6 +1,4 @@
-export class WebGL {
-
-static createShader(gl, source, type) {
+export function createShader(gl, source, type) {
     const shader = gl.createShader(type);
     gl.shaderSource(shader, source);
     gl.compileShader(shader);
@@ -16,7 +14,7 @@ static createShader(gl, source, type) {
     return shader;
 }
 
-static createProgram(gl, shaders) {
+export function createProgram(gl, shaders) {
     const program = gl.createProgram();
     for (const shader of shaders) {
         gl.attachShader(program, shader);
@@ -82,14 +80,14 @@ static createProgram(gl, shaders) {
     return { program, attributes, uniforms };
 }
 
-static buildPrograms(gl, shaders) {
+export function buildPrograms(gl, shaders) {
     const programs = {};
     for (const name in shaders) {
         try {
             const program = shaders[name];
-            programs[name] = WebGL.createProgram(gl, [
-                WebGL.createShader(gl, program.vertex, gl.VERTEX_SHADER),
-                WebGL.createShader(gl, program.fragment, gl.FRAGMENT_SHADER),
+            programs[name] = createProgram(gl, [
+                createShader(gl, program.vertex, gl.VERTEX_SHADER),
+                createShader(gl, program.fragment, gl.FRAGMENT_SHADER),
             ]);
         } catch (e) {
             e.message = `Error compiling and building ${name}:\n${e.message}`;
@@ -99,7 +97,7 @@ static buildPrograms(gl, shaders) {
     return programs;
 }
 
-static createTexture(gl, {
+export function createTexture(gl, {
     texture = gl.createTexture(),
     unit,
     target  = gl.TEXTURE_2D,
@@ -107,8 +105,10 @@ static createTexture(gl, {
     iformat = gl.RGBA,
     format  = gl.RGBA,
     type    = gl.UNSIGNED_BYTE,
-    image, data, width, height,
-    wrapS, wrapT, min, mag, mip,
+    image, data,
+    width, height, depth,
+    wrapS, wrapT, wrapR,
+    min, mag, mip,
 }) {
     if (unit != null) {
         gl.activeTexture(gl.TEXTURE0 + unit);
@@ -124,6 +124,7 @@ static createTexture(gl, {
 
     if (wrapS) { gl.texParameteri(target, gl.TEXTURE_WRAP_S, wrapS); }
     if (wrapT) { gl.texParameteri(target, gl.TEXTURE_WRAP_T, wrapT); }
+    if (wrapR) { gl.texParameteri(target, gl.TEXTURE_WRAP_R, wrapR); }
     if (min) { gl.texParameteri(target, gl.TEXTURE_MIN_FILTER, min); }
     if (mag) { gl.texParameteri(target, gl.TEXTURE_MAG_FILTER, mag); }
     if (mip) { gl.generateMipmap(target); }
@@ -131,7 +132,7 @@ static createTexture(gl, {
     return texture;
 }
 
-static createBuffer(gl, {
+export function createBuffer(gl, {
     buffer = gl.createBuffer(),
     target = gl.ARRAY_BUFFER,
     hint   = gl.STATIC_DRAW,
@@ -143,15 +144,7 @@ static createBuffer(gl, {
     return buffer;
 }
 
-static createUnitQuad(gl) {
-    return WebGL.createBuffer(gl, { data: new Float32Array([0, 0, 1, 0, 1, 1, 0, 1]) });
-}
-
-static createClipQuad(gl) {
-    return WebGL.createBuffer(gl, { data: new Float32Array([-1, -1, 1, -1, 1, 1, -1, 1]) });
-}
-
-static configureAttribute(gl, {
+export function configureAttribute(gl, {
     location, count, type,
     normalize = false,
     stride = 0, offset = 0,
@@ -162,16 +155,16 @@ static configureAttribute(gl, {
     gl.vertexAttribDivisor(location, divisor);
 }
 
-static createSampler(gl, {
+export function createSampler(gl, {
     sampler = gl.createSampler(),
-    wrapS, wrapT, min, mag,
+    wrapS, wrapT, wrapR,
+    min, mag,
 }) {
     if (wrapS) { gl.samplerParameteri(sampler, gl.TEXTURE_WRAP_S, wrapS); }
     if (wrapT) { gl.samplerParameteri(sampler, gl.TEXTURE_WRAP_T, wrapT); }
+    if (wrapR) { gl.samplerParameteri(sampler, gl.TEXTURE_WRAP_R, wrapR); }
     if (min) { gl.samplerParameteri(sampler, gl.TEXTURE_MIN_FILTER, min); }
     if (mag) { gl.samplerParameteri(sampler, gl.TEXTURE_MAG_FILTER, mag); }
 
     return sampler;
-}
-
 }

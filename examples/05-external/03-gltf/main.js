@@ -1,41 +1,39 @@
-import { Application } from '../../../common/engine/Application.js';
+import { ResizeSystem } from '../../../common/engine/systems/ResizeSystem.js';
+import { UpdateSystem } from '../../../common/engine/systems/UpdateSystem.js';
 
 import { GLTFLoader } from './GLTFLoader.js';
 import { Renderer } from './Renderer.js';
 
-class App extends Application {
+const canvas = document.querySelector('canvas');
+const gl = canvas.getContext('webgl2');
 
-    async start() {
-        this.loader = new GLTFLoader();
-        await this.loader.load('../../../common/models/rocks/rocks.gltf');
+const loader = new GLTFLoader();
+await loader.load('../../../common/models/rocks/rocks.gltf');
 
-        this.scene = await this.loader.loadScene(this.loader.defaultScene);
-        this.camera = await this.loader.loadNode('Camera');
+const scene = await loader.loadScene(loader.defaultScene);
+const camera = await loader.loadNode('Camera');
 
-        if (!this.scene || !this.camera) {
-            throw new Error('Scene or Camera not present in glTF');
-        }
-
-        if (!this.camera.camera) {
-            throw new Error('Camera node does not contain a camera reference');
-        }
-
-        this.renderer = new Renderer(this.gl);
-        this.renderer.prepareScene(this.scene);
-    }
-
-    render() {
-        this.renderer.render(this.scene, this.camera);
-    }
-
-    resize(width, height) {
-        this.camera.camera.aspect = width / height;
-        this.camera.camera.updateProjectionMatrix();
-    }
-
+if (!scene || !camera) {
+    throw new Error('Scene or Camera not present in glTF');
 }
 
-const canvas = document.querySelector('canvas');
-const app = new App(canvas);
-await app.init();
+if (!camera.camera) {
+    throw new Error('Camera node does not contain a camera reference');
+}
+
+const renderer = new Renderer(gl);
+renderer.prepareScene(scene);
+
+function render() {
+    renderer.render(scene, camera);
+}
+
+function resize({ displaySize: { width, height }}) {
+    camera.camera.aspect = width / height;
+    camera.camera.updateProjectionMatrix();
+}
+
+new ResizeSystem({ canvas, resize }).start();
+new UpdateSystem({ render }).start();
+
 document.querySelector('.loader-container').remove();

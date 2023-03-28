@@ -1,6 +1,6 @@
 import { vec3, mat4 } from '../../../lib/gl-matrix-module.js';
 
-import { WebGL } from '../../../common/engine/WebGL.js';
+import * as WebGL from '../../../common/engine/WebGL.js';
 
 import { shaders } from './shaders.js';
 
@@ -66,6 +66,7 @@ export class Renderer {
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.geometryBuffer.framebuffer);
 
+        gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         const { program, uniforms } = this.programs.renderGeometryBuffer;
@@ -89,6 +90,8 @@ export class Renderer {
         gl.disable(gl.CULL_FACE);
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.ssaoBuffer.framebuffer);
+
+        gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
         const { program, uniforms } = this.programs.ssao;
         gl.useProgram(program);
@@ -121,6 +124,8 @@ export class Renderer {
         gl.disable(gl.CULL_FACE);
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+        gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
         const { program, uniforms } = this.programs.renderToCanvas;
         gl.useProgram(program);
@@ -300,43 +305,6 @@ export class Renderer {
         });
 
         this.ssaoSamples = texture;
-    }
-
-    createModel(model) {
-        const gl = this.gl;
-
-        const vao = gl.createVertexArray();
-        gl.bindVertexArray(vao);
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model.vertices), gl.STATIC_DRAW);
-        gl.enableVertexAttribArray(0);
-        gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model.texcoords), gl.STATIC_DRAW);
-        gl.enableVertexAttribArray(1);
-        gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 0, 0);
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model.normals), gl.STATIC_DRAW);
-        gl.enableVertexAttribArray(2);
-        gl.vertexAttribPointer(2, 3, gl.FLOAT, false, 0, 0);
-
-        const indices = model.indices.length;
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gl.createBuffer());
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(model.indices), gl.STATIC_DRAW);
-
-        return { vao, indices };
-    }
-
-    createTexture(texture) {
-        const gl = this.gl;
-        return WebGL.createTexture(gl, {
-            image : texture,
-            min   : gl.NEAREST,
-            mag   : gl.NEAREST
-        });
     }
 
 }

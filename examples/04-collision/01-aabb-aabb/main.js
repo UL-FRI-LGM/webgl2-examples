@@ -1,4 +1,5 @@
-import { Application } from '../../../common/engine/Application.js';
+import { ResizeSystem } from '../../../common/engine/systems/ResizeSystem.js';
+import { UpdateSystem } from '../../../common/engine/systems/UpdateSystem.js';
 
 import { Renderer } from './Renderer.js';
 import { Physics } from './Physics.js';
@@ -6,61 +7,50 @@ import { Camera } from './Camera.js';
 import { SceneLoader } from './SceneLoader.js';
 import { SceneBuilder } from './SceneBuilder.js';
 
-class App extends Application {
+const canvas = document.querySelector('canvas');
+const gl = canvas.getContext('webgl2');
 
-    async start() {
-        const gl = this.gl;
+const renderer = new Renderer(gl);
 
-        this.renderer = new Renderer(gl);
+const sceneJson = await new SceneLoader().loadScene('scene.json');
+const builder = new SceneBuilder(sceneJson);
+const scene = builder.build();
+const physics = new Physics(scene);
 
-        await this.load('scene.json');
-
-        this.gl.canvas.addEventListener('click', e => this.gl.canvas.requestPointerLock());
-        document.addEventListener('pointerlockchange', e => {
-            if (document.pointerLockElement === this.gl.canvas) {
-                this.camera.enable();
-            } else {
-                this.camera.disable();
-            }
-        });
+// Find first camera.
+let camera = null;
+scene.traverse(node => {
+    if (node instanceof Camera) {
+        camera = node;
     }
+});
 
-    async load(uri) {
-        const scene = await new SceneLoader().loadScene(uri);
-        const builder = new SceneBuilder(scene);
-        this.scene = builder.build();
-        this.physics = new Physics(this.scene);
+renderer.prepare(scene);
 
-        // Find first camera.
-        this.camera = null;
-        this.scene.traverse(node => {
-            if (node instanceof Camera) {
-                this.camera = node;
-            }
-        });
-
-        this.camera.aspect = this.aspect;
-        this.camera.updateProjection();
-        this.renderer.prepare(this.scene);
+canvas.addEventListener('click', e => canvas.requestPointerLock());
+document.addEventListener('pointerlockchange', e => {
+    if (document.pointerLockElement === canvas) {
+        camera.enable();
+    } else {
+        camera.disable();
     }
+});
 
-    update(time, dt) {
-        this.camera.update(dt);
-        this.physics.update(dt);
-    }
-
-    render() {
-        this.renderer.render(this.scene, this.camera);
-    }
-
-    resize(width, height) {
-        this.camera.aspect = width / height;
-        this.camera.updateProjection();
-    }
-
+function update(time, dt) {
+    camera.update(dt);
+    physics.update(dt);
 }
 
-const canvas = document.querySelector('canvas');
-const app = new App(canvas);
-await app.init();
+function render() {
+    renderer.render(scene, camera);
+}
+
+function resize({ displaySize: { width, height }}) {
+    camera.aspect = width / height;
+    camera.updateProjection();
+}
+
+new ResizeSystem({ canvas, resize }).start();
+new UpdateSystem({ update, render }).start();
+
 document.querySelector('.loader-container').remove();

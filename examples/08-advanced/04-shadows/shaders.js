@@ -20,8 +20,8 @@ uniform mat4 uModelMatrix;
 uniform mat4 uCameraMatrix;
 
 layout (location = 0) in vec4 aPosition;
-layout (location = 1) in vec2 aTexCoord;
-layout (location = 2) in vec3 aNormal;
+layout (location = 1) in vec3 aNormal;
+layout (location = 3) in vec2 aTexCoord;
 
 out vec4 vPosition;
 out vec2 vTexCoord;

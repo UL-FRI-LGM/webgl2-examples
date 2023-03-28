@@ -1,6 +1,6 @@
 import { mat4 } from '../../../lib/gl-matrix-module.js';
 
-import { WebGL } from '../../../common/engine/WebGL.js';
+import * as WebGL from '../../../common/engine/WebGL.js';
 
 import { shaders } from './shaders.js';
 
@@ -31,6 +31,7 @@ export class Renderer {
     render(scene, camera) {
         const gl = this.gl;
 
+        gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         const { program, uniforms } = this.programs.simple;

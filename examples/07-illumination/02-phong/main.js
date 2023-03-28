@@ -1,101 +1,99 @@
 import { GUI } from '../../../lib/dat.gui.module.js';
 import { mat4 } from '../../../lib/gl-matrix-module.js';
 
-import { Application } from '../../../common/engine/Application.js';
+import { ResizeSystem } from '../../../common/engine/systems/ResizeSystem.js';
+import { UpdateSystem } from '../../../common/engine/systems/UpdateSystem.js';
+
 import { Node } from '../../../common/engine/Node.js';
 import { OrbitController } from '../../../common/engine/OrbitController.js';
+import { loadTexture, loadModel } from '../../../common/engine/BasicLoaders.js';
 
 import { Renderer } from './Renderer.js';
 import { Material } from './Material.js';
 
-class App extends Application {
+const canvas = document.querySelector('canvas');
+const gl = canvas.getContext('webgl2');
 
-    async start() {
-        const gl = this.gl;
+const renderer = new Renderer(gl);
 
-        this.renderer = new Renderer(gl);
+const root = new Node();
+const camera = new Node();
+const light = new Node();
+const model = new Node();
+root.addChild(camera);
+root.addChild(light);
+root.addChild(model);
 
-        this.root = new Node();
-        this.camera = new Node();
-        this.light = new Node();
-        this.model = new Node();
-        this.root.addChild(this.camera);
-        this.root.addChild(this.light);
-        this.root.addChild(this.model);
+light.position = [0, 2, 1];
+light.color = [255, 255, 255];
+light.intensity = 1;
+light.attenuation = [0.001, 0, 0.3];
 
-        this.light.position = [0, 2, 1];
-        this.light.color = [255, 255, 255];
-        this.light.intensity = 1;
-        this.light.attenuation = [0.001, 0, 0.3];
+camera.projectionMatrix = mat4.create();
+camera.translation = [0, 2, 5];
 
-        this.camera.projectionMatrix = mat4.create();
-        this.camera.translation = [0, 2, 5];
+const cameraController = new OrbitController(camera, canvas);
 
-        this.cameraController = new OrbitController(this.camera, this.gl.canvas);
+const [mesh, texture, envmap] = await Promise.all([
+    loadModel(gl, '../../../common/models/bunny.json'),
+    loadTexture(gl, '../../../common/images/grass.png', {
+        mip: true,
+        min: gl.NEAREST_MIPMAP_NEAREST,
+        mag: gl.NEAREST,
+    }),
+]);
 
-        const [model, texture, envmap] = await Promise.all([
-            this.renderer.loadModel('../../../common/models/bunny.json'),
-            this.renderer.loadTexture('../../../common/images/grass.png', {
-                mip: true,
-                min: gl.NEAREST_MIPMAP_NEAREST,
-                mag: gl.NEAREST,
-            }),
-        ]);
+model.model = mesh;
+model.material = new Material();
+model.material.texture = texture;
 
-        this.model.model = model;
-        this.model.material = new Material();
-        this.model.material.texture = texture;
-    }
-
-    update(time, dt) {
-        this.cameraController.update(dt);
-        this.light.translation = this.light.position;
-    }
-
-    render() {
-        this.renderer.render(this.root, this.camera, this.light);
-    }
-
-    resize(width, height) {
-        const aspect = width / height;
-        const fovy = Math.PI / 3;
-        const near = 0.1;
-        const far = 100;
-
-        mat4.perspective(this.camera.projectionMatrix, fovy, aspect, near, far);
-    }
-
+function update(time, dt) {
+    cameraController.update(dt);
+    light.translation = light.position;
 }
 
-const canvas = document.querySelector('canvas');
-const app = new App(canvas);
-await app.init();
-document.querySelector('.loader-container').remove();
+function render() {
+    renderer.render(root, camera, light);
+}
+
+function resize({ displaySize: { width, height }}) {
+    const aspect = width / height;
+    const fovy = Math.PI / 3;
+    const near = 0.1;
+    const far = 100;
+
+    mat4.perspective(camera.projectionMatrix, fovy, aspect, near, far);
+}
+
+new ResizeSystem({ canvas, resize }).start();
+new UpdateSystem({ update, render }).start();
 
 const gui = new GUI();
-gui.add(app.renderer, 'perFragment').onChange(perFragment => {
-    app.renderer.currentProgram = perFragment
-        ? app.renderer.programs.perFragment
-        : app.renderer.programs.perVertex;
+gui.add(renderer, 'perFragment').onChange(perFragment => {
+    renderer.currentProgram = perFragment
+        ? renderer.programs.perFragment
+        : renderer.programs.perVertex;
 });
 
-const light = gui.addFolder('Light');
-light.open();
-light.add(app.light, 'intensity', 0, 5);
-light.addColor(app.light, 'color');
-const lightPosition = light.addFolder('Position');
+const lightFolder = gui.addFolder('Light');
+lightFolder.open();
+lightFolder.add(light, 'intensity', 0, 5);
+lightFolder.addColor(light, 'color');
+const lightPosition = lightFolder.addFolder('Position');
 lightPosition.open();
-lightPosition.add(app.light.position, 0, -10, 10).name('x');
-lightPosition.add(app.light.position, 1, -10, 10).name('y');
-lightPosition.add(app.light.position, 2, -10, 10).name('z');
-const lightAttenuation = light.addFolder('Attenuation');
+lightPosition.add(light.position, 0, -10, 10).name('x');
+lightPosition.add(light.position, 1, -10, 10).name('y');
+lightPosition.add(light.position, 2, -10, 10).name('z');
+const lightAttenuation = lightFolder.addFolder('Attenuation');
 lightAttenuation.open();
-lightAttenuation.add(app.light.attenuation, 0, 0, 5).name('constant');
-lightAttenuation.add(app.light.attenuation, 1, 0, 2).name('linear');
-lightAttenuation.add(app.light.attenuation, 2, 0, 1).name('quadratic');
+lightAttenuation.add(light.attenuation, 0, 0, 5).name('constant');
+lightAttenuation.add(light.attenuation, 1, 0, 2).name('linear');
+lightAttenuation.add(light.attenuation, 2, 0, 1).name('quadratic');
 
-const material = gui.addFolder('Material');
-material.open();
-material.add(app.model.material, 'diffuse', 0, 1);
-material.add(app.model.material, 'specular', 0, 1);
-material.add(app.model.material, 'shininess', 1, 200);
+const materialFolder = gui.addFolder('Material');
+materialFolder.open();
+materialFolder.add(model.material, 'diffuse', 0, 1);
+materialFolder.add(model.material, 'specular', 0, 1);
+materialFolder.add(model.material, 'shininess', 1, 200);
+
+document.querySelector('.loader-container').remove();

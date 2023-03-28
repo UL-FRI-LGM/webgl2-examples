@@ -1,73 +1,73 @@
 import { GUI } from '../../../lib/dat.gui.module.js';
-import { vec3, mat4 } from '../../../lib/gl-matrix-module.js';
+import { mat4 } from '../../../lib/gl-matrix-module.js';
 
-import { Application } from '../../../common/engine/Application.js';
+import * as WebGL from '../../../common/engine/WebGL.js';
+
+import { ResizeSystem } from '../../../common/engine/systems/ResizeSystem.js';
+import { UpdateSystem } from '../../../common/engine/systems/UpdateSystem.js';
+
 import { Node } from '../../../common/engine/Node.js';
+import { loadTexture, loadModel } from '../../../common/engine/BasicLoaders.js';
 
 import { Renderer } from './Renderer.js';
 import { FirstPersonController } from './FirstPersonController.js';
 
 import { shaders } from './shaders.js';
 
-class App extends Application {
+const canvas = document.querySelector('canvas');
+const gl = canvas.getContext('webgl2');
 
-    async start() {
-        const gl = this.gl;
+const root = new Node();
 
-        this.renderer = new Renderer(gl);
+const camera = new Node();
+camera.translation = [0, 1, 0];
+camera.projectionMatrix = mat4.create();
+root.addChild(camera);
 
-        this.root = new Node();
+const controller = new FirstPersonController(camera, gl.canvas);
 
-        this.camera = new Node();
-        this.camera.translation = [0, 1, 0];
-        this.camera.projectionMatrix = mat4.create();
-        this.root.addChild(this.camera);
+const floor = new Node();
+floor.scale = [10, 1, 10];
+root.addChild(floor);
 
-        this.controller = new FirstPersonController(this.camera, this.gl.canvas);
+const [model, texture] = await Promise.all([
+    loadModel(gl, '../../../common/models/floor.json'),
+    loadTexture(gl, '../../../common/images/grass.png', {
+        mip: true,
+        min: gl.NEAREST_MIPMAP_NEAREST,
+        mag: gl.NEAREST,
+    }),
+]);
 
-        this.floor = new Node();
-        this.floor.scale = [10, 1, 10];
-        this.root.addChild(this.floor);
+floor.model = model;
+floor.texture = texture;
 
-        const [model, texture] = await Promise.all([
-            this.renderer.loadModel('../../../common/models/floor.json'),
-            this.renderer.loadTexture('../../../common/images/grass.png', {
-                mip: true,
-                min: gl.NEAREST_MIPMAP_NEAREST,
-                mag: gl.NEAREST,
-            }),
-        ]);
+const renderer = new Renderer(gl);
 
-        this.floor.model = model;
-        this.floor.texture = texture;
-    }
-
-    update(time, dt) {
-        this.controller.update(dt);
-    }
-
-    render() {
-        this.renderer.render(this.root, this.camera);
-    }
-
-    resize(width, height) {
-        const aspect = width / height;
-        const fovy = Math.PI / 2;
-        const near = 0.1;
-        const far = 100;
-
-        mat4.perspective(this.camera.projectionMatrix, fovy, aspect, near, far);
-    }
-
+function update(time, dt) {
+    controller.update(dt);
 }
 
-const canvas = document.querySelector('canvas');
-const app = new App(canvas);
-await app.init();
-document.querySelector('.loader-container').remove();
+function render() {
+    renderer.render(root, camera);
+}
+
+function resize({ displaySize: { width, height }}) {
+    const aspect = width / height;
+    const fovy = Math.PI / 2;
+    const near = 0.1;
+    const far = 100;
+
+    mat4.perspective(camera.projectionMatrix, fovy, aspect, near, far);
+}
+
+new ResizeSystem({ canvas, resize }).start();
+new UpdateSystem({ update, render }).start();
 
 const gui = new GUI();
-gui.add(app.controller, 'pointerSensitivity', 0.0001, 0.01);
-gui.add(app.controller, 'maxSpeed', 0, 10);
-gui.add(app.controller, 'decay', 0, 1);
-gui.add(app.controller, 'acceleration', 1, 100);
+gui.add(controller, 'pointerSensitivity', 0.0001, 0.01);
+gui.add(controller, 'maxSpeed', 0, 10);
+gui.add(controller, 'decay', 0, 1);
+gui.add(controller, 'acceleration', 1, 100);
+
+document.querySelector('.loader-container').remove();

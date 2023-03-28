@@ -3,7 +3,7 @@ const renderGeometryBufferVertex = `#version 300 es
 uniform mat4 uProjectionViewModel;
 
 layout (location = 0) in vec4 aPosition;
-layout (location = 1) in vec2 aTexCoord;
+layout (location = 3) in vec2 aTexCoord;
 
 out vec2 vTexCoord;
 

@@ -1,102 +1,86 @@
 import { GUI } from '../../../lib/dat.gui.module.js';
 import { mat4, vec3, quat } from '../../../lib/gl-matrix-module.js';
 
-import { Application } from '../../../common/engine/Application.js';
+import { ResizeSystem } from '../../../common/engine/systems/ResizeSystem.js';
+import { UpdateSystem } from '../../../common/engine/systems/UpdateSystem.js';
+
 import { Node } from '../../../common/engine/Node.js';
 import { OrbitController } from '../../../common/engine/OrbitController.js';
+import { loadTexture, loadModel } from '../../../common/engine/BasicLoaders.js';
 
 import { Renderer } from './Renderer.js';
 
-class App extends Application {
+const canvas = document.querySelector('canvas');
+const gl = canvas.getContext('webgl2');
 
-    start() {
-        this.renderer = new Renderer(this.gl);
+const renderer = new Renderer(gl);
 
-        this.scene = new Node();
-        this.camera = new Node();
-        this.camera.projectionMatrix = mat4.create();
-        this.scene.addChild(this.camera);
+const scene = new Node();
+const camera = new Node();
+camera.projectionMatrix = mat4.create();
+scene.addChild(camera);
 
-        this.cameraController = new OrbitController(this.camera, this.gl.canvas);
-        this.cameraController.distance = 10;
+const cameraController = new OrbitController(camera, canvas);
+cameraController.distance = 10;
 
-        this.cubeRoot = new Node();
-        this.scene.addChild(this.cubeRoot);
+const cubeRoot = new Node();
+scene.addChild(cubeRoot);
 
-        this.load();
-    }
+const [cubeMesh, cubeTexture] = await Promise.all([
+    loadModel(gl, '../../../common/models/cube.json'),
+    loadTexture(gl, '../../../common/images/crate-diffuse.png', {
+        mip: true,
+        min: gl.NEAREST_MIPMAP_NEAREST,
+        mag: gl.NEAREST,
+    }),
+]);
 
-    async loadImage(url) {
-        const response = await fetch(url);
-        const blob = await response.blob();
-        const image = await createImageBitmap(blob);
-        return image;
-    }
+const cubeCount = 100;
+for (let i = 0; i < cubeCount; i++) {
+    const cube = new Node();
+    cube.texture = cubeTexture;
+    cube.mesh = cubeMesh;
 
-    async loadJson(url) {
-        const response = await fetch(url);
-        const json = await response.json();
-        return json;
-    }
+    const scale = 0.1 + Math.random();
+    cube.translation = vec3.random(vec3.create(), Math.random() * 5);
+    cube.rotation = quat.random(quat.create());
+    cube.scale = [scale, scale, scale];
 
-    async load() {
-        const [cubeImage, cubeMesh] = await Promise.all([
-            this.loadImage('../../../common/images/crate-diffuse.png'),
-            this.loadJson('../../../common/models/cube.json'),
-        ]);
-
-        const cubeTexture = this.renderer.createTexture(cubeImage);
-        const cubeModel = this.renderer.createModel(cubeMesh);
-        const cubeCount = 100;
-
-        for (let i = 0; i < cubeCount; i++) {
-            const cube = new Node();
-            cube.texture = cubeTexture;
-            cube.mesh = cubeModel;
-
-            const scale = 0.1 + Math.random();
-            cube.translation = vec3.random(vec3.create(), Math.random() * 5);
-            cube.rotation = quat.random(quat.create());
-            cube.scale = [scale, scale, scale];
-
-            this.cubeRoot.addChild(cube);
-        }
-    }
-
-    update() {
-        this.cameraController.update();
-    }
-
-    render() {
-        this.renderer.render(this.scene, this.camera);
-    }
-
-    resize(width, height) {
-        const aspect = width / height;
-        const fovy = Math.PI / 3;
-        const near = 0.1;
-        const far = 100;
-
-        mat4.perspective(this.camera.projectionMatrix, fovy, aspect, near, far);
-
-        this.renderer.createGeometryBuffer();
-        this.renderer.createSSAOBuffer();
-    }
-
+    cubeRoot.addChild(cube);
 }
 
-const canvas = document.querySelector('canvas');
-const app = new App(canvas, { antialias: false });
-await app.init();
-document.querySelector('.loader-container').remove();
+function update() {
+    cameraController.update();
+}
+
+function render() {
+    renderer.render(scene, camera);
+}
+
+function resize({ displaySize: { width, height }}) {
+    const aspect = width / height;
+    const fovy = Math.PI / 3;
+    const near = 0.1;
+    const far = 100;
+
+    mat4.perspective(camera.projectionMatrix, fovy, aspect, near, far);
+
+    renderer.createGeometryBuffer();
+    renderer.createSSAOBuffer();
+}
+
+new ResizeSystem({ canvas, resize }).start();
+new UpdateSystem({ update, render }).start();
 
 const gui = new GUI();
-gui.add(app.renderer, 'colorEnabled');
-gui.add(app.renderer, 'occlusionEnabled');
-gui.add(app.renderer, 'occlusionStrength', 0, 10);
-gui.add(app.renderer, 'occlusionScale', 0, 2);
-gui.add(app.renderer, 'occlusionRange', 0, 2);
-gui.add(app.renderer, 'depthBias', 0, 0.5);
-gui.add(app.renderer, 'occlusionSampleCount',
+gui.add(renderer, 'colorEnabled');
+gui.add(renderer, 'occlusionEnabled');
+gui.add(renderer, 'occlusionStrength', 0, 10);
+gui.add(renderer, 'occlusionScale', 0, 2);
+gui.add(renderer, 'occlusionRange', 0, 2);
+gui.add(renderer, 'depthBias', 0, 0.5);
+gui.add(renderer, 'occlusionSampleCount',
     [1, 2, 4, 8, 16, 32, 64]
-).onChange(value => app.renderer.createSSAOSamples());
+).onChange(value => renderer.createSSAOSamples());
+
+document.querySelector('.loader-container').remove();
