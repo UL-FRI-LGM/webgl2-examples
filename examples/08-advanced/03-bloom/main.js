@@ -4,8 +4,8 @@ import { vec3, mat4, quat } from '../../../lib/gl-matrix-module.js';
 import { ResizeSystem } from '../../../common/engine/systems/ResizeSystem.js';
 import { UpdateSystem } from '../../../common/engine/systems/UpdateSystem.js';
 
-import { Node } from '../../../common/engine/Node.js';
-import { OrbitController } from '../../../common/engine/OrbitController.js';
+import { Node } from '../../../common/engine/core/Node.js';
+import { OrbitController } from '../../../common/engine/controllers/OrbitController.js';
 import { loadTexture, loadModel } from '../../../common/engine/BasicLoaders.js';
 
 import { Renderer } from './Renderer.js';

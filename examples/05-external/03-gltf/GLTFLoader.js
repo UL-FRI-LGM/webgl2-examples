@@ -9,7 +9,7 @@ import { PerspectiveCamera } from './PerspectiveCamera.js';
 import { OrthographicCamera } from './OrthographicCamera.js';
 import { Scene } from './Scene.js';
 
-import { Node } from '../../../common/engine/Node.js';
+import { Node } from '../../../common/engine/core/Node.js';
 
 // This class loads all GLTF resources and instantiates
 // the corresponding classes. Keep in mind that it loads

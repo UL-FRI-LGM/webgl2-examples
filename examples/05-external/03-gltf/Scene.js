@@ -1,4 +1,4 @@
-import { Node } from '../../../common/engine/Node.js';
+import { Node } from '../../../common/engine/core/Node.js';
 
 export class Scene {
 

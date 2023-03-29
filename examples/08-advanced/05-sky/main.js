@@ -4,8 +4,8 @@ import { mat4 } from '../../../lib/gl-matrix-module.js';
 import { ResizeSystem } from '../../../common/engine/systems/ResizeSystem.js';
 import { UpdateSystem } from '../../../common/engine/systems/UpdateSystem.js';
 
-import { Node } from '../../../common/engine/Node.js';
-import { OrbitController } from '../../../common/engine/OrbitController.js';
+import { Node } from '../../../common/engine/core/Node.js';
+import { OrbitController } from '../../../common/engine/controllers/OrbitController.js';
 
 import { Renderer } from './Renderer.js';
 
