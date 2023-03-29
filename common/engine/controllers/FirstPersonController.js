@@ -1,5 +1,7 @@
 import { quat, vec3, mat4 } from '../../../lib/gl-matrix-module.js';
 
+import { Transform } from '../core/Transform.js';
+
 export class FirstPersonController {
 
     constructor(node, domElement) {
@@ -82,15 +84,18 @@ export class FirstPersonController {
             vec3.scale(this.velocity, this.velocity, this.maxSpeed / speed);
         }
 
-        // Update translation based on velocity.
-        this.node.translation = vec3.scaleAndAdd(vec3.create(),
-            this.node.translation, this.velocity, dt);
+        const transform = this.node.getComponentOfType(Transform);
+        if (transform) {
+            // Update translation based on velocity.
+            vec3.scaleAndAdd(transform.translation,
+                transform.translation, this.velocity, dt);
 
-        // Update rotation based on the Euler angles.
-        const rotation = quat.create();
-        quat.rotateY(rotation, rotation, this.yaw);
-        quat.rotateX(rotation, rotation, this.pitch);
-        this.node.rotation = rotation;
+            // Update rotation based on the Euler angles.
+            const rotation = quat.create();
+            quat.rotateY(rotation, rotation, this.yaw);
+            quat.rotateX(rotation, rotation, this.pitch);
+            transform.rotation = rotation;
+        }
     }
 
     pointermoveHandler(e) {

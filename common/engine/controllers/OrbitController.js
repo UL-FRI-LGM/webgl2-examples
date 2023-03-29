@@ -1,5 +1,7 @@
 import { quat, vec3 } from '../../../lib/gl-matrix-module.js';
 
+import { Transform } from '../core/Transform.js';
+
 export class OrbitController {
 
     constructor(node, domElement) {
@@ -62,15 +64,20 @@ export class OrbitController {
     }
 
     update() {
+        const transform = this.node.getComponentOfType(Transform);
+        if (!transform) {
+            return;
+        }
+
         const rotation = quat.create();
         quat.rotateY(rotation, rotation, this.yaw);
         quat.rotateX(rotation, rotation, this.pitch);
-        this.node.rotation = rotation;
+        transform.rotation = rotation;
 
         const translation = [0, 0, this.distance];
         vec3.rotateX(translation, translation, [0, 0, 0], this.pitch);
         vec3.rotateY(translation, translation, [0, 0, 0], this.yaw);
-        this.node.translation = translation;
+        transform.translation = translation;
     }
 
 }

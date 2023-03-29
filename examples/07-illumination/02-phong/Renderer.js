@@ -2,6 +2,12 @@ import { vec3, mat4 } from '../../../lib/gl-matrix-module.js';
 
 import * as WebGL from '../../../common/engine/WebGL.js';
 
+import { Camera } from '../../../common/engine/core/Camera.js';
+import { Transform } from '../../../common/engine/core/Transform.js';
+
+import { Light } from './Light.js';
+import { Material } from './Material.js';
+
 import { shaders } from './shaders.js';
 
 export class Renderer {
@@ -20,6 +26,31 @@ export class Renderer {
             : this.programs.perVertex;
     }
 
+    getLocalMatrix(node) {
+        const transform = node.getComponentOfType(Transform);
+        return transform ? transform.matrix : mat4.create();
+    }
+
+    getGlobalMatrix(node) {
+        const localMatrix = this.getLocalMatrix(node);
+        if (!node.parent) {
+            return localMatrix;
+        } else {
+            const globalMatrix = this.getGlobalMatrix(node.parent);
+            return mat4.mul(globalMatrix, globalMatrix, localMatrix);
+        }
+    }
+
+    getViewMatrix(node) {
+        const globalMatrix = this.getGlobalMatrix(node);
+        return mat4.invert(globalMatrix, globalMatrix);
+    }
+
+    getProjectionMatrix(node) {
+        const camera = node.getComponentOfType(Camera);
+        return camera ? camera.projectionMatrix : mat4.create();
+    }
+
     render(scene, camera, light) {
         const gl = this.gl;
 
@@ -29,42 +60,48 @@ export class Renderer {
         const { program, uniforms } = this.currentProgram;
         gl.useProgram(program);
 
-        const viewMatrix = camera.globalMatrix;
-        mat4.invert(viewMatrix, viewMatrix);
+        const viewMatrix = this.getViewMatrix(camera);
+        const projectionMatrix = this.getProjectionMatrix(camera);
+
         gl.uniformMatrix4fv(uniforms.uViewMatrix, false, viewMatrix);
-        gl.uniformMatrix4fv(uniforms.uProjectionMatrix, false, camera.projectionMatrix);
+        gl.uniformMatrix4fv(uniforms.uProjectionMatrix, false, projectionMatrix);
+
         gl.uniform3fv(uniforms.uCameraPosition,
-            mat4.getTranslation(vec3.create(), camera.globalMatrix));
+            mat4.getTranslation(vec3.create(), this.getGlobalMatrix(camera)));
+
+        const lightComponent = light.getComponentOfType(Light);
 
         gl.uniform3fv(uniforms.uLight.color,
-            vec3.scale(vec3.create(), light.color, light.intensity / 255));
+            vec3.scale(vec3.create(), lightComponent.color, lightComponent.intensity / 255));
         gl.uniform3fv(uniforms.uLight.position,
-            mat4.getTranslation(vec3.create(), light.globalMatrix));
-        gl.uniform3fv(uniforms.uLight.attenuation, light.attenuation);
+            mat4.getTranslation(vec3.create(), this.getGlobalMatrix(light)));
+        gl.uniform3fv(uniforms.uLight.attenuation, lightComponent.attenuation);
 
-        this.renderNode(scene, scene.globalMatrix);
+        this.renderNode(scene);
     }
 
-    renderNode(node, modelMatrix) {
+    renderNode(node, modelMatrix = mat4.create()) {
         const gl = this.gl;
 
-        modelMatrix = mat4.clone(modelMatrix);
-        mat4.mul(modelMatrix, modelMatrix, node.localMatrix);
+        const localMatrix = this.getLocalMatrix(node);
+        modelMatrix = mat4.mul(mat4.create(), modelMatrix, localMatrix);
 
         const { uniforms } = this.currentProgram;
 
-        if (node.model && node.material) {
+        const material = node.getComponentOfType(Material);
+
+        if (node.model && material) {
             gl.bindVertexArray(node.model.vao);
 
             gl.uniformMatrix4fv(uniforms.uModelMatrix, false, modelMatrix);
 
             gl.activeTexture(gl.TEXTURE0);
             gl.uniform1i(uniforms.uTexture, 0);
-            gl.bindTexture(gl.TEXTURE_2D, node.material.texture);
+            gl.bindTexture(gl.TEXTURE_2D, material.texture);
 
-            gl.uniform1f(uniforms.uMaterial.diffuse, node.material.diffuse);
-            gl.uniform1f(uniforms.uMaterial.specular, node.material.specular);
-            gl.uniform1f(uniforms.uMaterial.shininess, node.material.shininess);
+            gl.uniform1f(uniforms.uMaterial.diffuse, material.diffuse);
+            gl.uniform1f(uniforms.uMaterial.specular, material.specular);
+            gl.uniform1f(uniforms.uMaterial.shininess, material.shininess);
 
             gl.drawElements(gl.TRIANGLES, node.model.indices, gl.UNSIGNED_SHORT, 0);
         }

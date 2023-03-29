@@ -5,11 +5,11 @@ import { Texture } from './Texture.js';
 import { Material } from './Material.js';
 import { Primitive } from './Primitive.js';
 import { Mesh } from './Mesh.js';
-import { PerspectiveCamera } from './PerspectiveCamera.js';
-import { OrthographicCamera } from './OrthographicCamera.js';
 import { Scene } from './Scene.js';
 
 import { Node } from '../../../common/engine/core/Node.js';
+import { Camera } from '../../../common/engine/core/Camera.js';
+import { Transform } from '../../../common/engine/core/Transform.js';
 
 // This class loads all GLTF resources and instantiates
 // the corresponding classes. Keep in mind that it loads
@@ -276,23 +276,23 @@ export class GLTFLoader {
 
         if (gltfSpec.type === 'perspective') {
             const persp = gltfSpec.perspective;
-            const camera = new PerspectiveCamera({
-                aspect : persp.aspectRatio,
-                fov    : persp.yfov,
-                near   : persp.znear,
-                far    : persp.zfar,
+            const camera = new Camera({
+                orthographic: false,
+                aspect: persp.aspectRatio,
+                fovy: persp.yfov,
+                near: persp.znear,
+                far: persp.zfar,
             });
             this.cache.set(gltfSpec, camera);
             return camera;
         } else if (gltfSpec.type === 'orthographic') {
             const ortho = gltfSpec.orthographic;
-            const camera = new OrthographicCamera({
-                left   : -ortho.xmag,
-                right  : ortho.xmag,
-                bottom : -ortho.ymag,
-                top    : ortho.ymag,
-                near   : ortho.znear,
-                far    : ortho.zfar,
+            const camera = new Camera({
+                orthographic: true,
+                aspect: ortho.xmag / ortho.ymag,
+                halfy: ortho.ymag,
+                near: ortho.znear,
+                far: ortho.zfar,
             });
             this.cache.set(gltfSpec, camera);
             return camera;
@@ -308,21 +308,25 @@ export class GLTFLoader {
             return this.cache.get(gltfSpec);
         }
 
-        const options = { ...gltfSpec, children: [] };
+        const node = new Node();
+        const transform = new Transform({ ...gltfSpec });
+        node.addComponent(transform);
+
         if (gltfSpec.children) {
-            for (const nodeIndex of gltfSpec.children) {
-                const node = await this.loadNode(nodeIndex);
-                options.children.push(node);
+            for (const childIndex of gltfSpec.children) {
+                const child = await this.loadNode(nodeIndex);
+                node.addChild(child);
             }
         }
         if (gltfSpec.camera !== undefined) {
-            options.camera = await this.loadCamera(gltfSpec.camera);
+            const camera = await this.loadCamera(gltfSpec.camera);
+            node.addComponent(camera);
         }
         if (gltfSpec.mesh !== undefined) {
-            options.mesh = await this.loadMesh(gltfSpec.mesh);
+            const mesh = await this.loadMesh(gltfSpec.mesh);
+            node.addComponent(mesh);
         }
 
-        const node = new Node(options);
         this.cache.set(gltfSpec, node);
         return node;
     }

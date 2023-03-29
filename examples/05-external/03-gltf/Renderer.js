@@ -2,6 +2,11 @@ import { mat4 } from '../../../lib/gl-matrix-module.js';
 
 import * as WebGL from '../../../common/engine/WebGL.js';
 
+import { Camera } from '../../../common/engine/core/Camera.js';
+import { Transform } from '../../../common/engine/core/Transform.js';
+
+import { Mesh } from './Mesh.js';
+
 import { shaders } from './shaders.js';
 
 // This class prepares all assets for use with WebGL
@@ -165,8 +170,10 @@ export class Renderer {
     }
 
     prepareNode(node) {
-        if (node.mesh) {
-            this.prepareMesh(node.mesh);
+        const mesh = node.getComponentOfType(Mesh);
+
+        if (mesh) {
+            this.prepareMesh(mesh);
         }
         for (const child of node.children) {
             this.prepareNode(child);
@@ -179,11 +186,29 @@ export class Renderer {
         }
     }
 
-    getViewProjectionMatrix(camera) {
-        const vpMatrix = camera.globalMatrix;
-        mat4.invert(vpMatrix, vpMatrix);
-        mat4.mul(vpMatrix, camera.camera.projectionMatrix, vpMatrix);
-        return vpMatrix;
+    getLocalMatrix(node) {
+        const transform = node.getComponentOfType(Transform);
+        return transform ? transform.matrix : mat4.create();
+    }
+
+    getGlobalMatrix(node) {
+        const localMatrix = this.getLocalMatrix(node);
+        if (!node.parent) {
+            return localMatrix;
+        } else {
+            const globalMatrix = this.getGlobalMatrix(node.parent);
+            return mat4.mul(globalMatrix, globalMatrix, localMatrix);
+        }
+    }
+
+    getViewMatrix(node) {
+        const globalMatrix = this.getGlobalMatrix(node);
+        return mat4.invert(globalMatrix, globalMatrix);
+    }
+
+    getProjectionMatrix(node) {
+        const camera = node.getComponentOfType(Camera);
+        return camera ? camera.projectionMatrix : mat4.create();
     }
 
     render(scene, camera) {
@@ -195,7 +220,10 @@ export class Renderer {
         const { program, uniforms } = this.programs.simple;
         gl.useProgram(program);
 
-        const mvpMatrix = this.getViewProjectionMatrix(camera);
+        const viewMatrix = this.getViewMatrix(camera);
+        const projectionMatrix = this.getProjectionMatrix(camera);
+        const mvpMatrix = mat4.multiply(mat4.create(), projectionMatrix, viewMatrix);
+
         for (const node of scene.nodes) {
             this.renderNode(node, mvpMatrix);
         }
@@ -206,12 +234,13 @@ export class Renderer {
 
         const { program, uniforms } = this.programs.simple;
 
-        mvpMatrix = mat4.clone(mvpMatrix);
-        mat4.mul(mvpMatrix, mvpMatrix, node.localMatrix);
+        const localMatrix = this.getLocalMatrix(node);
+        mvpMatrix = mat4.mul(mat4.create(), mvpMatrix, localMatrix);
 
-        if (node.mesh) {
+        const mesh = node.getComponentOfType(Mesh);
+        if (mesh) {
             gl.uniformMatrix4fv(uniforms.uModelViewProjection, false, mvpMatrix);
-            for (const primitive of node.mesh.primitives) {
+            for (const primitive of mesh.primitives) {
                 this.renderPrimitive(primitive);
             }
         }

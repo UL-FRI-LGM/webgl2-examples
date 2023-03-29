@@ -8,7 +8,7 @@ import { UpdateSystem } from '../../../common/engine/systems/UpdateSystem.js';
 
 import { loadTexture, loadModel } from '../../../common/engine/BasicLoaders.js';
 
-import { Node } from './Node.js';
+import { Node } from '../../../common/engine/core/Node.js';
 import { shaders } from './shaders.js';
 
 const canvas = document.querySelector('canvas');
@@ -22,10 +22,12 @@ gl.enable(gl.CULL_FACE);
 
 // We need a root node to add all other nodes to it.
 const root = new Node();
+root.localMatrix = mat4.create();
 
 // The camera holds a projection transformation, and its global
 // transformation is used as the inverse view transformation.
 const camera = new Node();
+camera.localMatrix = mat4.create();
 camera.projectionMatrix = mat4.create();
 root.addChild(camera);
 
@@ -34,6 +36,9 @@ root.addChild(camera);
 const cube1 = new Node();
 const cube2 = new Node();
 const cube3 = new Node();
+cube1.localMatrix = mat4.create();
+cube2.localMatrix = mat4.create();
+cube3.localMatrix = mat4.create();
 
 root.addChild(cube1);
 root.addChild(cube2);
@@ -61,6 +66,21 @@ const settings = {
     leftRotation: 0,
     rightRotation: 0,
 };
+
+function getGlobalMatrix(node) {
+    if (!node.parent) {
+        // If the node does not have a parent, it is the root node.
+        // Return its local transformation.
+        return mat4.clone(node.localMatrix);
+    } else {
+        // If the node has a parent, we have to take the parent's
+        // global transformation into account. This recursion
+        // essentially multiplies all local transformations up
+        // to the root node.
+        const globalMatrix = getGlobalMatrix(node.parent);
+        return mat4.mul(globalMatrix, globalMatrix, node.localMatrix);
+    }
+}
 
 function update() {
     const t1 = cube1.localMatrix;
@@ -94,7 +114,7 @@ function render() {
 
     // We can premultiply the view and projection matrices, so that we
     // do not have to do it for every node during scene traversal.
-    const viewMatrix = camera.globalMatrix;
+    const viewMatrix = getGlobalMatrix(camera);
     mat4.invert(viewMatrix, viewMatrix);
     mat4.mul(mvpMatrix, camera.projectionMatrix, viewMatrix);
 

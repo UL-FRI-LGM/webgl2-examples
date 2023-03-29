@@ -7,6 +7,9 @@ import { ResizeSystem } from '../../../common/engine/systems/ResizeSystem.js';
 import { UpdateSystem } from '../../../common/engine/systems/UpdateSystem.js';
 
 import { Node } from '../../../common/engine/core/Node.js';
+import { Camera } from '../../../common/engine/core/Camera.js';
+import { Transform } from '../../../common/engine/core/Transform.js';
+
 import { loadTexture, loadModel } from '../../../common/engine/BasicLoaders.js';
 
 import { Renderer } from './Renderer.js';
@@ -20,14 +23,22 @@ const gl = canvas.getContext('webgl2');
 const root = new Node();
 
 const camera = new Node();
-camera.translation = [0, 1, 0];
-camera.projectionMatrix = mat4.create();
+camera.addComponent(new Transform({
+    translation: [0, 1, 0],
+}));
+camera.addComponent(new Camera({
+    fovy: Math.PI / 2,
+    near: 0.1,
+    far: 100,
+}));
 root.addChild(camera);
 
-const controller = new FirstPersonController(camera, gl.canvas);
+const controller = new FirstPersonController(camera, canvas);
 
 const floor = new Node();
-floor.scale = [10, 1, 10];
+floor.addComponent(new Transform({
+    scale: [10, 1, 10],
+}));
 root.addChild(floor);
 
 const [model, texture] = await Promise.all([
@@ -53,12 +64,7 @@ function render() {
 }
 
 function resize({ displaySize: { width, height }}) {
-    const aspect = width / height;
-    const fovy = Math.PI / 2;
-    const near = 0.1;
-    const far = 100;
-
-    mat4.perspective(camera.projectionMatrix, fovy, aspect, near, far);
+    camera.getComponentOfType(Camera).aspect = width / height;
 }
 
 new ResizeSystem({ canvas, resize }).start();

@@ -12,19 +12,26 @@ export class Scene {
 
     traverse(before, after) {
         for (const node of this.nodes) {
-            this.traverseNode(node, before, after);
+            node.traverse(before, after);
         }
     }
 
-    traverseNode(node, before, after) {
-        if (before) {
-            before(node);
-        }
-        for (const child of node.children) {
-            this.traverseNode(child, before, after);
-        }
-        if (after) {
-            after(node);
-        }
+    linearize() {
+        const array = [];
+        this.traverse(node => array.push(node));
+        return array;
     }
+
+    filter(predicate) {
+        return this.linearize().filter(predicate);
+    }
+
+    find(predicate) {
+        return this.linearize().find(predicate);
+    }
+
+    map(transform) {
+        return this.linearize().map(transform);
+    }
+
 }
