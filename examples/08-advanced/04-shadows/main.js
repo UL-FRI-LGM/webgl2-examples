@@ -4,6 +4,9 @@ import { ResizeSystem } from '../../../common/engine/systems/ResizeSystem.js';
 import { UpdateSystem } from '../../../common/engine/systems/UpdateSystem.js';
 
 import { Node } from '../../../common/engine/core/Node.js';
+import { Camera } from '../../../common/engine/core/Camera.js';
+import { Transform } from '../../../common/engine/core/Transform.js';
+
 import { OrbitController } from '../../../common/engine/controllers/OrbitController.js';
 import { loadTexture, loadModel } from '../../../common/engine/BasicLoaders.js';
 
@@ -15,9 +18,12 @@ const gl = canvas.getContext('webgl2');
 const renderer = new Renderer(gl);
 
 const scene = new Node();
+
 const camera = new Node();
-camera.projectionMatrix = mat4.create();
 scene.addChild(camera);
+
+camera.addComponent(new Transform());
+camera.addComponent(new Camera());
 
 const cameraController = new OrbitController(camera, canvas);
 cameraController.distance = 10;
@@ -26,15 +32,22 @@ const cubeRoot = new Node();
 scene.addChild(cubeRoot);
 
 const shadowCameraRoot = new Node();
-const shadowCamera = new Node();
-shadowCamera.projectionMatrix = mat4.create();
-mat4.perspective(shadowCamera.projectionMatrix, 0.5, 1, 15, 50);
-shadowCamera.translation = [0, 0, 20];
-shadowCamera.aspect = 0.3;
-shadowCamera.near = 15;
-shadowCamera.far = 50;
 cubeRoot.addChild(shadowCameraRoot);
+
+shadowCameraRoot.addComponent(new Transform());
+
+const shadowCamera = new Node();
 shadowCameraRoot.addChild(shadowCamera);
+
+shadowCamera.addComponent(new Transform({
+    translation: [0, 0, 20],
+}));
+
+shadowCamera.addComponent(new Camera({
+    fovy: 0.5,
+    near: 15,
+    far: 50,
+}));
 
 const [cubeMesh, cubeTexture] = await Promise.all([
     loadModel(gl, '../../../common/models/cube.json'),
@@ -48,21 +61,22 @@ const [cubeMesh, cubeTexture] = await Promise.all([
 const cubeCount = 100;
 for (let i = 0; i < cubeCount; i++) {
     const cube = new Node();
+    cubeRoot.addChild(cube);
+
+    cube.addComponent(new Transform({
+        translation: vec3.random(vec3.create(), Math.random() * 5),
+        rotation: quat.random(quat.create()),
+        scale: vec3.scale(vec3.create(), [1, 1, 1], 0.1 + Math.random()),
+    }));
+
     cube.texture = cubeTexture;
     cube.mesh = cubeMesh;
-
-    const scale = 0.1 + Math.random();
-    cube.translation = vec3.random(vec3.create(), Math.random() * 5);
-    cube.rotation = quat.random(quat.create());
-    cube.scale = [scale, scale, scale];
-
-    cubeRoot.addChild(cube);
 }
 
 function update(time, dt) {
     cameraController.update();
-    shadowCameraRoot.rotation =
-        quat.setAxisAngle(quat.create(), [0, 1, 0], time * 0.1);
+    const shadowTransform = shadowCameraRoot.getComponentOfType(Transform);
+    quat.setAxisAngle(shadowTransform.rotation, [0, 1, 0], time * 0.1);
 }
 
 function render() {
@@ -70,14 +84,8 @@ function render() {
 }
 
 function resize({ displaySize: { width, height }}) {
-    const aspect = width / height;
-    const fovy = Math.PI / 3;
-    const near = 0.1;
-    const far = 100;
-
-    mat4.perspective(camera.projectionMatrix, fovy, aspect, near, far);
-
-    renderer.createShadowBuffer();
+    camera.getComponentOfType(Camera).aspect = width / height;
+    renderer.resize(width, height);
 }
 
 new ResizeSystem({ canvas, resize }).start();

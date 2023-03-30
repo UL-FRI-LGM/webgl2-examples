@@ -2,6 +2,9 @@ import { vec3, mat4 } from '../../../lib/gl-matrix-module.js';
 
 import * as WebGL from '../../../common/engine/WebGL.js';
 
+import { Camera } from '../../../common/engine/core/Camera.js';
+import { Transform } from '../../../common/engine/core/Transform.js';
+
 import { shaders } from './shaders.js';
 
 export class Renderer {
@@ -35,6 +38,31 @@ export class Renderer {
         this.programs = WebGL.buildPrograms(gl, shaders);
 
         this.createSkyBuffer();
+    }
+
+    getLocalMatrix(node) {
+        const transform = node.getComponentOfType(Transform);
+        return transform ? transform.matrix : mat4.create();
+    }
+
+    getGlobalMatrix(node) {
+        const localMatrix = this.getLocalMatrix(node);
+        if (!node.parent) {
+            return localMatrix;
+        } else {
+            const globalMatrix = this.getGlobalMatrix(node.parent);
+            return mat4.mul(globalMatrix, globalMatrix, localMatrix);
+        }
+    }
+
+    getViewMatrix(node) {
+        const globalMatrix = this.getGlobalMatrix(node);
+        return mat4.invert(globalMatrix, globalMatrix);
+    }
+
+    getProjectionMatrix(node) {
+        const camera = node.getComponentOfType(Camera);
+        return camera ? camera.projectionMatrix : mat4.create();
     }
 
     createSkyBuffer() {
@@ -123,10 +151,11 @@ export class Renderer {
         const { program, uniforms } = this.programs.skybox;
         gl.useProgram(program);
 
-        const viewMatrix = camera.globalMatrix;
-        const unprojectMatrix = mat4.clone(camera.projectionMatrix);
+        const viewMatrix = this.getViewMatrix(camera);
+        const projectionMatrix = this.getProjectionMatrix(camera);
+
+        const unprojectMatrix = mat4.multiply(mat4.create(), projectionMatrix, viewMatrix);
         mat4.invert(unprojectMatrix, unprojectMatrix);
-        mat4.multiply(unprojectMatrix, viewMatrix, unprojectMatrix);
 
         gl.uniformMatrix4fv(uniforms.uUnprojectMatrix, false, unprojectMatrix);
 

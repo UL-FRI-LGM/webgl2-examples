@@ -5,6 +5,9 @@ import { ResizeSystem } from '../../../common/engine/systems/ResizeSystem.js';
 import { UpdateSystem } from '../../../common/engine/systems/UpdateSystem.js';
 
 import { Node } from '../../../common/engine/core/Node.js';
+import { Camera } from '../../../common/engine/core/Camera.js';
+import { Transform } from '../../../common/engine/core/Transform.js';
+
 import { OrbitController } from '../../../common/engine/controllers/OrbitController.js';
 import { loadTexture, loadModel } from '../../../common/engine/BasicLoaders.js';
 
@@ -16,9 +19,12 @@ const gl = canvas.getContext('webgl2');
 const renderer = new Renderer(gl);
 
 const scene = new Node();
+
 const camera = new Node();
-camera.projectionMatrix = mat4.create();
 scene.addChild(camera);
+
+camera.addComponent(new Transform());
+camera.addComponent(new Camera());
 
 const cameraController = new OrbitController(camera, canvas);
 cameraController.distance = 10;
@@ -45,16 +51,17 @@ const [cubeMesh, cubeDiffuseTexture, cubeEmissionTexture] = await Promise.all([
 const cubeCount = 100;
 for (let i = 0; i < cubeCount; i++) {
     const cube = new Node();
+    cubeRoot.addChild(cube);
+
+    cube.addComponent(new Transform({
+        translation: vec3.random(vec3.create(), Math.random() * 5),
+        rotation: quat.random(quat.create()),
+        scale: vec3.scale(vec3.create(), [1, 1, 1], 0.1 + Math.random()),
+    }));
+
     cube.diffuseTexture = cubeDiffuseTexture;
     cube.emissionTexture = cubeEmissionTexture;
     cube.mesh = cubeMesh;
-
-    const scale = 0.1 + Math.random();
-    cube.translation = vec3.random(vec3.create(), Math.random() * 5);
-    cube.rotation = quat.random(quat.create());
-    cube.scale = [scale, scale, scale];
-
-    cubeRoot.addChild(cube);
 }
 
 function update() {
@@ -66,13 +73,7 @@ function render() {
 }
 
 function resize({ displaySize: { width, height }}) {
-    const aspect = width / height;
-    const fovy = Math.PI / 3;
-    const near = 0.1;
-    const far = 100;
-
-    mat4.perspective(camera.projectionMatrix, fovy, aspect, near, far);
-
+    camera.getComponentOfType(Camera).aspect = width / height;
     renderer.resize(width, height);
 }
 

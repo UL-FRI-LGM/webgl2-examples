@@ -2,6 +2,10 @@ import { vec3, mat4 } from '../../../lib/gl-matrix-module.js';
 
 import * as WebGL from '../../../common/engine/WebGL.js';
 
+import { Camera } from '../../../common/engine/core/Camera.js';
+import { Transform } from '../../../common/engine/core/Transform.js';
+import { Material } from './Material.js';
+
 import { shaders } from './shaders.js';
 
 export class Renderer {
@@ -16,6 +20,31 @@ export class Renderer {
         this.programs = WebGL.buildPrograms(gl, shaders);
     }
 
+    getLocalMatrix(node) {
+        const transform = node.getComponentOfType(Transform);
+        return transform ? transform.matrix : mat4.create();
+    }
+
+    getGlobalMatrix(node) {
+        const localMatrix = this.getLocalMatrix(node);
+        if (!node.parent) {
+            return localMatrix;
+        } else {
+            const globalMatrix = this.getGlobalMatrix(node.parent);
+            return mat4.mul(globalMatrix, globalMatrix, localMatrix);
+        }
+    }
+
+    getViewMatrix(node) {
+        const globalMatrix = this.getGlobalMatrix(node);
+        return mat4.invert(globalMatrix, globalMatrix);
+    }
+
+    getProjectionMatrix(node) {
+        const camera = node.getComponentOfType(Camera);
+        return camera ? camera.projectionMatrix : mat4.create();
+    }
+
     render(scene, camera, skybox) {
         const gl = this.gl;
 
@@ -25,42 +54,46 @@ export class Renderer {
         const { program, uniforms } = this.programs.envmap;
         gl.useProgram(program);
 
-        const viewMatrix = camera.globalMatrix;
-        mat4.invert(viewMatrix, viewMatrix);
-        gl.uniformMatrix4fv(uniforms.uViewMatrix, false, viewMatrix);
-        gl.uniformMatrix4fv(uniforms.uProjectionMatrix, false, camera.projectionMatrix);
-        gl.uniform3fv(uniforms.uCameraPosition,
-            mat4.getTranslation(vec3.create(), camera.globalMatrix));
+        const viewMatrix = this.getViewMatrix(camera);
+        const projectionMatrix = this.getProjectionMatrix(camera);
 
-        this.renderNode(scene, scene.globalMatrix);
+        gl.uniformMatrix4fv(uniforms.uViewMatrix, false, viewMatrix);
+        gl.uniformMatrix4fv(uniforms.uProjectionMatrix, false, projectionMatrix);
+
+        gl.uniform3fv(uniforms.uCameraPosition,
+            mat4.getTranslation(vec3.create(), this.getGlobalMatrix(camera)));
+
+        this.renderNode(scene, mat4.create());
         this.renderSkybox(skybox, camera);
     }
 
     renderNode(node, modelMatrix) {
         const gl = this.gl;
 
-        modelMatrix = mat4.clone(modelMatrix);
-        mat4.mul(modelMatrix, modelMatrix, node.localMatrix);
+        const localMatrix = this.getLocalMatrix(node);
+        modelMatrix = mat4.mul(mat4.create(), modelMatrix, localMatrix);
 
         const { uniforms } = this.programs.envmap;
 
-        if (node.model && node.material) {
+        const material = node.getComponentOfType(Material);
+
+        if (node.model && material) {
             gl.bindVertexArray(node.model.vao);
 
             gl.uniformMatrix4fv(uniforms.uModelMatrix, false, modelMatrix);
 
             gl.activeTexture(gl.TEXTURE0);
             gl.uniform1i(uniforms.uTexture, 0);
-            gl.bindTexture(gl.TEXTURE_2D, node.material.texture);
+            gl.bindTexture(gl.TEXTURE_2D, material.texture);
 
             gl.activeTexture(gl.TEXTURE1);
             gl.uniform1i(uniforms.uEnvmap, 1);
-            gl.bindTexture(gl.TEXTURE_2D, node.material.envmap);
+            gl.bindTexture(gl.TEXTURE_2D, material.envmap);
 
-            gl.uniform1f(uniforms.uReflectance, node.material.reflectance);
-            gl.uniform1f(uniforms.uTransmittance, node.material.transmittance);
-            gl.uniform1f(uniforms.uIOR, node.material.ior);
-            gl.uniform1f(uniforms.uEffect, node.material.effect);
+            gl.uniform1f(uniforms.uReflectance, material.reflectance);
+            gl.uniform1f(uniforms.uTransmittance, material.transmittance);
+            gl.uniform1f(uniforms.uIOR, material.ior);
+            gl.uniform1f(uniforms.uEffect, material.effect);
 
             gl.drawElements(gl.TRIANGLES, node.model.indices, gl.UNSIGNED_SHORT, 0);
         }
@@ -76,22 +109,28 @@ export class Renderer {
         const { program, uniforms } = this.programs.skybox;
         gl.useProgram(program);
 
-        const viewMatrix = camera.globalMatrix;
-        mat4.invert(viewMatrix, viewMatrix);
+        const viewMatrix = this.getViewMatrix(camera);
+        const projectionMatrix = this.getProjectionMatrix(camera);
+
         gl.uniformMatrix4fv(uniforms.uViewMatrix, false, viewMatrix);
-        gl.uniformMatrix4fv(uniforms.uProjectionMatrix, false, camera.projectionMatrix);
+        gl.uniformMatrix4fv(uniforms.uProjectionMatrix, false, projectionMatrix);
 
         gl.bindVertexArray(skybox.model.vao);
 
-        gl.activeTexture(gl.TEXTURE1);
-        gl.uniform1i(uniforms.uEnvmap, 1);
-        gl.bindTexture(gl.TEXTURE_2D, skybox.material.envmap);
+        const material = skybox.getComponentOfType(Material);
 
-        gl.depthFunc(gl.LEQUAL);
-        gl.disable(gl.CULL_FACE);
-        gl.drawElements(gl.TRIANGLES, skybox.model.indices, gl.UNSIGNED_SHORT, 0);
-        gl.enable(gl.CULL_FACE);
-        gl.depthFunc(gl.LESS);
+        if (material) {
+            gl.activeTexture(gl.TEXTURE1);
+            gl.uniform1i(uniforms.uEnvmap, 1);
+            gl.bindTexture(gl.TEXTURE_2D, material.envmap);
+
+            gl.depthFunc(gl.LEQUAL);
+            gl.disable(gl.CULL_FACE);
+            gl.drawElements(gl.TRIANGLES, skybox.model.indices, gl.UNSIGNED_SHORT, 0);
+            gl.enable(gl.CULL_FACE);
+            gl.depthFunc(gl.LESS);
+        }
+
     }
 
 }

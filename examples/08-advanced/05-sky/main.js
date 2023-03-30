@@ -5,6 +5,9 @@ import { ResizeSystem } from '../../../common/engine/systems/ResizeSystem.js';
 import { UpdateSystem } from '../../../common/engine/systems/UpdateSystem.js';
 
 import { Node } from '../../../common/engine/core/Node.js';
+import { Camera } from '../../../common/engine/core/Camera.js';
+import { Transform } from '../../../common/engine/core/Transform.js';
+
 import { OrbitController } from '../../../common/engine/controllers/OrbitController.js';
 
 import { Renderer } from './Renderer.js';
@@ -13,8 +16,15 @@ const canvas = document.querySelector('canvas');
 const gl = canvas.getContext('webgl2');
 
 const renderer = new Renderer(gl);
+
 const camera = new Node();
-camera.projectionMatrix = mat4.create();
+
+camera.addComponent(new Transform());
+camera.addComponent(new Camera({
+    near: 0.1,
+    far: 100,
+}));
+
 const cameraController = new OrbitController(camera, canvas);
 
 function update(time, dt) {
@@ -26,12 +36,7 @@ function render() {
 }
 
 function resize({ displaySize: { width, height }}) {
-    const aspect = width / height;
-    const fovy = Math.PI / 3;
-    const near = 0.1;
-    const far = 100;
-
-    mat4.perspective(camera.projectionMatrix, fovy, aspect, near, far);
+    camera.getComponentOfType(Camera).aspect = width / height;
 }
 
 new ResizeSystem({ canvas, resize }).start();

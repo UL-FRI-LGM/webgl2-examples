@@ -2,6 +2,9 @@ import { vec3, mat4 } from '../../../lib/gl-matrix-module.js';
 
 import * as WebGL from '../../../common/engine/WebGL.js';
 
+import { Camera } from '../../../common/engine/core/Camera.js';
+import { Transform } from '../../../common/engine/core/Transform.js';
+
 import { shaders } from './shaders.js';
 
 export class Renderer {
@@ -52,6 +55,36 @@ export class Renderer {
         this.createSSAOSamples();
     }
 
+    getLocalMatrix(node) {
+        const transform = node.getComponentOfType(Transform);
+        return transform ? transform.matrix : mat4.create();
+    }
+
+    getGlobalMatrix(node) {
+        const localMatrix = this.getLocalMatrix(node);
+        if (!node.parent) {
+            return localMatrix;
+        } else {
+            const globalMatrix = this.getGlobalMatrix(node.parent);
+            return mat4.mul(globalMatrix, globalMatrix, localMatrix);
+        }
+    }
+
+    getViewMatrix(node) {
+        const globalMatrix = this.getGlobalMatrix(node);
+        return mat4.invert(globalMatrix, globalMatrix);
+    }
+
+    getProjectionMatrix(node) {
+        const camera = node.getComponentOfType(Camera);
+        return camera ? camera.projectionMatrix : mat4.create();
+    }
+
+    resize(width, height) {
+        this.createGeometryBuffer();
+        this.createSSAOBuffer();
+    }
+
     render(scene, camera) {
         this.renderGeometryBuffer(scene, camera);
         this.renderSSAO(camera);
@@ -72,14 +105,13 @@ export class Renderer {
         const { program, uniforms } = this.programs.renderGeometryBuffer;
         gl.useProgram(program);
 
-        const matrix = mat4.create();
-        const viewMatrix = camera.globalMatrix;
-        mat4.invert(viewMatrix, viewMatrix);
-        mat4.copy(matrix, viewMatrix);
-        gl.uniformMatrix4fv(uniforms.uProjectionMatrix, false, camera.projectionMatrix);
+        const viewMatrix = this.getViewMatrix(camera);
+        const projectionMatrix = this.getProjectionMatrix(camera);
+
+        gl.uniformMatrix4fv(uniforms.uProjectionMatrix, false, projectionMatrix);
 
         for (const node of scene.children) {
-            this.renderNode(node, matrix, uniforms);
+            this.renderNode(node, viewMatrix, uniforms);
         }
     }
 
@@ -96,7 +128,9 @@ export class Renderer {
         const { program, uniforms } = this.programs.ssao;
         gl.useProgram(program);
 
-        gl.uniformMatrix4fv(uniforms.uProjectionMatrix, false, camera.projectionMatrix);
+        const projectionMatrix = this.getProjectionMatrix(camera);
+        gl.uniformMatrix4fv(uniforms.uProjectionMatrix, false, projectionMatrix);
+
         gl.uniform1i(uniforms.uOcclusionSampleCount, this.occlusionSampleCount);
         gl.uniform1f(uniforms.uOcclusionScale, this.occlusionScale);
         gl.uniform1f(uniforms.uOcclusionRange, this.occlusionRange);
@@ -150,8 +184,8 @@ export class Renderer {
     renderNode(node, matrix, uniforms) {
         const gl = this.gl;
 
-        matrix = mat4.clone(matrix);
-        mat4.mul(matrix, matrix, node.localMatrix);
+        const localMatrix = this.getLocalMatrix(node);
+        matrix = mat4.mul(mat4.create(), matrix, localMatrix);
 
         if (node.mesh) {
             gl.bindVertexArray(node.mesh.vao);

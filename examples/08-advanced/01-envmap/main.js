@@ -5,6 +5,9 @@ import { ResizeSystem } from '../../../common/engine/systems/ResizeSystem.js';
 import { UpdateSystem } from '../../../common/engine/systems/UpdateSystem.js';
 
 import { Node } from '../../../common/engine/core/Node.js';
+import { Camera } from '../../../common/engine/core/Camera.js';
+import { Transform } from '../../../common/engine/core/Transform.js';
+
 import { OrbitController } from '../../../common/engine/controllers/OrbitController.js';
 import { loadTexture, loadModel } from '../../../common/engine/BasicLoaders.js';
 
@@ -17,14 +20,17 @@ const gl = canvas.getContext('webgl2');
 const renderer = new Renderer(gl);
 
 const root = new Node();
+
 const camera = new Node();
-const model = new Node();
-const skybox = new Node();
 root.addChild(camera);
-root.addChild(model);
+
+camera.addComponent(new Transform());
+camera.addComponent(new Camera({
+    near: 0.1,
+    far: 100,
+}));
 
 const cameraController = new OrbitController(camera, canvas);
-camera.projectionMatrix = mat4.create();
 
 const [cube, mesh, texture, envmap] = await Promise.all([
     loadModel(gl, '../../../common/models/cube.json'),
@@ -40,14 +46,24 @@ const [cube, mesh, texture, envmap] = await Promise.all([
     }),
 ]);
 
-skybox.model = cube;
-skybox.material = new Material();
-skybox.material.envmap = envmap;
+const model = new Node();
+root.addChild(model);
 
 model.model = mesh;
-model.material = new Material();
-model.material.texture = texture;
-model.material.envmap = envmap;
+
+const modelMaterial = new Material();
+modelMaterial.texture = texture;
+modelMaterial.envmap = envmap;
+
+model.addComponent(modelMaterial);
+
+const skybox = new Node();
+skybox.model = cube;
+
+const skyboxMaterial = new Material();
+skyboxMaterial.envmap = envmap;
+
+skybox.addComponent(skyboxMaterial);
 
 function update(time, dt) {
     cameraController.update(dt);
@@ -58,21 +74,16 @@ function render() {
 }
 
 function resize({ displaySize: { width, height }}) {
-    const aspect = width / height;
-    const fovy = Math.PI / 3;
-    const near = 0.1;
-    const far = 100;
-
-    mat4.perspective(camera.projectionMatrix, fovy, aspect, near, far);
+    camera.getComponentOfType(Camera).aspect = width / height;
 }
 
 new ResizeSystem({ canvas, resize }).start();
 new UpdateSystem({ update, render }).start();
 
 const gui = new GUI();
-gui.add(model.material, 'effect', 0, 1);
-gui.add(model.material, 'reflectance', 0, 1);
-gui.add(model.material, 'transmittance', 0, 1);
-gui.add(model.material, 'ior', 0, 1);
+gui.add(modelMaterial, 'effect', 0, 1);
+gui.add(modelMaterial, 'reflectance', 0, 1);
+gui.add(modelMaterial, 'transmittance', 0, 1);
+gui.add(modelMaterial, 'ior', 0, 1);
 
 document.querySelector('.loader-container').remove();
