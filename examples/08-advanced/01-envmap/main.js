@@ -9,7 +9,7 @@ import { Camera } from '../../../common/engine/core/Camera.js';
 import { Transform } from '../../../common/engine/core/Transform.js';
 
 import { OrbitController } from '../../../common/engine/controllers/OrbitController.js';
-import { loadTexture, loadModel } from '../../../common/engine/BasicLoaders.js';
+import { loadTexture, loadMesh } from '../../../common/engine/BasicLoaders.js';
 
 import { Renderer } from './Renderer.js';
 import { Material } from './Material.js';
@@ -33,8 +33,8 @@ camera.addComponent(new Camera({
 const cameraController = new OrbitController(camera, canvas);
 
 const [cube, mesh, texture, envmap] = await Promise.all([
-    loadModel(gl, '../../../common/models/cube.json'),
-    loadModel(gl, '../../../common/models/bunny.json'),
+    loadMesh(gl, '../../../common/models/cube.json'),
+    loadMesh(gl, '../../../common/models/bunny.json'),
     loadTexture(gl, '../../../common/images/grayscale.png', {
         mip: true,
         min: gl.NEAREST_MIPMAP_NEAREST,
@@ -49,7 +49,7 @@ const [cube, mesh, texture, envmap] = await Promise.all([
 const model = new Node();
 root.addChild(model);
 
-model.model = mesh;
+model.mesh = mesh;
 
 const modelMaterial = new Material();
 modelMaterial.texture = texture;
@@ -58,7 +58,7 @@ modelMaterial.envmap = envmap;
 model.addComponent(modelMaterial);
 
 const skybox = new Node();
-skybox.model = cube;
+skybox.mesh = cube;
 
 const skyboxMaterial = new Material();
 skyboxMaterial.envmap = envmap;

@@ -90,8 +90,8 @@ export class Renderer {
 
         const material = node.getComponentOfType(Material);
 
-        if (node.model && material) {
-            gl.bindVertexArray(node.model.vao);
+        if (node.mesh && material) {
+            gl.bindVertexArray(node.mesh.vao);
 
             gl.uniformMatrix4fv(uniforms.uModelMatrix, false, modelMatrix);
 
@@ -103,7 +103,7 @@ export class Renderer {
             gl.uniform1f(uniforms.uMaterial.specular, material.specular);
             gl.uniform1f(uniforms.uMaterial.shininess, material.shininess);
 
-            gl.drawElements(gl.TRIANGLES, node.model.indices, gl.UNSIGNED_SHORT, 0);
+            gl.drawElements(gl.TRIANGLES, node.mesh.indices, gl.UNSIGNED_SHORT, 0);
         }
 
         for (const child of node.children) {

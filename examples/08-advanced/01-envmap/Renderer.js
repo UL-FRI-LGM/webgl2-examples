@@ -77,8 +77,8 @@ export class Renderer {
 
         const material = node.getComponentOfType(Material);
 
-        if (node.model && material) {
-            gl.bindVertexArray(node.model.vao);
+        if (node.mesh && material) {
+            gl.bindVertexArray(node.mesh.vao);
 
             gl.uniformMatrix4fv(uniforms.uModelMatrix, false, modelMatrix);
 
@@ -95,7 +95,7 @@ export class Renderer {
             gl.uniform1f(uniforms.uIOR, material.ior);
             gl.uniform1f(uniforms.uEffect, material.effect);
 
-            gl.drawElements(gl.TRIANGLES, node.model.indices, gl.UNSIGNED_SHORT, 0);
+            gl.drawElements(gl.TRIANGLES, node.mesh.indices, gl.UNSIGNED_SHORT, 0);
         }
 
         for (const child of node.children) {
@@ -115,7 +115,7 @@ export class Renderer {
         gl.uniformMatrix4fv(uniforms.uViewMatrix, false, viewMatrix);
         gl.uniformMatrix4fv(uniforms.uProjectionMatrix, false, projectionMatrix);
 
-        gl.bindVertexArray(skybox.model.vao);
+        gl.bindVertexArray(skybox.mesh.vao);
 
         const material = skybox.getComponentOfType(Material);
 
@@ -126,7 +126,7 @@ export class Renderer {
 
             gl.depthFunc(gl.LEQUAL);
             gl.disable(gl.CULL_FACE);
-            gl.drawElements(gl.TRIANGLES, skybox.model.indices, gl.UNSIGNED_SHORT, 0);
+            gl.drawElements(gl.TRIANGLES, skybox.mesh.indices, gl.UNSIGNED_SHORT, 0);
             gl.enable(gl.CULL_FACE);
             gl.depthFunc(gl.LESS);
         }

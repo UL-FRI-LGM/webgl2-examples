@@ -10,7 +10,7 @@ import { Node } from '../../../common/engine/core/Node.js';
 import { Camera } from '../../../common/engine/core/Camera.js';
 import { Transform } from '../../../common/engine/core/Transform.js';
 
-import { loadTexture, loadModel } from '../../../common/engine/BasicLoaders.js';
+import { loadTexture, loadMesh } from '../../../common/engine/BasicLoaders.js';
 
 import { Renderer } from './Renderer.js';
 import { FirstPersonController } from './FirstPersonController.js';
@@ -41,8 +41,8 @@ floor.addComponent(new Transform({
 }));
 root.addChild(floor);
 
-const [model, texture] = await Promise.all([
-    loadModel(gl, '../../../common/models/floor.json'),
+const [mesh, texture] = await Promise.all([
+    loadMesh(gl, '../../../common/models/floor.json'),
     loadTexture(gl, '../../../common/images/grass.png', {
         mip: true,
         min: gl.NEAREST_MIPMAP_NEAREST,
@@ -50,7 +50,7 @@ const [model, texture] = await Promise.all([
     }),
 ]);
 
-floor.model = model;
+floor.mesh = mesh;
 floor.texture = texture;
 
 const renderer = new Renderer(gl);

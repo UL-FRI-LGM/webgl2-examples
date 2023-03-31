@@ -68,8 +68,8 @@ export class Renderer {
 
         const { uniforms } = this.programs.simple;
 
-        if (node.model && node.texture) {
-            gl.bindVertexArray(node.model.vao);
+        if (node.mesh && node.texture) {
+            gl.bindVertexArray(node.mesh.vao);
 
             gl.uniformMatrix4fv(uniforms.uModelViewProjection, false, mvpMatrix);
 
@@ -77,7 +77,7 @@ export class Renderer {
             gl.uniform1i(uniforms.uTexture, 0);
             gl.bindTexture(gl.TEXTURE_2D, node.texture);
 
-            gl.drawElements(gl.TRIANGLES, node.model.indices, gl.UNSIGNED_SHORT, 0);
+            gl.drawElements(gl.TRIANGLES, node.mesh.indices, gl.UNSIGNED_SHORT, 0);
         }
 
         for (const child of node.children) {

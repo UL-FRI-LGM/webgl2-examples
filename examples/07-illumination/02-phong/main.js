@@ -9,7 +9,7 @@ import { Camera } from '../../../common/engine/core/Camera.js';
 import { Transform } from '../../../common/engine/core/Transform.js';
 
 import { OrbitController } from '../../../common/engine/controllers/OrbitController.js';
-import { loadTexture, loadModel } from '../../../common/engine/BasicLoaders.js';
+import { loadTexture, loadMesh } from '../../../common/engine/BasicLoaders.js';
 
 import { Renderer } from './Renderer.js';
 import { Material } from './Material.js';
@@ -53,7 +53,7 @@ const material = new Material();
 model.addComponent(material);
 
 const [mesh, texture, envmap] = await Promise.all([
-    loadModel(gl, '../../../common/models/bunny.json'),
+    loadMesh(gl, '../../../common/models/bunny.json'),
     loadTexture(gl, '../../../common/images/grass.png', {
         mip: true,
         min: gl.NEAREST_MIPMAP_NEAREST,
@@ -61,7 +61,7 @@ const [mesh, texture, envmap] = await Promise.all([
     }),
 ]);
 
-model.model = mesh;
+model.mesh = mesh;
 material.texture = texture;
 
 function update(time, dt) {

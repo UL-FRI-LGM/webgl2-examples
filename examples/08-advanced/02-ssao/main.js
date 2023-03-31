@@ -9,7 +9,7 @@ import { Camera } from '../../../common/engine/core/Camera.js';
 import { Transform } from '../../../common/engine/core/Transform.js';
 
 import { OrbitController } from '../../../common/engine/controllers/OrbitController.js';
-import { loadTexture, loadModel } from '../../../common/engine/BasicLoaders.js';
+import { loadTexture, loadMesh } from '../../../common/engine/BasicLoaders.js';
 
 import { Renderer } from './Renderer.js';
 
@@ -33,7 +33,7 @@ const cubeRoot = new Node();
 scene.addChild(cubeRoot);
 
 const [cubeMesh, cubeTexture] = await Promise.all([
-    loadModel(gl, '../../../common/models/cube.json'),
+    loadMesh(gl, '../../../common/models/cube.json'),
     loadTexture(gl, '../../../common/images/crate-diffuse.png', {
         mip: true,
         min: gl.NEAREST_MIPMAP_NEAREST,

@@ -6,7 +6,7 @@ import * as WebGL from '../../../common/engine/WebGL.js';
 import { ResizeSystem } from '../../../common/engine/systems/ResizeSystem.js';
 import { UpdateSystem } from '../../../common/engine/systems/UpdateSystem.js';
 
-import { loadTexture, loadModel } from '../../../common/engine/BasicLoaders.js';
+import { loadTexture, loadMesh } from '../../../common/engine/BasicLoaders.js';
 
 import { Node } from '../../../common/engine/core/Node.js';
 import { shaders } from './shaders.js';
@@ -44,9 +44,9 @@ root.addChild(cube1);
 root.addChild(cube2);
 cube2.addChild(cube3);
 
-// Load the model and texture.
-const [model, texture] = await Promise.all([
-    loadModel(gl, '../../../common/models/cube.json'),
+// Load the mesh and texture.
+const [mesh, texture] = await Promise.all([
+    loadMesh(gl, '../../../common/models/cube.json'),
     loadTexture(gl, '../../../common/images/crate-diffuse.png', {
         mip: true,
         min: gl.NEAREST_MIPMAP_NEAREST,
@@ -54,9 +54,9 @@ const [model, texture] = await Promise.all([
     }),
 ]);
 
-cube1.model = model;
-cube2.model = model;
-cube3.model = model;
+cube1.mesh = mesh;
+cube2.mesh = mesh;
+cube3.mesh = mesh;
 cube1.texture = texture;
 cube2.texture = texture;
 cube3.texture = texture;
@@ -126,11 +126,11 @@ function renderNode(node, mvpMatrix) {
 
     const { uniforms } = programs.simple;
 
-    if (node.model) {
-        gl.bindVertexArray(node.model.vao);
+    if (node.mesh) {
+        gl.bindVertexArray(node.mesh.vao);
         gl.uniformMatrix4fv(uniforms.uModelViewProjection, false, mvpMatrix);
         gl.bindTexture(gl.TEXTURE_2D, node.texture);
-        gl.drawElements(gl.TRIANGLES, node.model.indices, gl.UNSIGNED_SHORT, 0);
+        gl.drawElements(gl.TRIANGLES, node.mesh.indices, gl.UNSIGNED_SHORT, 0);
     }
 
     for (const child of node.children) {
