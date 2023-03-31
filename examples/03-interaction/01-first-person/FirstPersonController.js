@@ -127,14 +127,14 @@ export class FirstPersonController {
         const transform = this.node.getComponentOfType(Transform);
         if (transform) {
             // Update translation based on velocity (second line of Euler's method).
-            vec3.scaleAndAdd(this.transform.translation,
-                this.transform.translation, this.velocity, dt);
+            vec3.scaleAndAdd(transform.translation,
+                transform.translation, this.velocity, dt);
 
             // Update rotation based on the Euler angles.
             const rotation = quat.create();
             quat.rotateY(rotation, rotation, this.yaw);
             quat.rotateX(rotation, rotation, this.pitch);
-            this.transform.rotation = rotation;
+            transform.rotation = rotation;
         }
     }
 
