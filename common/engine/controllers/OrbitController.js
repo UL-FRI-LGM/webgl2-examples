@@ -24,15 +24,13 @@ export class OrbitController {
         this.pointermoveHandler = this.pointermoveHandler.bind(this);
         this.wheelHandler = this.wheelHandler.bind(this);
 
-        const element = this.domElement;
-        const doc = element.ownerDocument;
-
-        element.addEventListener('pointerdown', this.pointerdownHandler);
-        element.addEventListener('wheel', this.wheelHandler);
+        this.domElement.addEventListener('pointerdown', this.pointerdownHandler);
+        this.domElement.addEventListener('wheel', this.wheelHandler);
     }
 
     pointerdownHandler(e) {
         this.domElement.setPointerCapture(e.pointerId);
+        this.domElement.requestPointerLock();
         this.domElement.removeEventListener('pointerdown', this.pointerdownHandler);
         this.domElement.addEventListener('pointerup', this.pointerupHandler);
         this.domElement.addEventListener('pointermove', this.pointermoveHandler);
@@ -40,6 +38,7 @@ export class OrbitController {
 
     pointerupHandler(e) {
         this.domElement.releasePointerCapture(e.pointerId);
+        this.domElement.ownerDocument.exitPointerLock();
         this.domElement.addEventListener('pointerdown', this.pointerdownHandler);
         this.domElement.removeEventListener('pointerup', this.pointerupHandler);
         this.domElement.removeEventListener('pointermove', this.pointermoveHandler);
