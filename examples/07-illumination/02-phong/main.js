@@ -30,7 +30,6 @@ camera.addComponent(new Transform({
 }));
 
 camera.addComponent(new Camera({
-    fovy: Math.PI / 2,
     near: 0.1,
     far: 100,
 }));

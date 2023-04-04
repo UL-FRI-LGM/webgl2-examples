@@ -27,7 +27,6 @@ camera.addComponent(new Transform({
     translation: [0, 1, 0],
 }));
 camera.addComponent(new Camera({
-    fovy: Math.PI / 2,
     near: 0.1,
     far: 100,
 }));
