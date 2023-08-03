@@ -8,7 +8,7 @@ export async function loadMesh(gl, url) {
     gl.bindVertexArray(vao);
 
     WebGL.createBuffer(gl, {
-        data: new Float32Array(mesh.vertices),
+        data: new Float32Array(mesh.positions),
     });
 
     WebGL.configureAttribute(gl, {

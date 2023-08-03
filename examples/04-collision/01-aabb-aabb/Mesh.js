@@ -9,7 +9,7 @@ export class Mesh {
 }
 
 Mesh.defaults = {
-    vertices: [],
+    positions: [],
     texcoords: [],
     normals: [],
     indices: []
