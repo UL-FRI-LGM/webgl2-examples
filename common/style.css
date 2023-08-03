@@ -28,6 +28,10 @@ body, html {
     touch-action: none;
 }
 
+.pixelated {
+    image-rendering: pixelated;
+}
+
 .loader-container {
     display: flex;
     align-items: center;
