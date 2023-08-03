@@ -314,7 +314,7 @@ export class GLTFLoader {
 
         if (gltfSpec.children) {
             for (const childIndex of gltfSpec.children) {
-                const child = await this.loadNode(nodeIndex);
+                const child = await this.loadNode(childIndex);
                 node.addChild(child);
             }
         }
