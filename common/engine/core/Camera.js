@@ -3,12 +3,12 @@ import { mat4 } from '../../../lib/gl-matrix-module.js';
 export class Camera {
 
     constructor({
-        orthographic = false,
+        orthographic = 0,
         aspect = 1,
         fovy = 1,
         halfy = 1,
-        near = orthographic ? -1 : 1,
-        far = orthographic ? 1 : Infinity,
+        near = 1,
+        far = 100,
     } = {}) {
         this.orthographic = orthographic;
         this.aspect = aspect;
@@ -19,7 +19,17 @@ export class Camera {
     }
 
     get projectionMatrix() {
-        return this.orthographic ? this.orthographicMatrix : this.perspectiveMatrix;
+        if (this.orthographic === 0) {
+            return this.perspectiveMatrix;
+        } else if (this.orthographic === 1) {
+            return this.orthographicMatrix;
+        } else {
+            const a = this.orthographicMatrix;
+            const b = this.perspectiveMatrix;
+            return mat4.add(mat4.create(),
+                mat4.multiplyScalar(a, a, this.orthographic),
+                mat4.multiplyScalar(b, b, 1 - this.orthographic));
+        }
     }
 
     get orthographicMatrix() {

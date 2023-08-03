@@ -3,15 +3,11 @@ export class Node {
     constructor() {
         this.children = [];
         this.parent = null;
-
         this.components = [];
     }
 
     addChild(node) {
-        if (node.parent) {
-            node.parent.removeChild(node);
-        }
-
+        node.parent?.removeChild(node);
         this.children.push(node);
         node.parent = this;
     }
@@ -25,15 +21,11 @@ export class Node {
     }
 
     traverse(before, after) {
-        if (before) {
-            before(this);
-        }
+        before?.(this);
         for (const child of this.children) {
             child.traverse(before, after);
         }
-        if (after) {
-            after(this);
-        }
+        after?.(this);
     }
 
     linearize() {
@@ -62,7 +54,7 @@ export class Node {
         this.components = this.components.filter(c => c !== component);
     }
 
-    removeComponentOfType(type) {
+    removeComponentsOfType(type) {
         this.components = this.components.filter(component => !(component instanceof type));
     }
 
