@@ -1,4 +1,4 @@
-This is a collection of JavaScript/WebGL 2.0 examples for undergraduate computer
+This is a collection of WebGL 2.0 examples for undergraduate computer
 graphics courses.
 
 # Building and running
