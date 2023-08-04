@@ -1,4 +1,5 @@
 import {
+    Accessor,
     Camera,
     Material,
     Mesh,
@@ -23,29 +24,13 @@ export class GLTFLoader {
     // Loads the GLTF JSON file and all buffers and images that it references.
     // It also creates a cache for all future resource loading.
     async load(url) {
-        this.gltf = await fetch(url).then(response => response.json());
+        this.gltfUrl = new URL(url, window.location);
+        this.gltf = await this.fetchJson(this.gltfUrl);
         this.defaultScene = this.gltf.scene ?? 0;
         this.cache = new Map();
 
-        const buffers = this.gltf.buffers.map(async buffer => {
-            const bufferUrl = new URL(buffer.uri, url);
-            const response = await fetch(bufferUrl);
-            const arrayBuffer = await response.arrayBuffer();
-            this.cache.set(buffer, arrayBuffer);
-            return arrayBuffer;
-        });
-
-        const images = this.gltf.images.map(async image => {
-            const imageUrl = new URL(image.uri, url);
-            const response = await fetch(imageUrl);
-            const blob = await response.blob();
-            const imageBitmap = await createImageBitmap(blob);
-            this.cache.set(image, imageBitmap);
-            return imageBitmap;
-        });
-
-        this.buffers = await Promise.all(buffers);
-        this.images = await Promise.all(images);
+        await Promise.all(this.gltf.buffers?.map(buffer => this.preloadBuffer(buffer)) ?? []);
+        await Promise.all(this.gltf.images?.map(image => this.preloadImage(image)) ?? []);
     }
 
     // Finds an object in list at the given index, or if the 'name'
@@ -56,6 +41,56 @@ export class GLTFLoader {
         } else {
             return list.find(element => element.name === nameOrIndex);
         }
+    }
+
+    fetchJson(url) {
+        return fetch(url)
+            .then(response => response.json());
+    }
+
+    fetchBuffer(url) {
+        return fetch(url)
+            .then(response => response.arrayBuffer());
+    }
+
+    fetchImage(url) {
+        return fetch(url)
+            .then(response => response.blob())
+            .then(blob => createImageBitmap(blob));
+    }
+
+    async preloadImage(gltfSpec) {
+        if (this.cache.has(gltfSpec)) {
+            return this.cache.get(gltfSpec);
+        }
+
+        if (gltfSpec.uri) {
+            const url = new URL(gltfSpec.uri, this.gltfUrl);
+            const image = await this.fetchImage(url);
+            this.cache.set(gltfSpec, image);
+            return image;
+        } else {
+            const bufferView = this.gltf.bufferViews[gltfSpec.bufferView];
+            const buffer = this.loadBuffer(bufferView.buffer);
+            const dataView = new DataView(buffer, bufferView.byteOffset ?? 0, bufferView.byteLength);
+            const blob = new Blob([dataView], { type: gltfSpec.mimeType });
+            const url = URL.createObjectURL(blob);
+            const image = await this.fetchImage(url);
+            URL.revokeObjectURL(url);
+            this.cache.set(gltfSpec, image);
+            return image;
+        }
+    }
+
+    async preloadBuffer(gltfSpec) {
+        if (this.cache.has(gltfSpec)) {
+            return this.cache.get(gltfSpec);
+        }
+
+        const url = new URL(gltfSpec.uri, this.gltfUrl);
+        const buffer = await this.fetchBuffer(url);
+        this.cache.set(gltfSpec, buffer);
+        return buffer;
     }
 
     loadImage(nameOrIndex) {
@@ -115,11 +150,11 @@ export class GLTFLoader {
         };
 
         const sampler = new Sampler({
-            minFilter: minFilter[gltfSpec.minFilter],
-            magFilter: magFilter[gltfSpec.magFilter],
-            mipmapFilter: mipmapFilter[gltfSpec.minFilter],
-            addressModeU: addressMode[gltfSpec.wrapS],
-            addressModeV: addressMode[gltfSpec.wrapT],
+            minFilter: minFilter[gltfSpec.minFilter ?? 9729],
+            magFilter: magFilter[gltfSpec.magFilter ?? 9729],
+            mipmapFilter: mipmapFilter[gltfSpec.minFilter ?? 9729],
+            addressModeU: addressMode[gltfSpec.wrapS ?? 10497],
+            addressModeV: addressMode[gltfSpec.wrapT ?? 10497],
         });
 
         this.cache.set(gltfSpec, sampler);
@@ -135,10 +170,15 @@ export class GLTFLoader {
             return this.cache.get(gltfSpec);
         }
 
-        const image = this.loadImage(gltfSpec.source);
-        const sampler = this.loadSampler(gltfSpec.sampler);
+        const options = {};
+        if (gltfSpec.source !== undefined) {
+            options.image = this.loadImage(gltfSpec.source);
+        }
+        if (gltfSpec.sampler !== undefined) {
+            options.sampler = this.loadSampler(gltfSpec.sampler);
+        }
 
-        const texture = new Texture({ image, sampler });
+        const texture = new Texture(options);
 
         this.cache.set(gltfSpec, texture);
         return texture;
@@ -189,17 +229,54 @@ export class GLTFLoader {
         return material;
     }
 
-    prepareAccessor(index) {
-        const viewMap = {
-            5120: Int8Array,
-            5121: Uint8Array,
-            5122: Int16Array,
-            5123: Uint16Array,
-            5125: Uint32Array,
-            5126: Float32Array,
-        };
+    loadAccessor(nameOrIndex) {
+        const gltfSpec = this.findByNameOrIndex(this.gltf.accessors, nameOrIndex);
+        if (!gltfSpec) {
+            return null;
+        }
+        if (this.cache.has(gltfSpec)) {
+            return this.cache.get(gltfSpec);
+        }
 
-        const numComponentsMap = {
+        if (gltfSpec.bufferView === undefined) {
+            console.warn('Accessor does not reference a buffer view');
+            return null;
+        }
+
+        const bufferView = this.gltf.bufferViews[gltfSpec.bufferView];
+        const buffer = this.loadBuffer(bufferView.buffer);
+
+        const componentType = {
+            5120: 'int',
+            5121: 'int',
+            5122: 'int',
+            5123: 'int',
+            5124: 'int',
+            5125: 'int',
+            5126: 'float',
+        }[gltfSpec.componentType];
+
+        const componentSize = {
+            5120: 1,
+            5121: 1,
+            5122: 2,
+            5123: 2,
+            5124: 4,
+            5125: 4,
+            5126: 4,
+        }[gltfSpec.componentType];
+
+        const componentSigned = {
+            5120: true,
+            5121: false,
+            5122: true,
+            5123: false,
+            5124: true,
+            5125: false,
+            5126: false,
+        }[gltfSpec.componentType];
+
+        const componentCount = {
             SCALAR: 1,
             VEC2: 2,
             VEC3: 3,
@@ -207,37 +284,27 @@ export class GLTFLoader {
             MAT2: 4,
             MAT3: 9,
             MAT4: 16,
-        };
+        }[gltfSpec.type];
 
-        const accessor = this.gltf.accessors[index];
+        const componentNormalized = gltfSpec.normalized ?? false;
 
-        if (accessor.bufferView === undefined) {
-            console.warn('Accessor does not reference a buffer view');
-            return null;
-        }
-        const bufferView = this.gltf.bufferViews[accessor.bufferView];
-        const buffer = this.loadBuffer(bufferView.buffer);
+        const stride = bufferView.byteStride ?? (componentSize * componentCount);
+        const offset = (bufferView.byteOffset ?? 0) + (gltfSpec.byteOffset ?? 0);
 
-        const viewConstructor = viewMap[accessor.componentType];
-        const viewOffset = bufferView.byteOffset ?? 0;
-        const viewLength = bufferView.byteLength / viewConstructor.BYTES_PER_ELEMENT;
-        const view = new viewConstructor(buffer, viewOffset, viewLength);
+        const accessor = new Accessor({
+            buffer,
+            offset,
+            stride,
 
-        const byteStride = bufferView.byteStride;
-        const byteOffset = accessor.byteOffset ?? 0;
+            componentType,
+            componentCount,
+            componentSize,
+            componentSigned,
+            componentNormalized,
+        });
 
-        const numComponents = numComponentsMap[accessor.type];
-        const count = accessor.count;
-        const stride = byteStride ? byteStride / viewConstructor.BYTES_PER_ELEMENT : numComponents;
-        const offset = byteOffset / viewConstructor.BYTES_PER_ELEMENT;
-
-        function get(i) {
-            const start = offset + stride * i;
-            const end = offset + stride * i + numComponents;
-            return [...view.slice(start, end)];
-        }
-
-        return { view, count, offset, stride, numComponents, get };
+        this.cache.set(gltfSpec, accessor);
+        return accessor;
     }
 
     createMeshFromPrimitive(spec) {
@@ -251,15 +318,15 @@ export class GLTFLoader {
             return new Mesh();
         }
 
-        const attributeAccessData = {};
+        const accessors = {};
         for (const attribute in spec.attributes) {
-            attributeAccessData[attribute] = this.prepareAccessor(spec.attributes[attribute]);
+            accessors[attribute] = this.loadAccessor(spec.attributes[attribute]);
         }
 
-        const position = attributeAccessData.POSITION;
-        const texcoords = attributeAccessData.TEXCOORD_0;
-        const normal = attributeAccessData.NORMAL;
-        const tangent = attributeAccessData.TANGENT;
+        const position = accessors.POSITION;
+        const texcoords = accessors.TEXCOORD_0;
+        const normal = accessors.NORMAL;
+        const tangent = accessors.TANGENT;
 
         const vertexCount = position.count;
         const vertices = [];
@@ -276,7 +343,7 @@ export class GLTFLoader {
         }
 
         const indices = [];
-        const indicesAccessor = this.prepareAccessor(spec.indices);
+        const indicesAccessor = this.loadAccessor(spec.indices);
         const indexCount = indicesAccessor.count;
 
         for (let i = 0; i < indexCount; i++) {

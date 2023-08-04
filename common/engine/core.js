@@ -1,3 +1,4 @@
+export * from './core/Accessor.js';
 export * from './core/Camera.js';
 export * from './core/Material.js';
 export * from './core/Mesh.js';
