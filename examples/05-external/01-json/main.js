@@ -1,7 +1,7 @@
 import { ResizeSystem } from '../../../common/engine/systems/ResizeSystem.js';
 import { UpdateSystem } from '../../../common/engine/systems/UpdateSystem.js';
 
-import { JSONLoader } from './JSONLoader.js';
+import { JSONLoader } from '../../../common/engine/loaders/JSONLoader.js';
 import { Renderer } from './Renderer.js';
 
 import {
