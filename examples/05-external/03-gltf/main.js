@@ -1,10 +1,10 @@
 import { ResizeSystem } from '../../../common/engine/systems/ResizeSystem.js';
 import { UpdateSystem } from '../../../common/engine/systems/UpdateSystem.js';
 
-import { GLTFLoader } from './GLTFLoader.js';
+import { GLTFLoader } from '../../../common/engine/loaders/GLTFLoader.js';
 import { Renderer } from './Renderer.js';
 
-import { Camera } from '../../../common/engine/core/Camera.js';
+import { Camera } from '../../../common/engine/core.js';
 
 const canvas = document.querySelector('canvas');
 const gl = canvas.getContext('webgl2');
@@ -12,7 +12,7 @@ const gl = canvas.getContext('webgl2');
 const loader = new GLTFLoader();
 await loader.load('../../../common/models/rocks/rocks.gltf');
 
-const scene = await loader.loadScene(loader.defaultScene);
+const scene = loader.loadScene(loader.defaultScene);
 if (!scene) {
     throw new Error('A default scene is required to run this example');
 }
@@ -23,7 +23,6 @@ if (!camera) {
 }
 
 const renderer = new Renderer(gl);
-renderer.prepareScene(scene);
 
 function render() {
     renderer.render(scene, camera);

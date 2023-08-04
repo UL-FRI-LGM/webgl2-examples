@@ -1,7 +1,7 @@
 const vertex = `#version 300 es
 
 layout (location = 0) in vec4 aPosition;
-layout (location = 3) in vec2 aTexCoord;
+layout (location = 1) in vec2 aTexCoord;
 
 uniform mat4 uModelViewProjection;
 
@@ -17,16 +17,16 @@ const fragment = `#version 300 es
 precision mediump float;
 precision mediump sampler2D;
 
-uniform sampler2D uBaseColorTexture;
-uniform vec4 uBaseColorFactor;
+uniform sampler2D uBaseTexture;
+uniform vec4 uBaseFactor;
 
 in vec2 vTexCoord;
 
 out vec4 oColor;
 
 void main() {
-    vec4 baseColor = texture(uBaseColorTexture, vTexCoord);
-    oColor = uBaseColorFactor * baseColor;
+    vec4 baseColor = texture(uBaseTexture, vTexCoord);
+    oColor = uBaseFactor * baseColor;
 }
 `;
 
