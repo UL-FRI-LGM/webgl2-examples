@@ -2,7 +2,7 @@ import { quat, vec3 } from '../../../lib/gl-matrix-module.js';
 
 import { Transform } from '../core/Transform.js';
 
-export class OrbitController {
+export class TurntableController {
 
     constructor(node, domElement) {
         this.node = node;
