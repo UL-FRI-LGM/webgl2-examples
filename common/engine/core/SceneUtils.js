@@ -1,6 +1,7 @@
 import { mat4 } from '../../../lib/gl-matrix-module.js';
 
 import { Camera } from './Camera.js';
+import { Model } from './Model.js';
 import { Transform } from './Transform.js';
 
 export function getLocalModelMatrix(node) {
@@ -34,4 +35,8 @@ export function getGlobalViewMatrix(node) {
 export function getProjectionMatrix(node) {
     const camera = node.getComponentOfType(Camera);
     return camera ? camera.projectionMatrix : mat4.create();
+}
+
+export function getModels(node) {
+    return node.getComponentsOfType(Model);
 }

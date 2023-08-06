@@ -2,7 +2,7 @@ import { ResizeSystem } from '../../../common/engine/systems/ResizeSystem.js';
 import { UpdateSystem } from '../../../common/engine/systems/UpdateSystem.js';
 
 import { GLTFLoader } from '../../../common/engine/loaders/GLTFLoader.js';
-import { Renderer } from './Renderer.js';
+import { UnlitRenderer } from '../../../common/engine/renderers/UnlitRenderer.js';
 
 import { Camera } from '../../../common/engine/core.js';
 
@@ -22,7 +22,7 @@ if (!camera) {
     throw new Error('A camera in the scene is require to run this example');
 }
 
-const renderer = new Renderer(gl);
+const renderer = new UnlitRenderer(gl);
 
 function render() {
     renderer.render(scene, camera);

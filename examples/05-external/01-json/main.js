@@ -2,7 +2,7 @@ import { ResizeSystem } from '../../../common/engine/systems/ResizeSystem.js';
 import { UpdateSystem } from '../../../common/engine/systems/UpdateSystem.js';
 
 import { JSONLoader } from '../../../common/engine/loaders/JSONLoader.js';
-import { Renderer } from './Renderer.js';
+import { UnlitRenderer } from '../../../common/engine/renderers/UnlitRenderer.js';
 
 import {
     Camera,
@@ -54,8 +54,7 @@ const scene = new Node();
 scene.addChild(model);
 scene.addChild(camera);
 
-const renderer = new Renderer(gl);
-renderer.prepareNode(scene);
+const renderer = new UnlitRenderer(gl);
 
 function update(time, dt) {
     scene.traverse(node => {
