@@ -4,16 +4,22 @@ import { Transform } from '../core/Transform.js';
 
 export class TurntableController {
 
-    constructor(node, domElement) {
+    constructor(node, domElement, {
+        pitch = 0,
+        yaw = 0,
+        distance = 1,
+        moveSensitivity = 0.004,
+        zoomSensitivity = 0.002,
+    } = {}) {
         this.node = node;
         this.domElement = domElement;
 
-        this.pitch = 0;
-        this.yaw = 0;
-        this.distance = 2;
+        this.pitch = pitch;
+        this.yaw = yaw;
+        this.distance = distance;
 
-        this.moveSensitivity = 0.004;
-        this.zoomSensitivity = 0.002;
+        this.moveSensitivity = moveSensitivity;
+        this.zoomSensitivity = zoomSensitivity;
 
         this.initHandlers();
     }
