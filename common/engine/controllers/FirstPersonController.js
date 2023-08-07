@@ -43,7 +43,7 @@ export class FirstPersonController {
         });
     }
 
-    update(dt) {
+    update(t, dt) {
         // Calculate forward and right vectors.
         const cos = Math.cos(this.yaw);
         const sin = Math.sin(this.yaw);

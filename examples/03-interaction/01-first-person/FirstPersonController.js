@@ -62,7 +62,7 @@ export class FirstPersonController {
         });
     }
 
-    update(dt) {
+    update(t, dt) {
         // We are essentially solving the system of differential equations
         //
         //   a = dv/dt
