@@ -2,6 +2,7 @@ export class Accessor {
 
     constructor({
         buffer,
+        byteLength,
         offset = 0,
         stride = componentSize,
 
@@ -26,8 +27,15 @@ export class Accessor {
             componentSize,
             componentSigned,
         });
-        this.view = new viewType(this.buffer, this.offset);
-        this.strideInElements = this.stride / this.view.BYTES_PER_ELEMENT;
+
+        if (byteLength !== undefined) {
+            this.view = new viewType(buffer, offset, byteLength / viewType.BYTES_PER_ELEMENT);
+        } else {
+            this.view = new viewType(buffer, offset);
+        }
+
+        this.offsetInElements = offset / viewType.BYTES_PER_ELEMENT;
+        this.strideInElements = stride / viewType.BYTES_PER_ELEMENT;
 
         this.count = Math.floor(this.view.length / this.strideInElements);
 
