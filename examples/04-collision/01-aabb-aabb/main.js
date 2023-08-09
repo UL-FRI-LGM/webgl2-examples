@@ -1,44 +1,65 @@
 import { ResizeSystem } from '../../../common/engine/systems/ResizeSystem.js';
 import { UpdateSystem } from '../../../common/engine/systems/UpdateSystem.js';
 
-import { Renderer } from './Renderer.js';
+import { GLTFLoader } from '../../../common/engine/loaders/GLTFLoader.js';
+import { UnlitRenderer } from '../../../common/engine/renderers/UnlitRenderer.js';
+import { FirstPersonController } from '../../../common/engine/controllers/FirstPersonController.js';
+
+import { Camera, Model } from '../../../common/engine/core.js';
+
+import {
+    calculateAxisAlignedBoundingBox,
+    mergeAxisAlignedBoundingBoxes,
+} from '../../../common/engine/core/MeshUtils.js';
+
 import { Physics } from './Physics.js';
-import { Camera } from './Camera.js';
-import { SceneLoader } from './SceneLoader.js';
-import { SceneBuilder } from './SceneBuilder.js';
 
 const canvas = document.querySelector('canvas');
 const gl = canvas.getContext('webgl2');
+const renderer = new UnlitRenderer(gl);
 
-const renderer = new Renderer(gl);
+const loader = new GLTFLoader();
+await loader.load('scene/scene.gltf');
 
-const sceneJson = await new SceneLoader().loadScene('scene.json');
-const builder = new SceneBuilder(sceneJson);
-const scene = builder.build();
+const scene = loader.loadScene(loader.defaultScene);
+const camera = loader.loadNode('Camera');
+camera.addComponent(new FirstPersonController(camera, canvas));
+camera.isDynamic = true;
+camera.aabb = {
+    min: [-0.2, -0.2, -0.2],
+    max: [0.2, 0.2, 0.2],
+};
+
+loader.loadNode('Box.000').isStatic = true;
+loader.loadNode('Box.001').isStatic = true;
+loader.loadNode('Box.002').isStatic = true;
+loader.loadNode('Box.003').isStatic = true;
+loader.loadNode('Box.004').isStatic = true;
+loader.loadNode('Box.005').isStatic = true;
+loader.loadNode('Wall.000').isStatic = true;
+loader.loadNode('Wall.001').isStatic = true;
+loader.loadNode('Wall.002').isStatic = true;
+loader.loadNode('Wall.003').isStatic = true;
+
 const physics = new Physics(scene);
-
-// Find first camera.
-let camera = null;
 scene.traverse(node => {
-    if (node instanceof Camera) {
-        camera = node;
+    const model = node.getComponentOfType(Model);
+    if (!model) {
+        return;
     }
-});
 
-renderer.prepare(scene);
-
-canvas.addEventListener('click', e => canvas.requestPointerLock());
-document.addEventListener('pointerlockchange', e => {
-    if (document.pointerLockElement === canvas) {
-        camera.enable();
-    } else {
-        camera.disable();
-    }
+    const boxes = model.primitives.map(primitive => calculateAxisAlignedBoundingBox(primitive.mesh));
+    node.aabb = mergeAxisAlignedBoundingBoxes(boxes);
 });
 
 function update(time, dt) {
-    camera.update(dt);
-    physics.update(dt);
+    scene.traverse(node => {
+        for (const component of node.components) {
+            component.update?.(time, dt);
+        }
+    });
+
+    physics.update(time, dt);
 }
 
 function render() {
@@ -46,8 +67,7 @@ function render() {
 }
 
 function resize({ displaySize: { width, height }}) {
-    camera.aspect = width / height;
-    camera.updateProjection();
+    camera.getComponentOfType(Camera).aspect = width / height;
 }
 
 new ResizeSystem({ canvas, resize }).start();
