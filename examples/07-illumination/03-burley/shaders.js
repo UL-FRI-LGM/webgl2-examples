@@ -60,11 +60,10 @@ float F_Schlick(float f0, float f90, float VdotH) {
 float V_GGX(float NdotL, float NdotV, float roughness) {
     float roughnessSq = roughness * roughness;
 
-    float GGXV = NdotL * sqrt(NdotV * NdotV * (1.0 - roughnessSq) + roughnessSq);
-    float GGXL = NdotV * sqrt(NdotL * NdotL * (1.0 - roughnessSq) + roughnessSq);
+    float GGXV = NdotV + sqrt(NdotV * NdotV * (1.0 - roughnessSq) + roughnessSq);
+    float GGXL = NdotL + sqrt(NdotL * NdotL * (1.0 - roughnessSq) + roughnessSq);
 
-    float GGX = GGXV + GGXL;
-    return clamp(0.5 / GGX, 0.0, 1.0);
+    return 1.0 / (GGXV * GGXL);
 }
 
 float D_GGX(float NdotH, float roughness) {
@@ -87,9 +86,27 @@ float Fd_Burley(float NdotV, float NdotL, float LdotH, float roughness) {
     return lightScatter * viewScatter * (1.0 / PI);
 }
 
-vec3 linearToSRGB(vec3 color) {
+vec3 BRDF_diffuse(vec3 f0, vec3 f90, vec3 diffuseColor, float VdotH) {
+    const float PI = 3.14159265358979;
+    return (1.0 - F_Schlick(f0, f90, VdotH)) * (diffuseColor / PI);
+}
+
+vec3 BRDF_specular(vec3 f0, vec3 f90, float roughness, float VdotH, float NdotL, float NdotV, float NdotH) {
+    vec3 F = F_Schlick(f0, f90, VdotH);
+    float Vis = V_GGX(NdotL, NdotV, roughness);
+    float D = D_GGX(NdotH, roughness);
+
+    return F * Vis * D;
+}
+
+vec3 linearTosRGB(vec3 color) {
     const float gamma = 2.2;
     return pow(color, vec3(1.0 / gamma));
+}
+
+vec3 sRGBToLinear(vec3 color) {
+    const float gamma = 2.2;
+    return pow(color, vec3(gamma));
 }
 
 vec3 getLightIntensity(Light light, vec3 surfacePosition) {
@@ -110,27 +127,21 @@ void main() {
     float LdotH = clamp(dot(L, H), 0.0, 1.0);
     float VdotH = clamp(dot(V, H), 0.0, 1.0);
 
-    vec3 baseColor = texture(uBaseTexture, vTexCoord).rgb;
-    float metalness = texture(uMetalnessTexture, vTexCoord).r;
-    float perceptualRoughness = texture(uRoughnessTexture, vTexCoord).r;
+    vec3 baseColor = texture(uBaseTexture, vTexCoord).rgb * uBaseFactor;
+    float metalness = texture(uMetalnessTexture, vTexCoord).r * uMetalnessFactor;
+    float perceptualRoughness = texture(uRoughnessTexture, vTexCoord).r * uRoughnessFactor;
     float roughness = perceptualRoughness * perceptualRoughness;
 
     vec3 f0 = mix(vec3(0.04), baseColor, metalness);
     vec3 f90 = vec3(1);
     vec3 diffuseColor = mix(baseColor, vec3(0), metalness);
-
-    vec3  F = F_Schlick(f0, f90, VdotH);
-    float Vis = V_GGX(NdotL, NdotV, roughness);
-    float D = D_GGX(NdotH, roughness);
-
-    vec3 diffuse = (vec3(1) - F) * Fd_Lambert() * diffuseColor;
-    vec3 specular = F * Vis * D;
-
     vec3 lightIntensity = getLightIntensity(uLight, vPosition);
 
-    vec3 finalColor = (diffuse + specular) * lightIntensity;
+    vec3 diffuse = lightIntensity * NdotL * BRDF_diffuse(f0, f90, diffuseColor, VdotH);
+    vec3 specular = lightIntensity * NdotL * BRDF_specular(f0, f90, roughness, VdotH, NdotL, NdotV, NdotH);
 
-    oColor = vec4(linearToSRGB(finalColor), 1);
+    vec3 finalColor = diffuse + specular;
+    oColor = vec4(linearTosRGB(finalColor), 1);
 }
 `;
 

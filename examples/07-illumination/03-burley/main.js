@@ -44,34 +44,40 @@ light.addComponent(new Transform({
 light.addComponent(new Light());
 scene.addChild(light);
 
+const white = new ImageData(new Uint8ClampedArray([255, 255, 255, 255]), 1, 1);
+const material = new Material({
+    baseTexture: new Texture({
+        image: await new ImageLoader().load('../../../common/images/grass.png'),
+        sampler: new Sampler({
+            minFilter: 'nearest',
+            magFilter: 'nearest',
+        }),
+    }),
+    metalnessTexture: new Texture({
+        image: white,
+        sampler: new Sampler({
+            minFilter: 'nearest',
+            magFilter: 'nearest',
+        }),
+    }),
+    roughnessTexture: new Texture({
+        image: white,
+        sampler: new Sampler({
+            minFilter: 'nearest',
+            magFilter: 'nearest',
+        }),
+    }),
+    baseFactor: [1, 1, 1, 1],
+    metalnessFactor: 0,
+    roughnessFactor: 0.2,
+});
+
 const model = new Node();
 model.addComponent(new Model({
     primitives: [
         new Primitive({
             mesh: await new JSONLoader().loadMesh('../../../common/models/bunny.json'),
-            material: new Material({
-                baseTexture: new Texture({
-                    image: await new ImageLoader().load('../../../common/images/grass.png'),
-                    sampler: new Sampler({
-                        minFilter: 'nearest',
-                        magFilter: 'nearest',
-                    }),
-                }),
-                metalnessTexture: new Texture({
-                    image: await new ImageLoader().load('../../../common/images/grass.png'),
-                    sampler: new Sampler({
-                        minFilter: 'nearest',
-                        magFilter: 'nearest',
-                    }),
-                }),
-                roughnessTexture: new Texture({
-                    image: await new ImageLoader().load('../../../common/images/grass.png'),
-                    sampler: new Sampler({
-                        minFilter: 'nearest',
-                        magFilter: 'nearest',
-                    }),
-                }),
-            }),
+            material,
         }),
     ],
 }))
@@ -116,5 +122,10 @@ lightAttenuation.open();
 lightAttenuation.add(lightSettings.attenuation, 0, 0, 5).name('constant');
 lightAttenuation.add(lightSettings.attenuation, 1, 0, 2).name('linear');
 lightAttenuation.add(lightSettings.attenuation, 2, 0, 1).name('quadratic');
+
+const materialFolder = gui.addFolder('Material');
+materialFolder.open();
+materialFolder.add(material, 'roughnessFactor', 0, 1);
+materialFolder.add(material, 'metalnessFactor', 0, 1);
 
 document.querySelector('.loader-container').remove();
