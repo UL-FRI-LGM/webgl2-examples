@@ -20,8 +20,8 @@ uniform mat4 uModelMatrix;
 uniform mat4 uCameraMatrix;
 
 layout (location = 0) in vec4 aPosition;
-layout (location = 1) in vec3 aNormal;
-layout (location = 3) in vec2 aTexCoord;
+layout (location = 1) in vec2 aTexCoord;
+layout (location = 2) in vec3 aNormal;
 
 out vec4 vPosition;
 out vec2 vTexCoord;
@@ -40,7 +40,8 @@ precision mediump float;
 precision mediump sampler2D;
 precision mediump sampler2DShadow;
 
-uniform sampler2D uTexture;
+uniform sampler2D uBaseTexture;
+uniform vec4 uBaseFactor;
 uniform sampler2DShadow uDepth;
 uniform mat4 uLightMatrix;
 
@@ -60,7 +61,7 @@ void main() {
     float lambertFactor = max(0.0, -lightSpaceNormal.z);
 
     float shading = mix(0.3, 1.0, lambertFactor * shadowFactor);
-    oColor = texture(uTexture, vTexCoord) * vec4(vec3(shading), 1);
+    oColor = texture(uBaseTexture, vTexCoord) * uBaseFactor * vec4(vec3(shading), 1);
 }
 `;
 
