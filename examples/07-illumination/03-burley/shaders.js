@@ -78,9 +78,9 @@ float Fd_Lambert() {
     return 1.0 / PI;
 }
 
-float Fd_Burley(float NdotV, float NdotL, float LdotH, float roughness) {
+float Fd_Burley(float NdotV, float NdotL, float VdotH, float roughness) {
     const float PI = 3.14159265358979;
-    float f90 = 0.5 + 2.0 * roughness * LdotH * LdotH;
+    float f90 = 0.5 + 2.0 * roughness * VdotH * VdotH;
     float lightScatter = F_Schlick(1.0, f90, NdotL);
     float viewScatter = F_Schlick(1.0, f90, NdotV);
     return lightScatter * viewScatter * (1.0 / PI);
@@ -124,7 +124,6 @@ void main() {
     float NdotL = clamp(dot(N, L), 0.0, 1.0);
     float NdotV = clamp(dot(N, V), 0.0, 1.0);
     float NdotH = clamp(dot(N, H), 0.0, 1.0);
-    float LdotH = clamp(dot(L, H), 0.0, 1.0);
     float VdotH = clamp(dot(V, H), 0.0, 1.0);
 
     vec3 baseColor = texture(uBaseTexture, vTexCoord).rgb * uBaseFactor;
