@@ -4,20 +4,28 @@ import { Transform } from '../core/Transform.js';
 
 export class FirstPersonController {
 
-    constructor(node, domElement) {
+    constructor(node, domElement, {
+        pitch = 0,
+        yaw = 0,
+        velocity = [0, 0, 0],
+        acceleration = 50,
+        maxSpeed = 5,
+        decay = 0.99999,
+        pointerSensitivity = 0.002,
+    } = {}) {
         this.node = node;
         this.domElement = domElement;
 
         this.keys = {};
 
-        this.pitch = 0;
-        this.yaw = 0;
+        this.pitch = pitch;
+        this.yaw = yaw;
 
-        this.velocity = [0, 0, 0];
-        this.acceleration = 20;
-        this.maxSpeed = 3;
-        this.decay = 0.9;
-        this.pointerSensitivity = 0.002;
+        this.velocity = velocity;
+        this.acceleration = acceleration;
+        this.maxSpeed = maxSpeed;
+        this.decay = decay;
+        this.pointerSensitivity = pointerSensitivity;
 
         this.initHandlers();
     }

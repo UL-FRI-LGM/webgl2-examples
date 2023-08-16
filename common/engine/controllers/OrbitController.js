@@ -4,15 +4,20 @@ import { Transform } from '../core/Transform.js';
 
 export class OrbitController {
 
-    constructor(node, domElement) {
+    constructor(node, domElement, {
+        rotation = [0, 0, 0, 1],
+        distance = 2,
+        moveSensitivity = 0.004,
+        zoomSensitivity = 0.002,
+    } = {}) {
         this.node = node;
         this.domElement = domElement;
 
-        this.rotation = [0, 0, 0, 1];
-        this.distance = 2;
+        this.rotation = rotation;
+        this.distance = distance;
 
-        this.moveSensitivity = 0.004;
-        this.zoomSensitivity = 0.002;
+        this.moveSensitivity = moveSensitivity;
+        this.zoomSensitivity = zoomSensitivity;
 
         this.initHandlers();
     }
