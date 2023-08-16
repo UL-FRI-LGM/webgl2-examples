@@ -289,12 +289,14 @@ export class GLTFLoader {
         const componentNormalized = gltfSpec.normalized ?? false;
 
         const stride = bufferView.byteStride ?? (componentSize * componentCount);
-        const offset = (bufferView.byteOffset ?? 0) + (gltfSpec.byteOffset ?? 0);
-        const byteLength = bufferView.byteLength;
+        const offset = gltfSpec.byteOffset ?? 0;
+        const viewOffset = bufferView.byteOffset ?? 0;
+        const viewLength = bufferView.byteLength;
 
         const accessor = new Accessor({
             buffer,
-            byteLength,
+            viewLength,
+            viewOffset,
             offset,
             stride,
 

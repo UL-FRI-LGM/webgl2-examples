@@ -2,7 +2,8 @@ export class Accessor {
 
     constructor({
         buffer,
-        byteLength,
+        viewLength,
+        viewOffset = 0,
         offset = 0,
         stride = componentSize,
 
@@ -28,16 +29,16 @@ export class Accessor {
             componentSigned,
         });
 
-        if (byteLength !== undefined) {
-            this.view = new viewType(buffer, offset, byteLength / viewType.BYTES_PER_ELEMENT);
+        if (viewLength !== undefined) {
+            this.view = new viewType(buffer, viewOffset, viewLength / viewType.BYTES_PER_ELEMENT);
         } else {
-            this.view = new viewType(buffer, offset);
+            this.view = new viewType(buffer, viewOffset);
         }
 
         this.offsetInElements = offset / viewType.BYTES_PER_ELEMENT;
         this.strideInElements = stride / viewType.BYTES_PER_ELEMENT;
 
-        this.count = Math.floor(this.view.length / this.strideInElements);
+        this.count = Math.floor((this.view.length - this.offsetInElements) / this.strideInElements);
 
         this.normalize = this.getNormalizer({
             componentType,
@@ -55,13 +56,13 @@ export class Accessor {
     }
 
     get(index) {
-        const start = index * this.strideInElements;
+        const start = index * this.strideInElements + this.offsetInElements;
         const end = start + this.componentCount;
         return [...this.view.slice(start, end)].map(this.normalize);
     }
 
     set(index, value) {
-        const start = index * this.strideInElements;
+        const start = index * this.strideInElements + this.offsetInElements;
         this.view.set(value.map(this.denormalize), start);
     }
 
