@@ -1,74 +1,84 @@
 import { GUI } from '../../../lib/dat.gui.module.js';
-import { mat4 } from '../../../lib/gl-matrix-module.js';
 
 import { ResizeSystem } from '../../../common/engine/systems/ResizeSystem.js';
 import { UpdateSystem } from '../../../common/engine/systems/UpdateSystem.js';
 
-import { Node } from '../../../common/engine/core/Node.js';
-import { Camera } from '../../../common/engine/core/Camera.js';
-import { Transform } from '../../../common/engine/core/Transform.js';
+import { ImageLoader } from '../../../common/engine/loaders/ImageLoader.js';
+import { JSONLoader } from '../../../common/engine/loaders/JSONLoader.js';
 
 import { OrbitController } from '../../../common/engine/controllers/OrbitController.js';
-import { loadTexture, loadMesh } from '../../../common/engine/BasicLoaders.js';
+
+import {
+    Camera,
+    Material,
+    Model,
+    Node,
+    Primitive,
+    Sampler,
+    Texture,
+    Transform,
+} from '../../../common/engine/core.js';
 
 import { Renderer } from './Renderer.js';
-import { Material } from './Material.js';
 import { Light } from './Light.js';
 
 const canvas = document.querySelector('canvas');
 const gl = canvas.getContext('webgl2');
-
 const renderer = new Renderer(gl);
 
-const root = new Node();
+const scene = new Node();
 
 const camera = new Node();
-root.addChild(camera);
-
-camera.addComponent(new Transform({
-    translation: [0, 2, 5],
-}));
-
+camera.addComponent(new Transform());
 camera.addComponent(new Camera({
     near: 0.1,
     far: 100,
 }));
-
-const cameraController = new OrbitController(camera, canvas);
+camera.addComponent(new OrbitController(camera, canvas));
+scene.addChild(camera);
 
 const light = new Node();
-root.addChild(light);
-
 light.addComponent(new Transform({
     translation: [0, 2, 1],
 }));
-
 light.addComponent(new Light());
+scene.addChild(light);
+
+const material = new Material({
+    baseTexture: new Texture({
+        image: await new ImageLoader().load('../../../common/images/grass.png'),
+        sampler: new Sampler({
+            minFilter: 'nearest',
+            magFilter: 'nearest',
+        }),
+    }),
+});
+
+material.diffuse = 1;
+material.specular = 1;
+material.shininess = 50;
 
 const model = new Node();
-root.addChild(model);
-
-const material = new Material();
-model.addComponent(material);
-
-const [mesh, texture, envmap] = await Promise.all([
-    loadMesh(gl, '../../../common/models/bunny.json'),
-    loadTexture(gl, '../../../common/images/grass.png', {
-        mip: true,
-        min: gl.NEAREST_MIPMAP_NEAREST,
-        mag: gl.NEAREST,
-    }),
-]);
-
-model.mesh = mesh;
-material.texture = texture;
+model.addComponent(new Model({
+    primitives: [
+        new Primitive({
+            mesh: await new JSONLoader().loadMesh('../../../common/models/bunny.json'),
+            material,
+        }),
+    ],
+}))
+scene.addChild(model);
 
 function update(time, dt) {
-    cameraController.update(dt);
+    scene.traverse(node => {
+        for (const component of node.components) {
+            component.update?.(time, dt);
+        }
+    });
 }
 
 function render() {
-    renderer.render(root, camera, light);
+    renderer.render(scene, camera, light);
 }
 
 function resize({ displaySize: { width, height }}) {

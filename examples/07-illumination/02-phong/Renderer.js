@@ -2,53 +2,35 @@ import { vec3, mat4 } from '../../../lib/gl-matrix-module.js';
 
 import * as WebGL from '../../../common/engine/WebGL.js';
 
-import { Camera } from '../../../common/engine/core/Camera.js';
-import { Transform } from '../../../common/engine/core/Transform.js';
+import { BaseRenderer } from '../../../common/engine/renderers/BaseRenderer.js';
+
+import {
+    getLocalModelMatrix,
+    getGlobalModelMatrix,
+    getGlobalViewMatrix,
+    getProjectionMatrix,
+    getModels,
+} from '../../../common/engine/core/SceneUtils.js';
 
 import { Light } from './Light.js';
-import { Material } from './Material.js';
 
 import { shaders } from './shaders.js';
 
-export class Renderer {
+export class Renderer extends BaseRenderer {
 
     constructor(gl) {
-        this.gl = gl;
+        super(gl);
 
         gl.clearColor(1, 1, 1, 1);
         gl.enable(gl.DEPTH_TEST);
         gl.enable(gl.CULL_FACE);
 
         this.programs = WebGL.buildPrograms(gl, shaders);
+
         this.perFragment = true;
         this.currentProgram = this.perFragment
             ? this.programs.perFragment
             : this.programs.perVertex;
-    }
-
-    getLocalMatrix(node) {
-        const transform = node.getComponentOfType(Transform);
-        return transform ? transform.matrix : mat4.create();
-    }
-
-    getGlobalMatrix(node) {
-        const localMatrix = this.getLocalMatrix(node);
-        if (!node.parent) {
-            return localMatrix;
-        } else {
-            const globalMatrix = this.getGlobalMatrix(node.parent);
-            return mat4.mul(globalMatrix, globalMatrix, localMatrix);
-        }
-    }
-
-    getViewMatrix(node) {
-        const globalMatrix = this.getGlobalMatrix(node);
-        return mat4.invert(globalMatrix, globalMatrix);
-    }
-
-    getProjectionMatrix(node) {
-        const camera = node.getComponentOfType(Camera);
-        return camera ? camera.projectionMatrix : mat4.create();
     }
 
     render(scene, camera, light) {
@@ -60,21 +42,21 @@ export class Renderer {
         const { program, uniforms } = this.currentProgram;
         gl.useProgram(program);
 
-        const viewMatrix = this.getViewMatrix(camera);
-        const projectionMatrix = this.getProjectionMatrix(camera);
+        const viewMatrix = getGlobalViewMatrix(camera);
+        const projectionMatrix = getProjectionMatrix(camera);
 
         gl.uniformMatrix4fv(uniforms.uViewMatrix, false, viewMatrix);
         gl.uniformMatrix4fv(uniforms.uProjectionMatrix, false, projectionMatrix);
 
         gl.uniform3fv(uniforms.uCameraPosition,
-            mat4.getTranslation(vec3.create(), this.getGlobalMatrix(camera)));
+            mat4.getTranslation(vec3.create(), getGlobalModelMatrix(camera)));
 
         const lightComponent = light.getComponentOfType(Light);
 
         gl.uniform3fv(uniforms.uLight.color,
             vec3.scale(vec3.create(), lightComponent.color, lightComponent.intensity / 255));
         gl.uniform3fv(uniforms.uLight.position,
-            mat4.getTranslation(vec3.create(), this.getGlobalMatrix(light)));
+            mat4.getTranslation(vec3.create(), getGlobalModelMatrix(light)));
         gl.uniform3fv(uniforms.uLight.attenuation, lightComponent.attenuation);
 
         this.renderNode(scene);
@@ -83,32 +65,49 @@ export class Renderer {
     renderNode(node, modelMatrix = mat4.create()) {
         const gl = this.gl;
 
-        const localMatrix = this.getLocalMatrix(node);
-        modelMatrix = mat4.mul(mat4.create(), modelMatrix, localMatrix);
-
         const { uniforms } = this.currentProgram;
 
-        const material = node.getComponentOfType(Material);
+        const localMatrix = getLocalModelMatrix(node);
+        modelMatrix = mat4.mul(mat4.create(), modelMatrix, localMatrix);
+        gl.uniformMatrix4fv(uniforms.uModelMatrix, false, modelMatrix);
 
-        if (node.mesh && material) {
-            gl.bindVertexArray(node.mesh.vao);
-
-            gl.uniformMatrix4fv(uniforms.uModelMatrix, false, modelMatrix);
-
-            gl.activeTexture(gl.TEXTURE0);
-            gl.uniform1i(uniforms.uTexture, 0);
-            gl.bindTexture(gl.TEXTURE_2D, material.texture);
-
-            gl.uniform1f(uniforms.uMaterial.diffuse, material.diffuse);
-            gl.uniform1f(uniforms.uMaterial.specular, material.specular);
-            gl.uniform1f(uniforms.uMaterial.shininess, material.shininess);
-
-            gl.drawElements(gl.TRIANGLES, node.mesh.indices, gl.UNSIGNED_SHORT, 0);
+        const models = getModels(node);
+        for (const model of models) {
+            for (const primitive of model.primitives) {
+                this.renderPrimitive(primitive);
+            }
         }
 
         for (const child of node.children) {
             this.renderNode(child, modelMatrix);
         }
+    }
+
+    renderPrimitive(primitive) {
+        const gl = this.gl;
+
+        const { program, uniforms } = this.currentProgram;
+
+        const vao = this.prepareMesh(primitive.mesh);
+        gl.bindVertexArray(vao);
+
+        const material = primitive.material;
+        gl.uniform4fv(uniforms.uBaseFactor, material.baseFactor);
+
+        gl.activeTexture(gl.TEXTURE0);
+        gl.uniform1i(uniforms.uBaseTexture, 0);
+
+        const glTexture = this.prepareImage(material.baseTexture.image);
+        const glSampler = this.prepareSampler(material.baseTexture.sampler);
+
+        gl.bindTexture(gl.TEXTURE_2D, glTexture);
+        gl.bindSampler(0, glSampler);
+
+        gl.uniform1f(uniforms.uMaterial.diffuse, material.diffuse);
+        gl.uniform1f(uniforms.uMaterial.specular, material.specular);
+        gl.uniform1f(uniforms.uMaterial.shininess, material.shininess);
+
+        gl.drawElements(gl.TRIANGLES, primitive.mesh.indices.length, gl.UNSIGNED_INT, 0);
     }
 
 }
