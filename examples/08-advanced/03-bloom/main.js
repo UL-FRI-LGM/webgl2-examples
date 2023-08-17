@@ -4,68 +4,94 @@ import { vec3, mat4, quat } from '../../../lib/gl-matrix-module.js';
 import { ResizeSystem } from '../../../common/engine/systems/ResizeSystem.js';
 import { UpdateSystem } from '../../../common/engine/systems/UpdateSystem.js';
 
-import { Node } from '../../../common/engine/core/Node.js';
-import { Camera } from '../../../common/engine/core/Camera.js';
-import { Transform } from '../../../common/engine/core/Transform.js';
+import { ImageLoader } from '../../../common/engine/loaders/ImageLoader.js';
+import { JSONLoader } from '../../../common/engine/loaders/JSONLoader.js';
 
 import { OrbitController } from '../../../common/engine/controllers/OrbitController.js';
+
+import {
+    Camera,
+    Material,
+    Model,
+    Node,
+    Primitive,
+    Sampler,
+    Texture,
+    Transform,
+} from '../../../common/engine/core.js';
+
 import { loadTexture, loadMesh } from '../../../common/engine/BasicLoaders.js';
 
 import { Renderer } from './Renderer.js';
 
 const canvas = document.querySelector('canvas');
 const gl = canvas.getContext('webgl2');
-
 const renderer = new Renderer(gl);
 
 const scene = new Node();
 
 const camera = new Node();
-scene.addChild(camera);
-
 camera.addComponent(new Transform());
-camera.addComponent(new Camera());
-
-const cameraController = new OrbitController(camera, canvas);
-cameraController.distance = 10;
+camera.addComponent(new Camera({
+    near: 0.1,
+    far: 100,
+}));
+camera.addComponent(new OrbitController(camera, canvas, {
+    distance: 10,
+}));
+scene.addChild(camera);
 
 const cubeRoot = new Node();
 scene.addChild(cubeRoot);
 
-const [cubeMesh, cubeDiffuseTexture, cubeEmissionTexture] = await Promise.all([
-    loadMesh(gl, '../../../common/models/cube.json'),
-    loadTexture(gl, '../../../common/images/crate-diffuse.png', {
-        mip: true,
-        iformat: gl.SRGB8_ALPHA8,
-        min: gl.NEAREST_MIPMAP_NEAREST,
-        mag: gl.NEAREST,
-    }),
-    loadTexture(gl, '../../../common/images/crate-emission.png', {
-        mip: true,
-        iformat: gl.SRGB8_ALPHA8,
-        min: gl.NEAREST_MIPMAP_NEAREST,
-        mag: gl.NEAREST,
-    }),
+const [cubeMesh, cubeDiffuse, cubeEmission] = await Promise.all([
+    new JSONLoader().loadMesh('../../../common/models/cube.json'),
+    new ImageLoader().load('../../../common/images/crate-diffuse.png'),
+    new ImageLoader().load('../../../common/images/crate-emission.png'),
 ]);
+
+const cubeModel = new Model({
+    primitives: [
+        new Primitive({
+            mesh: cubeMesh,
+            material: new Material({
+                baseTexture: new Texture({
+                    image: cubeDiffuse,
+                    sampler: new Sampler({
+                        minFilter: 'nearest',
+                        magFilter: 'nearest',
+                    }),
+                }),
+                emissionTexture: new Texture({
+                    image: cubeEmission,
+                    sampler: new Sampler({
+                        minFilter: 'nearest',
+                        magFilter: 'nearest',
+                    }),
+                }),
+            }),
+        }),
+    ],
+});
 
 const cubeCount = 100;
 for (let i = 0; i < cubeCount; i++) {
     const cube = new Node();
-    cubeRoot.addChild(cube);
-
     cube.addComponent(new Transform({
         translation: vec3.random(vec3.create(), Math.random() * 5),
         rotation: quat.random(quat.create()),
         scale: vec3.scale(vec3.create(), [1, 1, 1], 0.1 + Math.random()),
     }));
-
-    cube.diffuseTexture = cubeDiffuseTexture;
-    cube.emissionTexture = cubeEmissionTexture;
-    cube.mesh = cubeMesh;
+    cube.addComponent(cubeModel);
+    cubeRoot.addChild(cube);
 }
 
-function update() {
-    cameraController.update();
+function update(time, dt) {
+    scene.traverse(node => {
+        for (const component of node.components) {
+            component.update?.(time, dt);
+        }
+    });
 }
 
 function render() {

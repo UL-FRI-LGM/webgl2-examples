@@ -2,17 +2,22 @@ import { vec3, mat4 } from '../../../lib/gl-matrix-module.js';
 
 import * as WebGL from '../../../common/engine/WebGL.js';
 
-import { Camera } from '../../../common/engine/core/Camera.js';
-import { Transform } from '../../../common/engine/core/Transform.js';
+import { BaseRenderer } from '../../../common/engine/renderers/BaseRenderer.js';
+
+import {
+    getLocalModelMatrix,
+    getGlobalModelMatrix,
+    getGlobalViewMatrix,
+    getProjectionMatrix,
+    getModels,
+} from '../../../common/engine/core/SceneUtils.js';
 
 import { shaders } from './shaders.js';
 
-export class Renderer {
+export class Renderer extends BaseRenderer {
 
     constructor(gl) {
-        this.gl = gl;
-
-        gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, gl.NONE);
+        super(gl);
 
         gl.clearColor(0, 0, 0, 1);
         gl.enable(gl.DEPTH_TEST);
@@ -34,31 +39,6 @@ export class Renderer {
         this.bloomBuffers = [];
 
         this.createGeometryBuffer();
-    }
-
-    getLocalMatrix(node) {
-        const transform = node.getComponentOfType(Transform);
-        return transform ? transform.matrix : mat4.create();
-    }
-
-    getGlobalMatrix(node) {
-        const localMatrix = this.getLocalMatrix(node);
-        if (!node.parent) {
-            return localMatrix;
-        } else {
-            const globalMatrix = this.getGlobalMatrix(node.parent);
-            return mat4.mul(globalMatrix, globalMatrix, localMatrix);
-        }
-    }
-
-    getViewMatrix(node) {
-        const globalMatrix = this.getGlobalMatrix(node);
-        return mat4.invert(globalMatrix, globalMatrix);
-    }
-
-    getProjectionMatrix(node) {
-        const camera = node.getComponentOfType(Camera);
-        return camera ? camera.projectionMatrix : mat4.create();
     }
 
     resize(width, height) {
@@ -89,15 +69,17 @@ export class Renderer {
         const { program, uniforms } = this.programs.renderGeometryBuffer;
         gl.useProgram(program);
 
-        const viewMatrix = this.getViewMatrix(camera);
-        const projectionMatrix = this.getProjectionMatrix(camera);
-        const matrix = mat4.mul(mat4.create(), projectionMatrix, viewMatrix);
+        const viewMatrix = getGlobalViewMatrix(camera);
+        const projectionMatrix = getProjectionMatrix(camera);
+
+        gl.uniformMatrix4fv(uniforms.uViewMatrix, false, viewMatrix);
+        gl.uniformMatrix4fv(uniforms.uProjectionMatrix, false, projectionMatrix);
 
         gl.uniform1f(uniforms.uEmissionStrength, this.emissionStrength);
         gl.uniform1f(uniforms.uExposure, this.preExposure);
 
         for (const node of scene.children) {
-            this.renderNode(node, matrix, uniforms);
+            this.renderNode(node);
         }
     }
 
@@ -114,6 +96,7 @@ export class Renderer {
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this.geometryBuffer.colorTexture);
         gl.uniform1i(uniforms.uColor, 0);
+        gl.bindSampler(0, null);
 
         gl.uniform1f(uniforms.uBloomThreshold, this.bloomThreshold);
         gl.uniform1f(uniforms.uBloomKnee, this.bloomKnee);
@@ -138,6 +121,7 @@ export class Renderer {
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, this.bloomBuffers[i - 1].texture);
             gl.uniform1i(uniforms.uColor, 0);
+            gl.bindSampler(0, null);
 
             gl.drawArrays(gl.TRIANGLES, 0, 3);
         }
@@ -157,6 +141,7 @@ export class Renderer {
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, this.bloomBuffers[i + 1].texture);
             gl.uniform1i(uniforms.uColor, 0);
+            gl.bindSampler(0, null);
 
             gl.uniform1f(uniforms.uBloomIntensity, this.bloomIntensity);
 
@@ -176,6 +161,7 @@ export class Renderer {
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this.geometryBuffer.colorTexture);
         gl.uniform1i(uniforms.uColor, 0);
+        gl.bindSampler(0, null);
 
         gl.uniform1f(uniforms.uBloomIntensity, 1);
 
@@ -201,6 +187,7 @@ export class Renderer {
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this.bloomBuffers[0].texture);
         gl.uniform1i(uniforms.uColor, 0);
+        gl.bindSampler(0, null);
 
         gl.uniform1f(uniforms.uExposure, this.postExposure);
         gl.uniform1f(uniforms.uGamma, this.gamma);
@@ -208,30 +195,54 @@ export class Renderer {
         gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
 
-    renderNode(node, matrix, uniforms) {
+    renderNode(node, modelMatrix = mat4.create()) {
         const gl = this.gl;
 
-        const localMatrix = this.getLocalMatrix(node);
-        matrix = mat4.mul(mat4.create(), matrix, localMatrix);
+        const { uniforms } = this.programs.renderGeometryBuffer;
 
-        if (node.mesh) {
-            gl.bindVertexArray(node.mesh.vao);
-            gl.uniformMatrix4fv(uniforms.uProjectionViewModel, false, matrix);
+        const localMatrix = getLocalModelMatrix(node);
+        modelMatrix = mat4.mul(mat4.create(), modelMatrix, localMatrix);
+        gl.uniformMatrix4fv(uniforms.uModelMatrix, false, modelMatrix);
 
-            gl.activeTexture(gl.TEXTURE0);
-            gl.bindTexture(gl.TEXTURE_2D, node.diffuseTexture);
-            gl.uniform1i(uniforms.uDiffuse, 0);
-
-            gl.activeTexture(gl.TEXTURE1);
-            gl.bindTexture(gl.TEXTURE_2D, node.emissionTexture);
-            gl.uniform1i(uniforms.uEmission, 1);
-
-            gl.drawElements(gl.TRIANGLES, node.mesh.indices, gl.UNSIGNED_SHORT, 0);
+        const models = getModels(node);
+        for (const model of models) {
+            for (const primitive of model.primitives) {
+                this.renderPrimitive(primitive);
+            }
         }
 
         for (const child of node.children) {
-            this.renderNode(child, matrix, uniforms);
+            this.renderNode(child, modelMatrix);
         }
+    }
+
+    renderPrimitive(primitive) {
+        const gl = this.gl;
+
+        const { uniforms } = this.programs.renderGeometryBuffer;
+
+        const vao = this.prepareMesh(primitive.mesh);
+        gl.bindVertexArray(vao);
+
+        const material = primitive.material;
+        gl.uniform4fv(uniforms.uBaseFactor, material.baseFactor);
+
+        const baseTexture = this.prepareImage(material.baseTexture.image);
+        const baseSampler = this.prepareSampler(material.baseTexture.sampler);
+        const emissionTexture = this.prepareImage(material.emissionTexture.image);
+        const emissionSampler = this.prepareSampler(material.emissionTexture.sampler);
+
+        gl.activeTexture(gl.TEXTURE0);
+        gl.uniform1i(uniforms.uBaseTexture, 0);
+        gl.bindTexture(gl.TEXTURE_2D, baseTexture);
+        gl.bindSampler(0, baseSampler);
+
+        gl.activeTexture(gl.TEXTURE1);
+        gl.uniform1i(uniforms.uEmissionTexture, 1);
+        gl.bindTexture(gl.TEXTURE_2D, emissionTexture);
+        gl.bindSampler(1, emissionSampler);
+
+        gl.drawElements(gl.TRIANGLES, primitive.mesh.indices.length, gl.UNSIGNED_INT, 0);
     }
 
     createGeometryBuffer() {

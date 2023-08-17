@@ -1,15 +1,16 @@
 const renderGeometryBufferVertex = `#version 300 es
-
-uniform mat4 uProjectionViewModel;
-
 layout (location = 0) in vec4 aPosition;
-layout (location = 3) in vec2 aTexCoord;
+layout (location = 1) in vec2 aTexCoord;
+
+uniform mat4 uModelMatrix;
+uniform mat4 uViewMatrix;
+uniform mat4 uProjectionMatrix;
 
 out vec2 vTexCoord;
 
 void main() {
     vTexCoord = aTexCoord;
-    gl_Position = uProjectionViewModel * aPosition;
+    gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * aPosition;
 }
 `;
 
@@ -17,8 +18,8 @@ const renderGeometryBufferFragment = `#version 300 es
 precision mediump float;
 precision mediump sampler2D;
 
-uniform sampler2D uDiffuse;
-uniform sampler2D uEmission;
+uniform sampler2D uBaseTexture;
+uniform sampler2D uEmissionTexture;
 
 uniform float uEmissionStrength;
 uniform float uExposure;
@@ -28,8 +29,8 @@ in vec2 vTexCoord;
 out vec4 oColor;
 
 void main() {
-    vec3 diffuse = texture(uDiffuse, vTexCoord).rgb;
-    vec3 emission = texture(uEmission, vTexCoord).rgb;
+    vec3 diffuse = pow(texture(uBaseTexture, vTexCoord).rgb, vec3(2.2));
+    vec3 emission = pow(texture(uEmissionTexture, vTexCoord).rgb, vec3(2.2));
 
     vec3 color = diffuse + uEmissionStrength * emission;
     oColor = vec4(color * uExposure, 1);
