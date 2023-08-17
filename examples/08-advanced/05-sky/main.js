@@ -1,34 +1,32 @@
 import { GUI } from '../../../lib/dat.gui.module.js';
-import { mat4 } from '../../../lib/gl-matrix-module.js';
 
 import { ResizeSystem } from '../../../common/engine/systems/ResizeSystem.js';
 import { UpdateSystem } from '../../../common/engine/systems/UpdateSystem.js';
 
-import { Node } from '../../../common/engine/core/Node.js';
-import { Camera } from '../../../common/engine/core/Camera.js';
-import { Transform } from '../../../common/engine/core/Transform.js';
+import { TurntableController } from '../../../common/engine/controllers/TurntableController.js';
 
-import { OrbitController } from '../../../common/engine/controllers/OrbitController.js';
+import {
+    Camera,
+    Node,
+    Transform,
+} from '../../../common/engine/core.js';
 
 import { Renderer } from './Renderer.js';
 
 const canvas = document.querySelector('canvas');
 const gl = canvas.getContext('webgl2');
-
 const renderer = new Renderer(gl);
 
 const camera = new Node();
-
 camera.addComponent(new Transform());
 camera.addComponent(new Camera({
     near: 0.1,
     far: 100,
 }));
-
-const cameraController = new OrbitController(camera, canvas);
+const cameraController = new TurntableController(camera, canvas);
 
 function update(time, dt) {
-    cameraController.update(dt);
+    cameraController.update(time, dt);
 }
 
 function render() {
