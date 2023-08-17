@@ -4,12 +4,21 @@ import { mat4, vec3, quat } from '../../../lib/gl-matrix-module.js';
 import { ResizeSystem } from '../../../common/engine/systems/ResizeSystem.js';
 import { UpdateSystem } from '../../../common/engine/systems/UpdateSystem.js';
 
-import { Node } from '../../../common/engine/core/Node.js';
-import { Camera } from '../../../common/engine/core/Camera.js';
-import { Transform } from '../../../common/engine/core/Transform.js';
+import { ImageLoader } from '../../../common/engine/loaders/ImageLoader.js';
+import { JSONLoader } from '../../../common/engine/loaders/JSONLoader.js';
 
 import { OrbitController } from '../../../common/engine/controllers/OrbitController.js';
-import { loadTexture, loadMesh } from '../../../common/engine/BasicLoaders.js';
+
+import {
+    Camera,
+    Material,
+    Model,
+    Node,
+    Primitive,
+    Sampler,
+    Texture,
+    Transform,
+} from '../../../common/engine/core.js';
 
 import { Renderer } from './Renderer.js';
 
@@ -21,43 +30,61 @@ const renderer = new Renderer(gl);
 const scene = new Node();
 
 const camera = new Node();
-scene.addChild(camera);
-
 camera.addComponent(new Transform());
-camera.addComponent(new Camera());
-
-const cameraController = new OrbitController(camera, canvas);
-cameraController.distance = 10;
+camera.addComponent(new Camera({
+    near: 0.1,
+    far: 100,
+}));
+camera.addComponent(new OrbitController(camera, canvas, {
+    distance: 10,
+}));
+scene.addChild(camera);
 
 const cubeRoot = new Node();
 scene.addChild(cubeRoot);
 
-const [cubeMesh, cubeTexture] = await Promise.all([
-    loadMesh(gl, '../../../common/models/cube.json'),
-    loadTexture(gl, '../../../common/images/crate-diffuse.png', {
-        mip: true,
-        min: gl.NEAREST_MIPMAP_NEAREST,
-        mag: gl.NEAREST,
-    }),
+const [cubeMesh, cubeImage] = await Promise.all([
+    new JSONLoader().loadMesh('../../../common/models/cube.json'),
+    new ImageLoader().load('../../../common/images/crate-diffuse.png'),
 ]);
+
+const cubeMaterial = new Material({
+    baseTexture: new Texture({
+        image: cubeImage,
+        sampler: new Sampler({
+            minFilter: 'nearest',
+            magFilter: 'nearest',
+        }),
+    }),
+});
+
+const cubeModel = new Model({
+    primitives: [
+        new Primitive({
+            mesh: cubeMesh,
+            material: cubeMaterial,
+        }),
+    ],
+});
 
 const cubeCount = 100;
 for (let i = 0; i < cubeCount; i++) {
     const cube = new Node();
-    cubeRoot.addChild(cube);
-
     cube.addComponent(new Transform({
         translation: vec3.random(vec3.create(), Math.random() * 5),
         rotation: quat.random(quat.create()),
         scale: vec3.scale(vec3.create(), [1, 1, 1], 0.1 + Math.random()),
     }));
-
-    cube.texture = cubeTexture;
-    cube.mesh = cubeMesh;
+    cube.addComponent(cubeModel);
+    cubeRoot.addChild(cube);
 }
 
-function update() {
-    cameraController.update();
+function update(time, dt) {
+    scene.traverse(node => {
+        for (const component of node.components) {
+            component.update?.(time, dt);
+        }
+    });
 }
 
 function render() {

@@ -2,15 +2,22 @@ import { vec3, mat4 } from '../../../lib/gl-matrix-module.js';
 
 import * as WebGL from '../../../common/engine/WebGL.js';
 
-import { Camera } from '../../../common/engine/core/Camera.js';
-import { Transform } from '../../../common/engine/core/Transform.js';
+import { BaseRenderer } from '../../../common/engine/renderers/BaseRenderer.js';
+
+import {
+    getLocalModelMatrix,
+    getGlobalModelMatrix,
+    getGlobalViewMatrix,
+    getProjectionMatrix,
+    getModels,
+} from '../../../common/engine/core/SceneUtils.js';
 
 import { shaders } from './shaders.js';
 
-export class Renderer {
+export class Renderer extends BaseRenderer {
 
     constructor(gl) {
-        this.gl = gl;
+        super(gl);
 
         gl.clearColor(1, 1, 1, 1);
         gl.enable(gl.DEPTH_TEST);
@@ -26,7 +33,7 @@ export class Renderer {
         this.occlusionSampleCount = 32;
         this.occlusionScale = 0.5;
         this.occlusionRange = 1;
-        this.depthBias = 0.2;
+        this.depthBias = 0.01;
 
         this.noOcclusion = WebGL.createTexture(gl, {
             width: 1,
@@ -55,31 +62,6 @@ export class Renderer {
         this.createSSAOSamples();
     }
 
-    getLocalMatrix(node) {
-        const transform = node.getComponentOfType(Transform);
-        return transform ? transform.matrix : mat4.create();
-    }
-
-    getGlobalMatrix(node) {
-        const localMatrix = this.getLocalMatrix(node);
-        if (!node.parent) {
-            return localMatrix;
-        } else {
-            const globalMatrix = this.getGlobalMatrix(node.parent);
-            return mat4.mul(globalMatrix, globalMatrix, localMatrix);
-        }
-    }
-
-    getViewMatrix(node) {
-        const globalMatrix = this.getGlobalMatrix(node);
-        return mat4.invert(globalMatrix, globalMatrix);
-    }
-
-    getProjectionMatrix(node) {
-        const camera = node.getComponentOfType(Camera);
-        return camera ? camera.projectionMatrix : mat4.create();
-    }
-
     resize(width, height) {
         this.createGeometryBuffer();
         this.createSSAOBuffer();
@@ -105,13 +87,14 @@ export class Renderer {
         const { program, uniforms } = this.programs.renderGeometryBuffer;
         gl.useProgram(program);
 
-        const viewMatrix = this.getViewMatrix(camera);
-        const projectionMatrix = this.getProjectionMatrix(camera);
+        const viewMatrix = getGlobalViewMatrix(camera);
+        const projectionMatrix = getProjectionMatrix(camera);
 
+        gl.uniformMatrix4fv(uniforms.uViewMatrix, false, viewMatrix);
         gl.uniformMatrix4fv(uniforms.uProjectionMatrix, false, projectionMatrix);
 
         for (const node of scene.children) {
-            this.renderNode(node, viewMatrix, uniforms);
+            this.renderNode(node);
         }
     }
 
@@ -128,7 +111,7 @@ export class Renderer {
         const { program, uniforms } = this.programs.ssao;
         gl.useProgram(program);
 
-        const projectionMatrix = this.getProjectionMatrix(camera);
+        const projectionMatrix = getProjectionMatrix(camera);
         gl.uniformMatrix4fv(uniforms.uProjectionMatrix, false, projectionMatrix);
 
         gl.uniform1i(uniforms.uOcclusionSampleCount, this.occlusionSampleCount);
@@ -139,14 +122,17 @@ export class Renderer {
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this.ssaoSamples);
         gl.uniform1i(uniforms.uOcclusionSamples, 0);
+        gl.bindSampler(0, null);
 
         gl.activeTexture(gl.TEXTURE1);
         gl.bindTexture(gl.TEXTURE_2D, this.geometryBuffer.positionTexture);
         gl.uniform1i(uniforms.uPosition, 1);
+        gl.bindSampler(1, null);
 
         gl.activeTexture(gl.TEXTURE2);
         gl.bindTexture(gl.TEXTURE_2D, this.geometryBuffer.normalTexture);
         gl.uniform1i(uniforms.uNormal, 2);
+        gl.bindSampler(2, null);
 
         gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
@@ -169,36 +155,62 @@ export class Renderer {
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this.colorEnabled ? this.geometryBuffer.colorTexture : this.noColor);
         gl.uniform1i(uniforms.uColor, 0);
+        gl.bindSampler(0, null);
 
         gl.activeTexture(gl.TEXTURE1);
         gl.bindTexture(gl.TEXTURE_2D, this.occlusionEnabled ? this.ssaoBuffer.texture : this.noOcclusion);
         gl.uniform1i(uniforms.uAmbient, 1);
+        gl.bindSampler(1, null);
 
         gl.activeTexture(gl.TEXTURE2);
         gl.bindTexture(gl.TEXTURE_2D, this.geometryBuffer.normalTexture);
         gl.uniform1i(uniforms.uNormal, 2);
+        gl.bindSampler(2, null);
 
         gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
 
-    renderNode(node, matrix, uniforms) {
+    renderNode(node, modelMatrix = mat4.create()) {
         const gl = this.gl;
 
-        const localMatrix = this.getLocalMatrix(node);
-        matrix = mat4.mul(mat4.create(), matrix, localMatrix);
+        const { uniforms } = this.programs.renderGeometryBuffer;
 
-        if (node.mesh) {
-            gl.bindVertexArray(node.mesh.vao);
-            gl.uniformMatrix4fv(uniforms.uViewModelMatrix, false, matrix);
-            gl.activeTexture(gl.TEXTURE0);
-            gl.bindTexture(gl.TEXTURE_2D, node.texture);
-            gl.uniform1i(uniforms.uTexture, 0);
-            gl.drawElements(gl.TRIANGLES, node.mesh.indices, gl.UNSIGNED_SHORT, 0);
+        const localMatrix = getLocalModelMatrix(node);
+        modelMatrix = mat4.mul(mat4.create(), modelMatrix, localMatrix);
+        gl.uniformMatrix4fv(uniforms.uModelMatrix, false, modelMatrix);
+
+        const models = getModels(node);
+        for (const model of models) {
+            for (const primitive of model.primitives) {
+                this.renderPrimitive(primitive);
+            }
         }
 
         for (const child of node.children) {
-            this.renderNode(child, matrix, uniforms);
+            this.renderNode(child, modelMatrix);
         }
+    }
+
+    renderPrimitive(primitive) {
+        const gl = this.gl;
+
+        const { uniforms } = this.programs.renderGeometryBuffer;
+
+        const vao = this.prepareMesh(primitive.mesh);
+        gl.bindVertexArray(vao);
+
+        const material = primitive.material;
+        gl.uniform4fv(uniforms.uBaseFactor, material.baseFactor);
+
+        const baseTexture = this.prepareImage(material.baseTexture.image);
+        const baseSampler = this.prepareSampler(material.baseTexture.sampler);
+
+        gl.activeTexture(gl.TEXTURE0);
+        gl.uniform1i(uniforms.uBaseTexture, 0);
+        gl.bindTexture(gl.TEXTURE_2D, baseTexture);
+        gl.bindSampler(0, baseSampler);
+
+        gl.drawElements(gl.TRIANGLES, primitive.mesh.indices.length, gl.UNSIGNED_INT, 0);
     }
 
     createGeometryBuffer() {

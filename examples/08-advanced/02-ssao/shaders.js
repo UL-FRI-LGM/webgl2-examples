@@ -1,28 +1,31 @@
 const renderGeometryBufferVertex = `#version 300 es
-
-uniform mat4 uViewModelMatrix;
-uniform mat4 uProjectionMatrix;
-
 layout (location = 0) in vec4 aPosition;
-layout (location = 1) in vec3 aNormal;
-layout (location = 3) in vec2 aTexCoord;
+layout (location = 1) in vec2 aTexCoord;
+layout (location = 2) in vec3 aNormal;
+
+uniform mat4 uModelMatrix;
+uniform mat4 uViewMatrix;
+uniform mat4 uProjectionMatrix;
 
 out vec4 vPosition;
 out vec2 vTexCoord;
 out vec3 vNormal;
 
 void main() {
+    mat4 viewModelMatrix = uViewMatrix * uModelMatrix;
     vTexCoord = aTexCoord;
-    vPosition = uViewModelMatrix * aPosition;
-    vNormal = mat3(uViewModelMatrix) * aNormal;
+    vPosition = viewModelMatrix * aPosition;
+    vNormal = mat3(viewModelMatrix) * aNormal;
     gl_Position = uProjectionMatrix * vPosition;
 }
 `;
 
 const renderGeometryBufferFragment = `#version 300 es
 precision mediump float;
+precision mediump sampler2D;
 
-uniform mediump sampler2D uTexture;
+uniform sampler2D uBaseTexture;
+uniform vec4 uBaseFactor;
 
 in vec4 vPosition;
 in vec2 vTexCoord;
@@ -33,7 +36,7 @@ layout (location = 1) out vec4 oPosition;
 layout (location = 2) out vec3 oNormal;
 
 void main() {
-    oColor = texture(uTexture, vTexCoord);
+    oColor = texture(uBaseTexture, vTexCoord) * uBaseFactor;
     oPosition = vPosition;
     oNormal = normalize(vNormal);
 }
