@@ -29,14 +29,14 @@ vec2 directionToTexcoord(vec3 v) {
 }
 
 void main() {
-    oColor = texture(uEnvmap, directionToTexcoord(normalize(vPosition)));
+    oColor = textureLod(uEnvmap, directionToTexcoord(normalize(vPosition)), 0.0);
 }
 `;
 
 const envmapVertex = `#version 300 es
 layout (location = 0) in vec3 aPosition;
-layout (location = 1) in vec3 aNormal;
-layout (location = 3) in vec2 aTexCoord;
+layout (location = 1) in vec2 aTexCoord;
+layout (location = 2) in vec3 aNormal;
 
 uniform mat4 uModelMatrix;
 uniform mat4 uViewMatrix;
@@ -87,8 +87,8 @@ void main() {
     vec3 T = refract(-V, N, uIOR);
 
     vec4 surfaceColor = texture(uTexture, vTexCoord);
-    vec4 reflectedColor = texture(uEnvmap, directionToTexcoord(R));
-    vec4 refractedColor = texture(uEnvmap, directionToTexcoord(T));
+    vec4 reflectedColor = textureLod(uEnvmap, directionToTexcoord(R), 0.0);
+    vec4 refractedColor = textureLod(uEnvmap, directionToTexcoord(T), 0.0);
 
     vec4 reflection = mix(surfaceColor, reflectedColor, uReflectance);
     vec4 refraction = mix(surfaceColor, refractedColor, uTransmittance);

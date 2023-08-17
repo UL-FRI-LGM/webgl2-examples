@@ -80,7 +80,7 @@ model.addComponent(new Model({
             material,
         }),
     ],
-}))
+}));
 scene.addChild(model);
 
 function update(time, dt) {

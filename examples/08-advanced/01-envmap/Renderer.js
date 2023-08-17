@@ -2,16 +2,22 @@ import { vec3, mat4 } from '../../../lib/gl-matrix-module.js';
 
 import * as WebGL from '../../../common/engine/WebGL.js';
 
-import { Camera } from '../../../common/engine/core/Camera.js';
-import { Transform } from '../../../common/engine/core/Transform.js';
-import { Material } from './Material.js';
+import { BaseRenderer } from '../../../common/engine/renderers/BaseRenderer.js';
+
+import {
+    getLocalModelMatrix,
+    getGlobalModelMatrix,
+    getGlobalViewMatrix,
+    getProjectionMatrix,
+    getModels,
+} from '../../../common/engine/core/SceneUtils.js';
 
 import { shaders } from './shaders.js';
 
-export class Renderer {
+export class Renderer extends BaseRenderer {
 
     constructor(gl) {
-        this.gl = gl;
+        super(gl);
 
         gl.clearColor(1, 1, 1, 1);
         gl.enable(gl.DEPTH_TEST);
@@ -20,29 +26,9 @@ export class Renderer {
         this.programs = WebGL.buildPrograms(gl, shaders);
     }
 
-    getLocalMatrix(node) {
-        const transform = node.getComponentOfType(Transform);
-        return transform ? transform.matrix : mat4.create();
-    }
-
-    getGlobalMatrix(node) {
-        const localMatrix = this.getLocalMatrix(node);
-        if (!node.parent) {
-            return localMatrix;
-        } else {
-            const globalMatrix = this.getGlobalMatrix(node.parent);
-            return mat4.mul(globalMatrix, globalMatrix, localMatrix);
-        }
-    }
-
-    getViewMatrix(node) {
-        const globalMatrix = this.getGlobalMatrix(node);
-        return mat4.invert(globalMatrix, globalMatrix);
-    }
-
-    getProjectionMatrix(node) {
-        const camera = node.getComponentOfType(Camera);
-        return camera ? camera.projectionMatrix : mat4.create();
+    getSkyboxPrimitive(skybox) {
+        const models = getModels(skybox);
+        return models[0].primitives[0];
     }
 
     render(scene, camera, skybox) {
@@ -54,53 +40,74 @@ export class Renderer {
         const { program, uniforms } = this.programs.envmap;
         gl.useProgram(program);
 
-        const viewMatrix = this.getViewMatrix(camera);
-        const projectionMatrix = this.getProjectionMatrix(camera);
+        const viewMatrix = getGlobalViewMatrix(camera);
+        const projectionMatrix = getProjectionMatrix(camera);
 
         gl.uniformMatrix4fv(uniforms.uViewMatrix, false, viewMatrix);
         gl.uniformMatrix4fv(uniforms.uProjectionMatrix, false, projectionMatrix);
 
         gl.uniform3fv(uniforms.uCameraPosition,
-            mat4.getTranslation(vec3.create(), this.getGlobalMatrix(camera)));
+            mat4.getTranslation(vec3.create(), getGlobalModelMatrix(camera)));
 
-        this.renderNode(scene, mat4.create());
+        const skyboxPrimitive = this.getSkyboxPrimitive(skybox);
+        const skyboxMaterial = skyboxPrimitive.material;
+        const skyboxTexture = this.prepareImage(skyboxMaterial.baseTexture.image);
+        const skyboxSampler = this.prepareSampler(skyboxMaterial.baseTexture.sampler);
+
+        gl.activeTexture(gl.TEXTURE1);
+        gl.uniform1i(uniforms.uEnvmap, 1);
+        gl.bindTexture(gl.TEXTURE_2D, skyboxTexture);
+        gl.bindSampler(1, skyboxSampler);
+
+        this.renderNode(scene);
         this.renderSkybox(skybox, camera);
     }
 
-    renderNode(node, modelMatrix) {
+    renderNode(node, modelMatrix = mat4.create()) {
         const gl = this.gl;
-
-        const localMatrix = this.getLocalMatrix(node);
-        modelMatrix = mat4.mul(mat4.create(), modelMatrix, localMatrix);
 
         const { uniforms } = this.programs.envmap;
 
-        const material = node.getComponentOfType(Material);
+        const localMatrix = getLocalModelMatrix(node);
+        modelMatrix = mat4.mul(mat4.create(), modelMatrix, localMatrix);
+        gl.uniformMatrix4fv(uniforms.uModelMatrix, false, modelMatrix);
 
-        if (node.mesh && material) {
-            gl.bindVertexArray(node.mesh.vao);
-
-            gl.uniformMatrix4fv(uniforms.uModelMatrix, false, modelMatrix);
-
-            gl.activeTexture(gl.TEXTURE0);
-            gl.uniform1i(uniforms.uTexture, 0);
-            gl.bindTexture(gl.TEXTURE_2D, material.texture);
-
-            gl.activeTexture(gl.TEXTURE1);
-            gl.uniform1i(uniforms.uEnvmap, 1);
-            gl.bindTexture(gl.TEXTURE_2D, material.envmap);
-
-            gl.uniform1f(uniforms.uReflectance, material.reflectance);
-            gl.uniform1f(uniforms.uTransmittance, material.transmittance);
-            gl.uniform1f(uniforms.uIOR, material.ior);
-            gl.uniform1f(uniforms.uEffect, material.effect);
-
-            gl.drawElements(gl.TRIANGLES, node.mesh.indices, gl.UNSIGNED_SHORT, 0);
+        const models = getModels(node);
+        for (const model of models) {
+            for (const primitive of model.primitives) {
+                this.renderPrimitive(primitive);
+            }
         }
 
         for (const child of node.children) {
             this.renderNode(child, modelMatrix);
         }
+    }
+
+    renderPrimitive(primitive) {
+        const gl = this.gl;
+
+        const { uniforms } = this.programs.envmap;
+
+        const vao = this.prepareMesh(primitive.mesh);
+        gl.bindVertexArray(vao);
+
+        const material = primitive.material;
+
+        const baseTexture = this.prepareImage(material.baseTexture.image);
+        const baseSampler = this.prepareSampler(material.baseTexture.sampler);
+
+        gl.activeTexture(gl.TEXTURE0);
+        gl.uniform1i(uniforms.uTexture, 0);
+        gl.bindTexture(gl.TEXTURE_2D, baseTexture);
+        gl.bindSampler(0, baseSampler);
+
+        gl.uniform1f(uniforms.uReflectance, material.reflectance);
+        gl.uniform1f(uniforms.uTransmittance, material.transmittance);
+        gl.uniform1f(uniforms.uIOR, material.ior);
+        gl.uniform1f(uniforms.uEffect, material.effect);
+
+        gl.drawElements(gl.TRIANGLES, primitive.mesh.indices.length, gl.UNSIGNED_INT, 0);
     }
 
     renderSkybox(skybox, camera) {
@@ -109,28 +116,30 @@ export class Renderer {
         const { program, uniforms } = this.programs.skybox;
         gl.useProgram(program);
 
-        const viewMatrix = this.getViewMatrix(camera);
-        const projectionMatrix = this.getProjectionMatrix(camera);
+        const viewMatrix = getGlobalViewMatrix(camera);
+        const projectionMatrix = getProjectionMatrix(camera);
 
         gl.uniformMatrix4fv(uniforms.uViewMatrix, false, viewMatrix);
         gl.uniformMatrix4fv(uniforms.uProjectionMatrix, false, projectionMatrix);
 
-        gl.bindVertexArray(skybox.mesh.vao);
+        const skyboxPrimitive = this.getSkyboxPrimitive(skybox);
+        const skyboxMaterial = skyboxPrimitive.material;
+        const skyboxTexture = this.prepareImage(skyboxMaterial.baseTexture.image);
+        const skyboxSampler = this.prepareSampler(skyboxMaterial.baseTexture.sampler);
 
-        const material = skybox.getComponentOfType(Material);
+        const vao = this.prepareMesh(skyboxPrimitive.mesh);
+        gl.bindVertexArray(vao);
 
-        if (material) {
-            gl.activeTexture(gl.TEXTURE1);
-            gl.uniform1i(uniforms.uEnvmap, 1);
-            gl.bindTexture(gl.TEXTURE_2D, material.envmap);
+        gl.activeTexture(gl.TEXTURE1);
+        gl.uniform1i(uniforms.uEnvmap, 1);
+        gl.bindTexture(gl.TEXTURE_2D, skyboxTexture);
+        gl.bindSampler(1, skyboxSampler);
 
-            gl.depthFunc(gl.LEQUAL);
-            gl.disable(gl.CULL_FACE);
-            gl.drawElements(gl.TRIANGLES, skybox.mesh.indices, gl.UNSIGNED_SHORT, 0);
-            gl.enable(gl.CULL_FACE);
-            gl.depthFunc(gl.LESS);
-        }
-
+        gl.depthFunc(gl.LEQUAL);
+        gl.disable(gl.CULL_FACE);
+        gl.drawElements(gl.TRIANGLES, skyboxPrimitive.mesh.indices.length, gl.UNSIGNED_INT, 0);
+        gl.enable(gl.CULL_FACE);
+        gl.depthFunc(gl.LESS);
     }
 
 }

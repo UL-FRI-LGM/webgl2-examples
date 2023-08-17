@@ -4,73 +4,100 @@ import { quat, mat4 } from '../../../lib/gl-matrix-module.js';
 import { ResizeSystem } from '../../../common/engine/systems/ResizeSystem.js';
 import { UpdateSystem } from '../../../common/engine/systems/UpdateSystem.js';
 
-import { Node } from '../../../common/engine/core/Node.js';
-import { Camera } from '../../../common/engine/core/Camera.js';
-import { Transform } from '../../../common/engine/core/Transform.js';
+import { ImageLoader } from '../../../common/engine/loaders/ImageLoader.js';
+import { JSONLoader } from '../../../common/engine/loaders/JSONLoader.js';
 
 import { OrbitController } from '../../../common/engine/controllers/OrbitController.js';
-import { loadTexture, loadMesh } from '../../../common/engine/BasicLoaders.js';
+
+import {
+    Camera,
+    Material,
+    Model,
+    Node,
+    Primitive,
+    Sampler,
+    Texture,
+    Transform,
+} from '../../../common/engine/core.js';
 
 import { Renderer } from './Renderer.js';
-import { Material } from './Material.js';
 
 const canvas = document.querySelector('canvas');
 const gl = canvas.getContext('webgl2');
-
 const renderer = new Renderer(gl);
 
-const root = new Node();
+const scene = new Node();
 
 const camera = new Node();
-root.addChild(camera);
-
 camera.addComponent(new Transform());
 camera.addComponent(new Camera({
     near: 0.1,
     far: 100,
 }));
+camera.addComponent(new OrbitController(camera, canvas));
+scene.addChild(camera);
 
-const cameraController = new OrbitController(camera, canvas);
-
-const [cube, mesh, texture, envmap] = await Promise.all([
-    loadMesh(gl, '../../../common/models/cube.json'),
-    loadMesh(gl, '../../../common/models/bunny.json'),
-    loadTexture(gl, '../../../common/images/grayscale.png', {
-        mip: true,
-        min: gl.NEAREST_MIPMAP_NEAREST,
-        mag: gl.NEAREST,
-    }),
-    loadTexture(gl, '../../../common/images/cambridge.webp', {
-        min: gl.LINEAR,
-        mag: gl.LINEAR,
-    }),
+const [cubeMesh, modelMesh, baseImage, envmapImage] = await Promise.all([
+    new JSONLoader().loadMesh('../../../common/models/cube.json'),
+    new JSONLoader().loadMesh('../../../common/models/bunny.json'),
+    new ImageLoader().load('../../../common/images/grayscale.png'),
+    new ImageLoader().load('../../../common/images/cambridge.webp'),
 ]);
 
+const modelMaterial = new Material({
+    baseTexture: new Texture({
+        image: baseImage,
+        sampler: new Sampler({
+            minFilter: 'nearest',
+            magFilter: 'nearest',
+        }),
+    }),
+});
+
+modelMaterial.effect = 1;
+modelMaterial.reflectance = 0.2;
+modelMaterial.transmittance = 0.8;
+modelMaterial.ior = 0.75;
+
 const model = new Node();
-root.addChild(model);
-
-model.mesh = mesh;
-
-const modelMaterial = new Material();
-modelMaterial.texture = texture;
-modelMaterial.envmap = envmap;
-
-model.addComponent(modelMaterial);
+model.addComponent(new Model({
+    primitives: [
+        new Primitive({
+            mesh: modelMesh,
+            material: modelMaterial,
+        }),
+    ],
+}));
+scene.addChild(model);
 
 const skybox = new Node();
-skybox.mesh = cube;
-
-const skyboxMaterial = new Material();
-skyboxMaterial.envmap = envmap;
-
-skybox.addComponent(skyboxMaterial);
+skybox.addComponent(new Model({
+    primitives: [
+        new Primitive({
+            mesh: cubeMesh,
+            material: new Material({
+                baseTexture: new Texture({
+                    image: envmapImage,
+                    sampler: new Sampler({
+                        minFilter: 'linear',
+                        magFilter: 'linear',
+                    }),
+                }),
+            }),
+        }),
+    ],
+}));
 
 function update(time, dt) {
-    cameraController.update(dt);
+    scene.traverse(node => {
+        for (const component of node.components) {
+            component.update?.(time, dt);
+        }
+    });
 }
 
 function render() {
-    renderer.render(root, camera, skybox);
+    renderer.render(scene, camera, skybox);
 }
 
 function resize({ displaySize: { width, height }}) {

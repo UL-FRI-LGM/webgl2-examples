@@ -59,7 +59,7 @@ model.addComponent(new Model({
             }),
         }),
     ],
-}))
+}));
 scene.addChild(model);
 
 function update(time, dt) {
