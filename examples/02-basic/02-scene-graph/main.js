@@ -6,8 +6,6 @@ import * as WebGL from '../../../common/engine/WebGL.js';
 import { ResizeSystem } from '../../../common/engine/systems/ResizeSystem.js';
 import { UpdateSystem } from '../../../common/engine/systems/UpdateSystem.js';
 
-import { loadTexture, loadMesh } from '../../../common/engine/BasicLoaders.js';
-
 import { Node } from '../../../common/engine/core/Node.js';
 import { shaders } from './shaders.js';
 
@@ -44,19 +42,50 @@ root.addChild(cube1);
 root.addChild(cube2);
 cube2.addChild(cube3);
 
-// Load the mesh and texture.
-const [mesh, texture] = await Promise.all([
-    loadMesh(gl, '../../../common/models/cube.json'),
-    loadTexture(gl, '../../../common/images/crate-diffuse.png', {
-        mip: true,
-        min: gl.NEAREST_MIPMAP_NEAREST,
-        mag: gl.NEAREST,
-    }),
-]);
+// Load the mesh.
+const json = await fetch('../../../common/models/cube.json')
+    .then(response => response.json());
+
+const vao = gl.createVertexArray();
+gl.bindVertexArray(vao);
+
+WebGL.createBuffer(gl, { data: new Float32Array(json.positions) });
+WebGL.configureAttribute(gl, {
+    location: 0,
+    count: 3,
+    type: gl.FLOAT,
+});
+
+WebGL.createBuffer(gl, { data: new Float32Array(json.texcoords) });
+WebGL.configureAttribute(gl, {
+    location: 3,
+    count: 2,
+    type: gl.FLOAT,
+});
+
+WebGL.createBuffer(gl, {
+    target: gl.ELEMENT_ARRAY_BUFFER,
+    data: new Uint16Array(json.indices),
+});
+
+const mesh = { vao, indices: json.indices.length };
 
 cube1.mesh = mesh;
 cube2.mesh = mesh;
 cube3.mesh = mesh;
+
+// Load the texture.
+const image = await fetch('../../../common/images/crate-diffuse.png')
+    .then(response => response.blob())
+    .then(blob => createImageBitmap(blob));
+
+const texture = WebGL.createTexture(gl, {
+    image,
+    mip: true,
+    min: gl.NEAREST_MIPMAP_NEAREST,
+    mag: gl.NEAREST,
+});
+
 cube1.texture = texture;
 cube2.texture = texture;
 cube3.texture = texture;

@@ -20,8 +20,6 @@ import {
     Transform,
 } from '../../../common/engine/core.js';
 
-import { loadTexture, loadMesh } from '../../../common/engine/BasicLoaders.js';
-
 import { Renderer } from './Renderer.js';
 
 const canvas = document.querySelector('canvas');
