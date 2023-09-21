@@ -1,212 +1,47 @@
-export function linear(t) {
-    return t;
-}
+export function swap(f, t, ...args) { return 1 - f(1 - t, ...args); }
+export function inout(f, t, ...args) { return t < 0.5 ? f(2 * t, ...args) / 2 : 1 - f(2 * (1 - t), ...args) / 2; }
 
-export function easeInSine(t) {
-    return -1 * Math.cos(t * (Math.PI / 2)) + 1;
-}
+export function step(t, p = 0) { return t < p ? 0 : 1; }
+export function stepEaseIn(...args) { return step(...args); }
+export function stepEaseOut(...args) { return swap(step, ...args); }
+export function stepEaseInOut(...args) { return inout(step, ...args); }
 
-export function easeOutSine(t) {
-    return Math.sin(t * (Math.PI / 2));
-}
+export function linear(t) { return t; }
+export function linearEaseIn(...args) { return linear(...args); }
+export function linearEaseOut(...args) { return swap(linear, ...args); }
+export function linearEaseInOut(...args) { return inout(linear, ...args); }
 
-export function easeInOutSine(t) {
-    return -0.5 * (Math.cos(Math.PI * t) - 1);
-}
+export function poly(t, p = 2) { return Math.pow(t, p); }
+export function polyEaseIn(...args) { return poly(...args); }
+export function polyEaseOut(...args) { return swap(poly, ...args); }
+export function polyEaseInOut(...args) { return inout(poly, ...args); }
 
-export function easeInQuad(t) {
-    return t * t;
-}
+export function expo(t, p = 5) { return (Math.exp(p * t) - 1) / (Math.exp(p) - 1); }
+export function expoEaseIn(...args) { return expo(...args); }
+export function expoEaseOut(...args) { return swap(expo, ...args); }
+export function expoEaseInOut(...args) { return inout(expo, ...args); }
 
-export function easeOutQuad(t) {
-    return t * (2 - t);
-}
+export function sine(t, n = 1) { return 1 - Math.cos(n * t * Math.PI / 2); }
+export function sineEaseIn(...args) { return sine(...args); }
+export function sineEaseOut(...args) { return swap(sine, ...args); }
+export function sineEaseInOut(...args) { return inout(sine, ...args); }
 
-export function easeInOutQuad(t) {
-    return t < 0.5 ? 2 * t * t : - 1 + (4 - 2 * t) * t;
-}
+export function circ(t) { return 1 - Math.sqrt(1 - t * t); }
+export function circEaseIn(...args) { return circ(...args); }
+export function circEaseOut(...args) { return swap(circ, ...args); }
+export function circEaseInOut(...args) { return inout(circ, ...args); }
 
-export function easeInCubic(t) {
-    return t * t * t;
-}
+export function back(t, p = 2) { return t * t * ((p + 1) * t - p); }
+export function backEaseIn(...args) { return back(...args); }
+export function backEaseOut(...args) { return swap(back, ...args); }
+export function backEaseInOut(...args) { return inout(back, ...args); }
 
-export function easeOutCubic(t) {
-    const t1 = t - 1;
-    return t1 * t1 * t1 + 1;
-}
+export function elastic(t, p = 5, n = 5) { return expo(t, p) * (1 - sine(t, 4 * n)); }
+export function elasticEaseIn(...args) { return elastic(...args); }
+export function elasticEaseOut(...args) { return swap(elastic, ...args); }
+export function elasticEaseInOut(...args) { return inout(elastic, ...args); }
 
-export function easeInOutCubic(t) {
-    return t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
-}
-
-export function easeInQuart(t) {
-    return t * t * t * t;
-}
-
-export function easeOutQuart(t) {
-    const t1 = t - 1;
-    return 1 - t1 * t1 * t1 * t1;
-}
-
-export function easeInOutQuart(t) {
-    const t1 = t - 1;
-    return t < 0.5 ? 8 * t * t * t * t : 1 - 8 * t1 * t1 * t1 * t1;
-}
-
-export function easeInQuint(t) {
-    return t * t * t * t * t;
-}
-
-export function easeOutQuint(t) {
-    const t1 = t - 1;
-    return 1 + t1 * t1 * t1 * t1 * t1;
-}
-
-export function easeInOutQuint(t) {
-    const t1 = t - 1;
-    return t < 0.5 ? 16 * t * t * t * t * t : 1 + 16 * t1 * t1 * t1 * t1 * t1;
-}
-
-export function easeInExpo(t) {
-    if (t === 0) {
-        return 0;
-    }
-
-    return Math.pow(2, 10 * (t - 1));
-}
-
-export function easeOutExpo(t) {
-    if (t === 1) {
-        return 1;
-    }
-
-    return (-Math.pow(2, -10 * t) + 1);
-}
-
-export function easeInOutExpo(t) {
-    if (t === 0 || t === 1) {
-        return t;
-    }
-
-    const scaledTime = t * 2;
-    const scaledTime1 = scaledTime - 1;
-
-    if (scaledTime < 1) {
-        return 0.5 * Math.pow(2, 10 * (scaledTime1));
-    }
-
-    return 0.5 * (-Math.pow(2, -10 * scaledTime1) + 2);
-}
-
-export function easeInCirc(t) {
-    return -1 * (Math.sqrt(1 - t * t) - 1);
-}
-
-export function easeOutCirc(t) {
-    const t1 = t - 1;
-    return Math.sqrt(1 - t1 * t1);
-}
-
-export function easeInOutCirc(t) {
-    const scaledTime = t * 2;
-    const scaledTime1 = scaledTime - 2;
-
-    if (scaledTime < 1) {
-        return -0.5 * (Math.sqrt(1 - scaledTime * scaledTime) - 1);
-    }
-
-    return 0.5 * (Math.sqrt(1 - scaledTime1 * scaledTime1) + 1);
-}
-
-export function easeInBack(t, magnitude = 1.70158) {
-    return t * t * ((magnitude + 1) * t - magnitude);
-}
-
-export function easeOutBack(t, magnitude = 1.70158) {
-    const scaledTime = (t / 1) - 1;
-    return (scaledTime * scaledTime * ((magnitude + 1) * scaledTime + magnitude)) + 1;
-}
-
-export function easeInOutBack(t, magnitude = 1.70158) {
-    const scaledTime = t * 2;
-    const scaledTime2 = scaledTime - 2;
-
-    const s = magnitude * 1.525;
-
-    if (scaledTime < 1) {
-        return 0.5 * scaledTime * scaledTime * (((s + 1) * scaledTime) - s);
-    }
-
-    return 0.5 * (scaledTime2 * scaledTime2 * ((s + 1) * scaledTime2 + s) + 2);
-}
-export function easeInElastic(t, magnitude = 0.7) {
-    if (t === 0 || t === 1) {
-        return t;
-    }
-
-    const scaledTime = t / 1;
-    const scaledTime1 = scaledTime - 1;
-
-    const p = 1 - magnitude;
-    const s = p / (2 * Math.PI) * Math.asin(1);
-
-    return -(Math.pow(2, 10 * scaledTime1) * Math.sin((scaledTime1 - s) * (2 * Math.PI) / p));
-}
-
-export function easeOutElastic(t, magnitude = 0.7) {
-    if (t === 0 || t === 1) {
-        return t;
-    }
-
-    const p = 1 - magnitude;
-    const scaledTime = t * 2;
-
-    const s = p / (2 * Math.PI) * Math.asin(1);
-    return (Math.pow(2, -10 * scaledTime) * Math.sin((scaledTime - s) * (2 * Math.PI) / p)) + 1;
-}
-
-export function easeInOutElastic(t, magnitude = 0.65) {
-    if (t === 0 || t === 1) {
-        return t;
-    }
-
-    const p = 1 - magnitude;
-    const scaledTime = t * 2;
-    const scaledTime1 = scaledTime - 1;
-
-    const s = p / (2 * Math.PI) * Math.asin(1);
-
-    if (scaledTime < 1) {
-        return -0.5 * (Math.pow(2, 10 * scaledTime1) * Math.sin((scaledTime1 - s) * (2 * Math.PI) / p));
-    }
-
-    return (Math.pow(2, -10 * scaledTime1) * Math.sin((scaledTime1 - s) * (2 * Math.PI) / p) * 0.5) + 1;
-}
-
-export function easeOutBounce(t) {
-    const scaledTime = t / 1;
-
-    if (scaledTime < (1 / 2.75)) {
-        return 7.5625 * scaledTime * scaledTime;
-    } else if (scaledTime < (2 / 2.75)) {
-        const scaledTime2 = scaledTime - (1.5 / 2.75);
-        return (7.5625 * scaledTime2 * scaledTime2) + 0.75;
-    } else if (scaledTime < (2.5 / 2.75)) {
-        const scaledTime2 = scaledTime - (2.25 / 2.75);
-        return (7.5625 * scaledTime2 * scaledTime2) + 0.9375;
-    } else {
-        const scaledTime2 = scaledTime - (2.625 / 2.75);
-        return (7.5625 * scaledTime2 * scaledTime2) + 0.984375;
-    }
-}
-
-export function easeInBounce(t) {
-    return 1 - easeOutBounce(1 - t);
-}
-
-export function easeInOutBounce(t) {
-    if (t < 0.5) {
-        return easeInBounce(t * 2) * 0.5;
-    }
-    return (easeOutBounce((t * 2) - 1) * 0.5) + 0.5;
-}
+export function bounce(t, p = 2, n = 2) { return Math.abs(poly(t, p) * (1 - sine(t, 4 * n))); }
+export function bounceEaseIn(...args) { return bounce(...args); }
+export function bounceEaseOut(...args) { return swap(bounce, ...args); }
+export function bounceEaseInOut(...args) { return inout(bounce, ...args); }
