@@ -24,7 +24,7 @@ export class Transform {
     set matrix(matrix) {
         mat4.getRotation(this.rotation, matrix);
         mat4.getTranslation(this.translation, matrix);
-        mat4.getScale(this.scale, matrix);
+        mat4.getScaling(this.scale, matrix);
     }
 
 }
