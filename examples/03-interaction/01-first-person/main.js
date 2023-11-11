@@ -22,7 +22,8 @@ import { UnlitRenderer } from '../../../common/engine/renderers/UnlitRenderer.js
 import { FirstPersonController } from './FirstPersonController.js';
 
 const canvas = document.querySelector('canvas');
-const gl = canvas.getContext('webgl2');
+const renderer = new UnlitRenderer(canvas);
+await renderer.initialize();
 
 const scene = new Node();
 
@@ -58,8 +59,6 @@ floor.addComponent(new Model({
     ],
 }));
 scene.addChild(floor);
-
-const renderer = new UnlitRenderer(gl);
 
 function update(time, dt) {
     scene.traverse(node => {

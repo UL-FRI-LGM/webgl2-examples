@@ -5,8 +5,8 @@ import { parseFormat, createVertexBuffer } from '../core/VertexUtils.js';
 
 export class BaseRenderer {
 
-    constructor(gl) {
-        this.gl = gl;
+    constructor(canvas) {
+        this.gl = canvas.getContext('webgl2');
         this.glObjects = new WeakMap();
     }
 

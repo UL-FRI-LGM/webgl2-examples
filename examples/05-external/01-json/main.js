@@ -19,7 +19,8 @@ import {
 import { OrbitController } from '../../../common/engine/controllers/OrbitController.js';
 
 const canvas = document.querySelector('canvas');
-const gl = canvas.getContext('webgl2');
+const renderer = new UnlitRenderer(canvas);
+await renderer.initialize();
 
 const loader = new JSONLoader();
 const mesh = await loader.loadMesh('../../../common/models/bunny.json');
@@ -53,8 +54,6 @@ camera.addComponent(new OrbitController(camera, canvas));
 const scene = new Node();
 scene.addChild(model);
 scene.addChild(camera);
-
-const renderer = new UnlitRenderer(gl);
 
 function update(time, dt) {
     scene.traverse(node => {

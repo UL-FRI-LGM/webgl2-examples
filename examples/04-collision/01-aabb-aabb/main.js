@@ -15,8 +15,8 @@ import {
 import { Physics } from './Physics.js';
 
 const canvas = document.querySelector('canvas');
-const gl = canvas.getContext('webgl2');
-const renderer = new UnlitRenderer(gl);
+const renderer = new UnlitRenderer(canvas);
+await renderer.initialize();
 
 const loader = new GLTFLoader();
 await loader.load('scene/scene.gltf');

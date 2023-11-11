@@ -7,7 +7,8 @@ import { UnlitRenderer } from '../../../common/engine/renderers/UnlitRenderer.js
 import { Camera } from '../../../common/engine/core.js';
 
 const canvas = document.querySelector('canvas');
-const gl = canvas.getContext('webgl2');
+const renderer = new UnlitRenderer(canvas);
+await renderer.initialize();
 
 const loader = new GLTFLoader();
 await loader.load('../../../common/models/rocks/rocks.gltf');
@@ -21,8 +22,6 @@ const camera = scene.find(node => node.getComponentOfType(Camera));
 if (!camera) {
     throw new Error('A camera in the scene is require to run this example');
 }
-
-const renderer = new UnlitRenderer(gl);
 
 function render() {
     renderer.render(scene, camera);

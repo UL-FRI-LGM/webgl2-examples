@@ -11,16 +11,20 @@ import {
     getModels,
 } from '../core/SceneUtils.js';
 
-const unlitVertexShader = await fetch(new URL('../shaders/unlit.vs', import.meta.url))
-    .then(response => response.text());
-
-const unlitFragmentShader = await fetch(new URL('../shaders/unlit.fs', import.meta.url))
-    .then(response => response.text());
-
 export class UnlitRenderer extends BaseRenderer {
 
-    constructor(gl) {
-        super(gl);
+    constructor(canvas) {
+        super(canvas);
+    }
+
+    async initialize() {
+        const gl = this.gl;
+
+        const unlitVertexShader = await fetch(new URL('../shaders/unlit.vs', import.meta.url))
+            .then(response => response.text());
+
+        const unlitFragmentShader = await fetch(new URL('../shaders/unlit.fs', import.meta.url))
+            .then(response => response.text());
 
         this.programs = WebGL.buildPrograms(gl, {
             unlit: {

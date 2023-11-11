@@ -2,6 +2,8 @@ import { vec3, mat4 } from '../../../lib/gl-matrix-module.js';
 
 import * as WebGL from '../../../common/engine/WebGL.js';
 
+import { BaseRenderer } from '../../../common/engine/renderers/BaseRenderer.js';
+
 import {
     getLocalModelMatrix,
     getGlobalModelMatrix,
@@ -12,10 +14,14 @@ import {
 
 import { shaders } from './shaders.js';
 
-export class Renderer {
+export class Renderer extends BaseRenderer {
 
-    constructor(gl) {
-        this.gl = gl;
+    constructor(canvas) {
+        super(canvas);
+    }
+
+    async initialize() {
+        const gl = this.gl;
 
         gl.getExtension('EXT_color_buffer_float');
         gl.getExtension('OES_texture_float_linear');

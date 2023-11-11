@@ -16,8 +16,12 @@ import { shaders } from './shaders.js';
 
 export class Renderer extends BaseRenderer {
 
-    constructor(gl) {
-        super(gl);
+    constructor(canvas) {
+        super(canvas);
+    }
+
+    async initialize() {
+        const gl = this.gl;
 
         gl.clearColor(0, 0, 0, 1);
         gl.enable(gl.DEPTH_TEST);

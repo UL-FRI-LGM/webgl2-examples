@@ -23,8 +23,8 @@ import {
 import { Renderer } from './Renderer.js';
 
 const canvas = document.querySelector('canvas');
-const gl = canvas.getContext('webgl2');
-const renderer = new Renderer(gl);
+const renderer = new Renderer(canvas);
+await renderer.initialize();
 
 const scene = new Node();
 
