@@ -49,19 +49,21 @@ export class UnlitRenderer extends BaseRenderer {
 
         const viewMatrix = getGlobalViewMatrix(camera);
         const projectionMatrix = getProjectionMatrix(camera);
-        const mvpMatrix = mat4.multiply(mat4.create(), projectionMatrix, viewMatrix);
 
-        this.renderNode(scene, mvpMatrix);
+        gl.uniformMatrix4fv(uniforms.uViewMatrix, false, viewMatrix);
+        gl.uniformMatrix4fv(uniforms.uProjectionMatrix, false, projectionMatrix);
+
+        this.renderNode(scene);
     }
 
-    renderNode(node, mvpMatrix) {
+    renderNode(node, modelMatrix = mat4.create()) {
         const gl = this.gl;
 
         const { program, uniforms } = this.programs.unlit;
 
         const localMatrix = getLocalModelMatrix(node);
-        mvpMatrix = mat4.mul(mat4.create(), mvpMatrix, localMatrix);
-        gl.uniformMatrix4fv(uniforms.uModelViewProjection, false, mvpMatrix);
+        modelMatrix = mat4.mul(mat4.create(), modelMatrix, localMatrix);
+        gl.uniformMatrix4fv(uniforms.uModelMatrix, false, modelMatrix);
 
         const models = getModels(node);
         for (const model of models) {
@@ -71,7 +73,7 @@ export class UnlitRenderer extends BaseRenderer {
         }
 
         for (const child of node.children) {
-            this.renderNode(child, mvpMatrix);
+            this.renderNode(child, modelMatrix);
         }
     }
 
