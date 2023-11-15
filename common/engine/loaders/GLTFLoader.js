@@ -176,6 +176,8 @@ export class GLTFLoader {
         }
         if (gltfSpec.sampler !== undefined) {
             options.sampler = this.loadSampler(gltfSpec.sampler);
+        } else {
+            options.sampler = new Sampler();
         }
 
         const texture = new Texture(options);
