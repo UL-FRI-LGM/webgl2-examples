@@ -1,5 +1,5 @@
-import { GUI } from '../../../lib/dat.gui.module.js';
-import { mat4 } from '../../../lib/gl-matrix-module.js';
+import { GUI } from '../../../lib/dat.js';
+import { mat4 } from '../../../lib/glm.js';
 
 import {
     Camera,

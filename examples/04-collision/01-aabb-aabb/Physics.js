@@ -1,4 +1,4 @@
-import { vec3, mat4 } from '../../../lib/gl-matrix-module.js';
+import { vec3, mat4 } from '../../../lib/glm.js';
 import { getGlobalModelMatrix } from '../../../common/engine/core/SceneUtils.js';
 import { Transform } from '../../../common/engine/core.js';
 

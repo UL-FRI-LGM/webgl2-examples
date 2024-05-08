@@ -1,6 +1,6 @@
 import { Transform } from '../core.js';
 
-import { quat } from '../../../lib/gl-matrix-module.js';
+import { quat } from '../../../lib/glm.js';
 
 export class RotateAnimator {
 

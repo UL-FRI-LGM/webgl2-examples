@@ -1,4 +1,4 @@
-import { mat4 } from '../../../lib/gl-matrix-module.js';
+import { mat4 } from '../../../lib/glm.js';
 
 import * as WebGL from '../WebGL.js';
 

@@ -1,4 +1,4 @@
-import { mat4 } from '../../../lib/gl-matrix-module.js';
+import { mat4 } from '../../../lib/glm.js';
 
 import { Camera } from './Camera.js';
 import { Model } from './Model.js';

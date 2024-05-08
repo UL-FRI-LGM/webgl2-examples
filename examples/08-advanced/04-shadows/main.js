@@ -1,4 +1,4 @@
-import { mat4, vec3, quat } from '../../../lib/gl-matrix-module.js';
+import { mat4, vec3, quat } from '../../../lib/glm.js';
 
 import { ResizeSystem } from '../../../common/engine/systems/ResizeSystem.js';
 import { UpdateSystem } from '../../../common/engine/systems/UpdateSystem.js';

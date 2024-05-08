@@ -1,4 +1,4 @@
-import { quat, vec3, mat4 } from '../../../lib/gl-matrix-module.js';
+import { quat, vec3, mat4 } from '../../../lib/glm.js';
 
 import { Transform } from '../core/Transform.js';
 

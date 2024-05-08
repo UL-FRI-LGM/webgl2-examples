@@ -1,4 +1,4 @@
-import { GUI } from '../../../lib/dat.gui.module.js';
+import { GUI } from '../../../lib/dat.js';
 import * as WebGL from '../../../common/engine/WebGL.js';
 
 import { ResizeSystem } from '../../../common/engine/systems/ResizeSystem.js';

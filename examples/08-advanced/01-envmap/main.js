@@ -1,5 +1,5 @@
-import { GUI } from '../../../lib/dat.gui.module.js';
-import { quat, mat4 } from '../../../lib/gl-matrix-module.js';
+import { GUI } from '../../../lib/dat.js';
+import { quat, mat4 } from '../../../lib/glm.js';
 
 import { ResizeSystem } from '../../../common/engine/systems/ResizeSystem.js';
 import { UpdateSystem } from '../../../common/engine/systems/UpdateSystem.js';
