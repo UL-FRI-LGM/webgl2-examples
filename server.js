@@ -5,23 +5,24 @@ const http = require('http');
 // a map from extname to content type - extend if necessary
 const extnameToContentType = {
     'js'   : 'text/javascript',
+    'mjs'  : 'text/javascript',
     'css'  : 'text/css',
     'html' : 'text/html',
     'json' : 'text/json',
+    'wgsl' : 'text/wgsl',
     'png'  : 'image/png',
     'jpg'  : 'image/jpeg',
     'jpeg' : 'image/jpeg',
     'webp' : 'image/webp',
+    'avif' : 'image/avif',
 };
 
 const server = http.createServer(async (req, res) => {
+    // decode the URL to ensure that e.g. %20's are converted to spaces
+    const url = decodeURIComponent(req.url);
+
     // ensure that request path does not jump out of the project root
-    const requestPath = path.normalize(req.url);
-    if (requestPath.startsWith('..')) {
-        res.writeHead(403);
-        res.end();
-        console.log(`403 ${req.method} ${req.url}`);
-    }
+    const requestPath = path.join('/', url);
 
     // get a file path from the project root
     const rootPath = __dirname;
@@ -40,12 +41,12 @@ const server = http.createServer(async (req, res) => {
         res.setHeader('Content-Type', contentType);
         res.writeHead(200);
         res.end(data);
-        console.log(`200 ${req.method} ${req.url}`);
+        console.log(`200 ${req.method} ${requestPath}`);
     } catch (e) {
         // if the file cannot be read, respond with an empty 404
         res.writeHead(404);
         res.end();
-        console.log(`404 ${req.method} ${req.url}`);
+        console.log(`404 ${req.method} ${requestPath}`);
     }
 });
 
