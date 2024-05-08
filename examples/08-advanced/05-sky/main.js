@@ -1,15 +1,15 @@
-import { GUI } from '../../../lib/dat.js';
+import { GUI } from 'dat';
 
-import { ResizeSystem } from '../../../common/engine/systems/ResizeSystem.js';
-import { UpdateSystem } from '../../../common/engine/systems/UpdateSystem.js';
+import { ResizeSystem } from 'engine/systems/ResizeSystem.js';
+import { UpdateSystem } from 'engine/systems/UpdateSystem.js';
 
-import { TurntableController } from '../../../common/engine/controllers/TurntableController.js';
+import { TurntableController } from 'engine/controllers/TurntableController.js';
 
 import {
     Camera,
     Node,
     Transform,
-} from '../../../common/engine/core.js';
+} from 'engine/core.js';
 
 import { Renderer } from './Renderer.js';
 

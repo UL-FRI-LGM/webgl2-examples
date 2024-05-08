@@ -11,6 +11,7 @@ const extnameToContentType = {
     'png'  : 'image/png',
     'jpg'  : 'image/jpeg',
     'jpeg' : 'image/jpeg',
+    'webp' : 'image/webp',
 };
 
 const server = http.createServer(async (req, res) => {
@@ -23,7 +24,7 @@ const server = http.createServer(async (req, res) => {
     }
 
     // get a file path from the project root
-    const rootPath = path.join(__dirname, '..');
+    const rootPath = __dirname;
     let filePath = path.join(rootPath, requestPath);
     if (filePath.endsWith(path.sep)) {
         filePath = path.join(filePath, 'index.html');

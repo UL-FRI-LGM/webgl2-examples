@@ -1,6 +1,6 @@
-import { Transform } from '../core.js';
+import { vec3 } from 'glm';
 
-import { vec3 } from '../../../lib/glm.js';
+import { Transform } from '../core/Transform.js';
 
 export class LinearAnimator {
 

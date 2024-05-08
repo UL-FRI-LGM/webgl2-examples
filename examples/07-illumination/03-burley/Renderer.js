@@ -1,8 +1,8 @@
-import { vec3, mat4 } from '../../../lib/glm.js';
+import { vec3, mat4 } from 'glm';
 
-import * as WebGL from '../../../common/engine/WebGL.js';
+import * as WebGL from 'engine/WebGL.js';
 
-import { BaseRenderer } from '../../../common/engine/renderers/BaseRenderer.js';
+import { BaseRenderer } from 'engine/renderers/BaseRenderer.js';
 
 import {
     getLocalModelMatrix,
@@ -10,7 +10,7 @@ import {
     getGlobalViewMatrix,
     getProjectionMatrix,
     getModels,
-} from '../../../common/engine/core/SceneUtils.js';
+} from 'engine/core/SceneUtils.js';
 
 import { Light } from './Light.js';
 

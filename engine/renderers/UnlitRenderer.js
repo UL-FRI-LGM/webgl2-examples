@@ -1,4 +1,4 @@
-import { mat4 } from '../../../lib/glm.js';
+import { mat4 } from 'glm';
 
 import * as WebGL from '../WebGL.js';
 

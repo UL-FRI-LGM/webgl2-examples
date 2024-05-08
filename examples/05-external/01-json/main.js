@@ -1,8 +1,8 @@
-import { ResizeSystem } from '../../../common/engine/systems/ResizeSystem.js';
-import { UpdateSystem } from '../../../common/engine/systems/UpdateSystem.js';
+import { ResizeSystem } from 'engine/systems/ResizeSystem.js';
+import { UpdateSystem } from 'engine/systems/UpdateSystem.js';
 
-import { JSONLoader } from '../../../common/engine/loaders/JSONLoader.js';
-import { UnlitRenderer } from '../../../common/engine/renderers/UnlitRenderer.js';
+import { JSONLoader } from 'engine/loaders/JSONLoader.js';
+import { UnlitRenderer } from 'engine/renderers/UnlitRenderer.js';
 
 import {
     Camera,
@@ -14,18 +14,18 @@ import {
     Sampler,
     Texture,
     Transform,
-} from '../../../common/engine/core.js';
+} from 'engine/core.js';
 
-import { OrbitController } from '../../../common/engine/controllers/OrbitController.js';
+import { OrbitController } from 'engine/controllers/OrbitController.js';
 
 const canvas = document.querySelector('canvas');
 const renderer = new UnlitRenderer(canvas);
 await renderer.initialize();
 
 const loader = new JSONLoader();
-const mesh = await loader.loadMesh('../../../common/models/bunny.json');
+const mesh = await loader.loadMesh('../../../models/bunny/bunny.json');
 
-const image = await fetch('../../../common/images/grayscale.png')
+const image = await fetch('../../../models/bunny/grayscale.png')
     .then(response => response.blob())
     .then(blob => createImageBitmap(blob));
 

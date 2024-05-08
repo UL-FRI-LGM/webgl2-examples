@@ -1,8 +1,8 @@
-import { GUI } from '../../../lib/dat.js';
-import * as WebGL from '../../../common/engine/WebGL.js';
+import { GUI } from 'dat';
+import * as WebGL from 'engine/WebGL.js';
 
-import { ResizeSystem } from '../../../common/engine/systems/ResizeSystem.js';
-import { UpdateSystem } from '../../../common/engine/systems/UpdateSystem.js';
+import { ResizeSystem } from 'engine/systems/ResizeSystem.js';
+import { UpdateSystem } from 'engine/systems/UpdateSystem.js';
 
 import { shaders } from './shaders.js';
 
@@ -26,7 +26,7 @@ gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ZERO, gl.ONE);
 gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD);
 
 // Load the image.
-const response = await fetch('../../../common/images/crate-diffuse.png');
+const response = await fetch('../../../models/cube/cube-diffuse.png');
 const blob = await response.blob();
 const imageBitmap = await createImageBitmap(blob);
 

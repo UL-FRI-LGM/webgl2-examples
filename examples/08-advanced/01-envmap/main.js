@@ -1,13 +1,13 @@
-import { GUI } from '../../../lib/dat.js';
-import { quat, mat4 } from '../../../lib/glm.js';
+import { GUI } from 'dat';
+import { quat, mat4 } from 'glm';
 
-import { ResizeSystem } from '../../../common/engine/systems/ResizeSystem.js';
-import { UpdateSystem } from '../../../common/engine/systems/UpdateSystem.js';
+import { ResizeSystem } from 'engine/systems/ResizeSystem.js';
+import { UpdateSystem } from 'engine/systems/UpdateSystem.js';
 
-import { ImageLoader } from '../../../common/engine/loaders/ImageLoader.js';
-import { JSONLoader } from '../../../common/engine/loaders/JSONLoader.js';
+import { ImageLoader } from 'engine/loaders/ImageLoader.js';
+import { JSONLoader } from 'engine/loaders/JSONLoader.js';
 
-import { OrbitController } from '../../../common/engine/controllers/OrbitController.js';
+import { OrbitController } from 'engine/controllers/OrbitController.js';
 
 import {
     Camera,
@@ -18,7 +18,7 @@ import {
     Sampler,
     Texture,
     Transform,
-} from '../../../common/engine/core.js';
+} from 'engine/core.js';
 
 import { Renderer } from './Renderer.js';
 
@@ -38,10 +38,10 @@ camera.addComponent(new OrbitController(camera, canvas));
 scene.addChild(camera);
 
 const [cubeMesh, modelMesh, baseImage, envmapImage] = await Promise.all([
-    new JSONLoader().loadMesh('../../../common/models/cube.json'),
-    new JSONLoader().loadMesh('../../../common/models/bunny.json'),
-    new ImageLoader().load('../../../common/images/grayscale.png'),
-    new ImageLoader().load('../../../common/images/cambridge.webp'),
+    new JSONLoader().loadMesh('../../../models/cube/cube.json'),
+    new JSONLoader().loadMesh('../../../models/bunny/bunny.json'),
+    new ImageLoader().load('../../../models/bunny/grayscale.png'),
+    new ImageLoader().load('cambridge.webp'),
 ]);
 
 const modelMaterial = new Material({

@@ -1,17 +1,17 @@
-import { ResizeSystem } from '../../../common/engine/systems/ResizeSystem.js';
-import { UpdateSystem } from '../../../common/engine/systems/UpdateSystem.js';
+import { ResizeSystem } from 'engine/systems/ResizeSystem.js';
+import { UpdateSystem } from 'engine/systems/UpdateSystem.js';
 
-import { GLTFLoader } from '../../../common/engine/loaders/GLTFLoader.js';
-import { UnlitRenderer } from '../../../common/engine/renderers/UnlitRenderer.js';
+import { GLTFLoader } from 'engine/loaders/GLTFLoader.js';
+import { UnlitRenderer } from 'engine/renderers/UnlitRenderer.js';
 
-import { Camera } from '../../../common/engine/core.js';
+import { Camera } from 'engine/core.js';
 
 const canvas = document.querySelector('canvas');
 const renderer = new UnlitRenderer(canvas);
 await renderer.initialize();
 
 const loader = new GLTFLoader();
-await loader.load('../../../common/models/rocks/rocks.gltf');
+await loader.load('../../../models/rocks/rocks.gltf');
 
 const scene = loader.loadScene(loader.defaultScene);
 if (!scene) {

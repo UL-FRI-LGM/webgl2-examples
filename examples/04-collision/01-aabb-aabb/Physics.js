@@ -1,6 +1,6 @@
-import { vec3, mat4 } from '../../../lib/glm.js';
-import { getGlobalModelMatrix } from '../../../common/engine/core/SceneUtils.js';
-import { Transform } from '../../../common/engine/core.js';
+import { vec3, mat4 } from 'glm';
+import { getGlobalModelMatrix } from 'engine/core/SceneUtils.js';
+import { Transform } from 'engine/core.js';
 
 export class Physics {
 

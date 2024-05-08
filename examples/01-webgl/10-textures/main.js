@@ -1,8 +1,8 @@
-import { GUI } from '../../../lib/dat.js';
-import * as WebGL from '../../../common/engine/WebGL.js';
+import { GUI } from 'dat';
+import * as WebGL from 'engine/WebGL.js';
 
-import { ResizeSystem } from '../../../common/engine/systems/ResizeSystem.js';
-import { UpdateSystem } from '../../../common/engine/systems/UpdateSystem.js';
+import { ResizeSystem } from 'engine/systems/ResizeSystem.js';
+import { UpdateSystem } from 'engine/systems/UpdateSystem.js';
 
 import { shaders } from './shaders.js';
 
@@ -12,7 +12,7 @@ const gl = canvas.getContext('webgl2');
 // Load the image. This will block start() until the promises resolve.
 // Note that createImageBitmap also accepts <img>, <image>, <video>,
 // <canvas>, etc., so you can create a texture from such sources.
-const response = await fetch('../../../common/images/crate-diffuse.png');
+const response = await fetch('../../../models/cube/cube-diffuse.png');
 const blob = await response.blob();
 const imageBitmap = await createImageBitmap(blob);
 

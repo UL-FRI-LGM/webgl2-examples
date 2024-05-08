@@ -1,5 +1,5 @@
-import { GUI } from '../../../lib/dat.js';
-import { mat4 } from '../../../lib/glm.js';
+import { GUI } from 'dat';
+import { mat4 } from 'glm';
 
 import {
     Camera,
@@ -10,14 +10,14 @@ import {
     Sampler,
     Texture,
     Transform,
-} from '../../../common/engine/core.js';
+} from 'engine/core.js';
 
-import * as WebGL from '../../../common/engine/WebGL.js';
-import { ResizeSystem } from '../../../common/engine/systems/ResizeSystem.js';
-import { UpdateSystem } from '../../../common/engine/systems/UpdateSystem.js';
-import { ImageLoader } from '../../../common/engine/loaders/ImageLoader.js';
-import { JSONLoader } from '../../../common/engine/loaders/JSONLoader.js';
-import { UnlitRenderer } from '../../../common/engine/renderers/UnlitRenderer.js';
+import * as WebGL from 'engine/WebGL.js';
+import { ResizeSystem } from 'engine/systems/ResizeSystem.js';
+import { UpdateSystem } from 'engine/systems/UpdateSystem.js';
+import { ImageLoader } from 'engine/loaders/ImageLoader.js';
+import { JSONLoader } from 'engine/loaders/JSONLoader.js';
+import { UnlitRenderer } from 'engine/renderers/UnlitRenderer.js';
 
 import { FirstPersonController } from './FirstPersonController.js';
 
@@ -45,10 +45,10 @@ floor.addComponent(new Transform({
 floor.addComponent(new Model({
     primitives: [
         new Primitive({
-            mesh: await new JSONLoader().loadMesh('../../../common/models/floor.json'),
+            mesh: await new JSONLoader().loadMesh('../../../models/floor/floor.json'),
             material: new Material({
                 baseTexture: new Texture({
-                    image: await new ImageLoader().load('../../../common/images/grass.png'),
+                    image: await new ImageLoader().load('../../../models/floor/grass.png'),
                     sampler: new Sampler({
                         minFilter: 'nearest',
                         magFilter: 'nearest',

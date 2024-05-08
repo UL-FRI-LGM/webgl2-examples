@@ -1,21 +1,19 @@
-import { quat, vec3 } from '../../../lib/glm.js';
+import { quat, vec3 } from 'glm';
 
 import { Transform } from '../core/Transform.js';
 
-export class TurntableController {
+export class OrbitController {
 
     constructor(node, domElement, {
-        pitch = 0,
-        yaw = 0,
-        distance = 1,
+        rotation = [0, 0, 0, 1],
+        distance = 2,
         moveSensitivity = 0.004,
         zoomSensitivity = 0.002,
     } = {}) {
         this.node = node;
         this.domElement = domElement;
 
-        this.pitch = pitch;
-        this.yaw = yaw;
+        this.rotation = rotation;
         this.distance = distance;
 
         this.moveSensitivity = moveSensitivity;
@@ -54,14 +52,9 @@ export class TurntableController {
         const dx = e.movementX;
         const dy = e.movementY;
 
-        this.pitch -= dy * this.moveSensitivity;
-        this.yaw   -= dx * this.moveSensitivity;
-
-        const twopi = Math.PI * 2;
-        const halfpi = Math.PI / 2;
-
-        this.pitch = Math.min(Math.max(this.pitch, -halfpi), halfpi);
-        this.yaw = ((this.yaw % twopi) + twopi) % twopi;
+        quat.rotateX(this.rotation, this.rotation, -dy * this.moveSensitivity);
+        quat.rotateY(this.rotation, this.rotation, -dx * this.moveSensitivity);
+        quat.normalize(this.rotation, this.rotation);
     }
 
     wheelHandler(e) {
@@ -74,15 +67,8 @@ export class TurntableController {
             return;
         }
 
-        const rotation = quat.create();
-        quat.rotateY(rotation, rotation, this.yaw);
-        quat.rotateX(rotation, rotation, this.pitch);
-        transform.rotation = rotation;
-
-        const translation = [0, 0, this.distance];
-        vec3.rotateX(translation, translation, [0, 0, 0], this.pitch);
-        vec3.rotateY(translation, translation, [0, 0, 0], this.yaw);
-        transform.translation = translation;
+        quat.copy(transform.rotation, this.rotation);
+        vec3.transformQuat(transform.translation, [0, 0, this.distance], this.rotation);
     }
 
 }

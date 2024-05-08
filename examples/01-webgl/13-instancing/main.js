@@ -1,7 +1,7 @@
-import * as WebGL from '../../../common/engine/WebGL.js';
+import * as WebGL from 'engine/WebGL.js';
 
-import { ResizeSystem } from '../../../common/engine/systems/ResizeSystem.js';
-import { UpdateSystem } from '../../../common/engine/systems/UpdateSystem.js';
+import { ResizeSystem } from 'engine/systems/ResizeSystem.js';
+import { UpdateSystem } from 'engine/systems/UpdateSystem.js';
 
 import { shaders } from './shaders.js';
 

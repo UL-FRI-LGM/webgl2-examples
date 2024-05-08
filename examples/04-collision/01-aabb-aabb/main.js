@@ -1,16 +1,16 @@
-import { ResizeSystem } from '../../../common/engine/systems/ResizeSystem.js';
-import { UpdateSystem } from '../../../common/engine/systems/UpdateSystem.js';
+import { ResizeSystem } from 'engine/systems/ResizeSystem.js';
+import { UpdateSystem } from 'engine/systems/UpdateSystem.js';
 
-import { GLTFLoader } from '../../../common/engine/loaders/GLTFLoader.js';
-import { UnlitRenderer } from '../../../common/engine/renderers/UnlitRenderer.js';
-import { FirstPersonController } from '../../../common/engine/controllers/FirstPersonController.js';
+import { GLTFLoader } from 'engine/loaders/GLTFLoader.js';
+import { UnlitRenderer } from 'engine/renderers/UnlitRenderer.js';
+import { FirstPersonController } from 'engine/controllers/FirstPersonController.js';
 
-import { Camera, Model } from '../../../common/engine/core.js';
+import { Camera, Model } from 'engine/core.js';
 
 import {
     calculateAxisAlignedBoundingBox,
     mergeAxisAlignedBoundingBoxes,
-} from '../../../common/engine/core/MeshUtils.js';
+} from 'engine/core/MeshUtils.js';
 
 import { Physics } from './Physics.js';
 

@@ -1,12 +1,12 @@
-import { mat4, vec3, quat } from '../../../lib/glm.js';
+import { mat4, vec3, quat } from 'glm';
 
-import { ResizeSystem } from '../../../common/engine/systems/ResizeSystem.js';
-import { UpdateSystem } from '../../../common/engine/systems/UpdateSystem.js';
+import { ResizeSystem } from 'engine/systems/ResizeSystem.js';
+import { UpdateSystem } from 'engine/systems/UpdateSystem.js';
 
-import { ImageLoader } from '../../../common/engine/loaders/ImageLoader.js';
-import { JSONLoader } from '../../../common/engine/loaders/JSONLoader.js';
+import { ImageLoader } from 'engine/loaders/ImageLoader.js';
+import { JSONLoader } from 'engine/loaders/JSONLoader.js';
 
-import { OrbitController } from '../../../common/engine/controllers/OrbitController.js';
+import { OrbitController } from 'engine/controllers/OrbitController.js';
 
 import {
     Camera,
@@ -17,7 +17,7 @@ import {
     Sampler,
     Texture,
     Transform,
-} from '../../../common/engine/core.js';
+} from 'engine/core.js';
 
 import { Renderer } from './Renderer.js';
 
@@ -60,8 +60,8 @@ shadowCamera.addComponent(new Camera({
 shadowCameraRoot.addChild(shadowCamera);
 
 const [cubeMesh, cubeImage] = await Promise.all([
-    new JSONLoader().loadMesh('../../../common/models/cube.json'),
-    new ImageLoader().load('../../../common/images/crate-diffuse.png'),
+    new JSONLoader().loadMesh('../../../models/cube/cube.json'),
+    new ImageLoader().load('../../../models/cube/cube-diffuse.png'),
 ]);
 
 const cubeMaterial = new Material({

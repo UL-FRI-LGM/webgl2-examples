@@ -1,6 +1,6 @@
-import { Transform } from '../core.js';
+import { quat } from 'glm';
 
-import { quat } from '../../../lib/glm.js';
+import { Transform } from '../core/Transform.js';
 
 export class RotateAnimator {
 

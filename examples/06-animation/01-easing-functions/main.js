@@ -1,15 +1,15 @@
-import { quat, vec3, mat4 } from '../../../lib/glm.js';
+import { quat, vec3, mat4 } from 'glm';
 
-import { ResizeSystem } from '../../../common/engine/systems/ResizeSystem.js';
-import { UpdateSystem } from '../../../common/engine/systems/UpdateSystem.js';
+import { ResizeSystem } from 'engine/systems/ResizeSystem.js';
+import { UpdateSystem } from 'engine/systems/UpdateSystem.js';
 
-import { GLTFLoader } from '../../../common/engine/loaders/GLTFLoader.js';
-import { UnlitRenderer } from '../../../common/engine/renderers/UnlitRenderer.js';
-import { TurntableController } from '../../../common/engine/controllers/TurntableController.js';
-import { getGlobalModelMatrix } from '../../../common/engine/core/SceneUtils.js';
-import { Camera, Transform } from '../../../common/engine/core.js';
+import { GLTFLoader } from 'engine/loaders/GLTFLoader.js';
+import { UnlitRenderer } from 'engine/renderers/UnlitRenderer.js';
+import { TurntableController } from 'engine/controllers/TurntableController.js';
+import { getGlobalModelMatrix } from 'engine/core/SceneUtils.js';
+import { Camera, Transform } from 'engine/core.js';
 
-import * as EasingFunctions from '../../../common/engine/animators/EasingFunctions.js';
+import * as EasingFunctions from 'engine/animators/EasingFunctions.js';
 
 const canvas = document.querySelector('canvas');
 const renderer = new UnlitRenderer(canvas);

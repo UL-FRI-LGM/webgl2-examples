@@ -1,4 +1,4 @@
-import { vec3 } from '../../../lib/glm.js';
+import { vec3 } from 'glm';
 
 export function calculateAxisAlignedBoundingBox(mesh) {
     const initial = {
