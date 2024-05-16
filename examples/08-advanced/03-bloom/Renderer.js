@@ -231,8 +231,11 @@ export class Renderer extends BaseRenderer {
         const material = primitive.material;
         gl.uniform4fv(uniforms.uBaseFactor, material.baseFactor);
 
+        this.prepareTexture(material.baseTexture);
         const baseTexture = this.prepareImage(material.baseTexture.image);
         const baseSampler = this.prepareSampler(material.baseTexture.sampler);
+
+        this.prepareTexture(material.emissionTexture);
         const emissionTexture = this.prepareImage(material.emissionTexture.image);
         const emissionSampler = this.prepareSampler(material.emissionTexture.sampler);
 

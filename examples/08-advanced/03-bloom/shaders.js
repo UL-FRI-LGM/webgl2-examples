@@ -29,10 +29,10 @@ in vec2 vTexCoord;
 out vec4 oColor;
 
 void main() {
-    vec3 diffuse = pow(texture(uBaseTexture, vTexCoord).rgb, vec3(2.2));
-    vec3 emission = pow(texture(uEmissionTexture, vTexCoord).rgb, vec3(2.2));
+    vec4 diffuse = texture(uBaseTexture, vTexCoord);
+    vec4 emission = texture(uEmissionTexture, vTexCoord);
 
-    vec3 color = diffuse + uEmissionStrength * emission;
+    vec3 color = diffuse.rgb + uEmissionStrength * emission.rgb;
     oColor = vec4(color * uExposure, 1);
 }
 `;

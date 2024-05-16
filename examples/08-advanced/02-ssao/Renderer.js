@@ -33,7 +33,7 @@ export class Renderer extends BaseRenderer {
 
         this.colorEnabled = true;
         this.occlusionEnabled = true;
-        this.occlusionStrength = 2;
+        this.occlusionStrength = 3;
         this.occlusionSampleCount = 32;
         this.occlusionScale = 0.5;
         this.occlusionRange = 1;
@@ -206,6 +206,7 @@ export class Renderer extends BaseRenderer {
         const material = primitive.material;
         gl.uniform4fv(uniforms.uBaseFactor, material.baseFactor);
 
+        this.prepareTexture(material.baseTexture);
         const baseTexture = this.prepareImage(material.baseTexture.image);
         const baseSampler = this.prepareSampler(material.baseTexture.sampler);
 

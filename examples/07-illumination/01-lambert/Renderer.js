@@ -100,6 +100,7 @@ export class Renderer extends BaseRenderer {
         gl.activeTexture(gl.TEXTURE0);
         gl.uniform1i(uniforms.uBaseTexture, 0);
 
+        this.prepareTexture(material.baseTexture);
         const glTexture = this.prepareImage(material.baseTexture.image);
         const glSampler = this.prepareSampler(material.baseTexture.sampler);
 

@@ -29,7 +29,8 @@ vec2 directionToTexcoord(vec3 v) {
 }
 
 void main() {
-    oColor = textureLod(uEnvmap, directionToTexcoord(normalize(vPosition)), 0.0);
+    vec4 finalColor = textureLod(uEnvmap, directionToTexcoord(normalize(vPosition)), 0.0);
+    oColor = vec4(pow(finalColor.rgb, vec3(1.0 / 2.2)), finalColor.a);
 }
 `;
 
@@ -93,7 +94,8 @@ void main() {
     vec4 reflection = mix(surfaceColor, reflectedColor, uReflectance);
     vec4 refraction = mix(surfaceColor, refractedColor, uTransmittance);
 
-    oColor = mix(reflection, refraction, uEffect);
+    vec4 finalColor = mix(reflection, refraction, uEffect);
+    oColor = vec4(pow(finalColor.rgb, vec3(1.0 / 2.2)), finalColor.a);
 }
 `;
 

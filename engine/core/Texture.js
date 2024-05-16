@@ -3,9 +3,11 @@ export class Texture {
     constructor({
         image,
         sampler,
+        isSRGB = false,
     } = {}) {
         this.image = image;
         this.sampler = sampler;
+        this.isSRGB = isSRGB;
     }
 
     get width() {

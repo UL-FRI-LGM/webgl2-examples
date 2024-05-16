@@ -51,6 +51,7 @@ const modelMaterial = new Material({
             minFilter: 'nearest',
             magFilter: 'nearest',
         }),
+        isSRGB: true,
     }),
 });
 
@@ -82,6 +83,7 @@ skybox.addComponent(new Model({
                         minFilter: 'linear',
                         magFilter: 'linear',
                     }),
+                    isSRGB: true,
                 }),
             }),
         }),

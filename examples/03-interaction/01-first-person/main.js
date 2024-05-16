@@ -53,6 +53,7 @@ floor.addComponent(new Model({
                         minFilter: 'nearest',
                         magFilter: 'nearest',
                     }),
+                    isSRGB: true,
                 }),
             }),
         }),

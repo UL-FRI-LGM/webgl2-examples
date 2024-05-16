@@ -59,6 +59,7 @@ const cubeModel = new Model({
                         minFilter: 'nearest',
                         magFilter: 'nearest',
                     }),
+                    isSRGB: true,
                 }),
                 emissionTexture: new Texture({
                     image: cubeEmission,
@@ -66,6 +67,7 @@ const cubeModel = new Model({
                         minFilter: 'nearest',
                         magFilter: 'nearest',
                     }),
+                    isSRGB: true,
                 }),
             }),
         }),

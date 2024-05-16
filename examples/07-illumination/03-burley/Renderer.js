@@ -93,10 +93,15 @@ export class Renderer extends BaseRenderer {
 
         const material = primitive.material;
 
+        this.prepareTexture(material.baseTexture);
         const baseTexture = this.prepareImage(material.baseTexture.image);
         const baseSampler = this.prepareSampler(material.baseTexture.sampler);
+
+        this.prepareTexture(material.metalnessTexture);
         const metalnessTexture = this.prepareImage(material.metalnessTexture.image);
         const metalnessSampler = this.prepareSampler(material.metalnessTexture.sampler);
+
+        this.prepareTexture(material.roughnessTexture);
         const roughnessTexture = this.prepareImage(material.roughnessTexture.image);
         const roughnessSampler = this.prepareSampler(material.roughnessTexture.sampler);
 

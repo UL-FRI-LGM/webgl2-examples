@@ -55,6 +55,8 @@ export class Renderer extends BaseRenderer {
 
         const skyboxPrimitive = this.getSkyboxPrimitive(skybox);
         const skyboxMaterial = skyboxPrimitive.material;
+
+        this.prepareTexture(skyboxMaterial.baseTexture);
         const skyboxTexture = this.prepareImage(skyboxMaterial.baseTexture.image);
         const skyboxSampler = this.prepareSampler(skyboxMaterial.baseTexture.sampler);
 
@@ -128,6 +130,8 @@ export class Renderer extends BaseRenderer {
 
         const skyboxPrimitive = this.getSkyboxPrimitive(skybox);
         const skyboxMaterial = skyboxPrimitive.material;
+
+        this.prepareTexture(skyboxMaterial.baseTexture);
         const skyboxTexture = this.prepareImage(skyboxMaterial.baseTexture.image);
         const skyboxSampler = this.prepareSampler(skyboxMaterial.baseTexture.sampler);
 

@@ -145,7 +145,7 @@ void main() {
     }
 
     float ambient = pow(texture(uAmbient, vPosition).r, uOcclusionStrength);
-    oColor = color * vec4(vec3(ambient), 1);
+    oColor = pow(color * vec4(vec3(ambient), 1), vec4(1.0 / 2.2));
 }
 `;
 

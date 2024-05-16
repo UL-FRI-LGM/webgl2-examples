@@ -52,6 +52,7 @@ const material = new Material({
             minFilter: 'nearest',
             magFilter: 'nearest',
         }),
+        isSRGB: true,
     }),
     metalnessTexture: new Texture({
         image: white,

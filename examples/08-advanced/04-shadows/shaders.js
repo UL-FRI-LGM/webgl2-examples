@@ -60,8 +60,11 @@ void main() {
     vec3 lightSpaceNormal = normalize(mat3(uLightMatrix) * vNormal);
     float lambertFactor = max(0.0, -lightSpaceNormal.z);
 
-    float shading = mix(0.3, 1.0, lambertFactor * shadowFactor);
-    oColor = texture(uBaseTexture, vTexCoord) * uBaseFactor * vec4(vec3(shading), 1);
+    vec4 baseColor = texture(uBaseTexture, vTexCoord) * uBaseFactor;
+    float shading = mix(0.1, 1.0, lambertFactor * shadowFactor);
+    vec4 finalColor = baseColor * vec4(vec3(shading), 1);
+
+    oColor = vec4(pow(finalColor.rgb, vec3(1.0 / 2.2)), finalColor.a);
 }
 `;
 

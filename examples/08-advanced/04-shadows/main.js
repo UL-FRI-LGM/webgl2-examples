@@ -71,6 +71,7 @@ const cubeMaterial = new Material({
             minFilter: 'nearest',
             magFilter: 'nearest',
         }),
+        isSRGB: true,
     }),
 });
 

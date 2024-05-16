@@ -91,6 +91,7 @@ export class UnlitRenderer extends BaseRenderer {
         gl.activeTexture(gl.TEXTURE0);
         gl.uniform1i(uniforms.uBaseTexture, 0);
 
+        // ignore sRGB
         const glTexture = this.prepareImage(material.baseTexture.image);
         const glSampler = this.prepareSampler(material.baseTexture.sampler);
 
