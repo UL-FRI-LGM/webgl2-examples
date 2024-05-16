@@ -31,10 +31,7 @@ const camera = new Node();
 camera.addComponent(new Transform({
     translation: [0, 1, 0],
 }));
-camera.addComponent(new Camera({
-    near: 0.1,
-    far: 100,
-}));
+camera.addComponent(new Camera());
 camera.addComponent(new FirstPersonController(camera, canvas));
 scene.addChild(camera);
 

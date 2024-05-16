@@ -19,10 +19,7 @@ await renderer.initialize();
 
 const camera = new Node();
 camera.addComponent(new Transform());
-camera.addComponent(new Camera({
-    near: 0.1,
-    far: 100,
-}));
+camera.addComponent(new Camera());
 const cameraController = new TurntableController(camera, canvas);
 
 function update(time, dt) {
